@@ -1,7 +1,9 @@
 package main
 
-import "github.com/u00io/nuiforms/examples/ex03masterdetail"
+import (
+	"github.com/u00io/nuiforms/examples/ex04scrolling"
+)
 
 func main() {
-	ex03masterdetail.Run()
+	ex04scrolling.Run()
 }

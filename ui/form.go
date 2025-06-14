@@ -103,6 +103,7 @@ func (c *Form) Update() {
 
 func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
+	cnv.SetClip(0, 0, c.width, c.height)
 	c.topWidget.processPaint(cnv)
 }
 
@@ -203,11 +204,8 @@ func (c *Form) processChar(char rune) {
 }
 
 func (c *Form) processMouseWheel(deltaX int, deltaY int) {
-	if c.hoverWidget != nil {
-		c.hoverWidget.processMouseWheel(deltaX, deltaY)
-		return
-	}
 	c.topWidget.processMouseWheel(deltaX, deltaY)
+	c.Update()
 }
 
 func (c *Form) processTimer() {

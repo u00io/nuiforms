@@ -32,6 +32,13 @@ type Widget struct {
 	// inner widgets
 	widgets []*Widget
 
+	allowScrollX bool
+	allowScrollY bool
+	scrollX      int
+	scrollY      int
+	//innerWidth   int
+	innerHeight int
+
 	props map[string]interface{}
 
 	// temp
@@ -94,6 +101,11 @@ func (c *Widget) RemoveWidget(w *Widget) {
 
 func (c *Widget) SetBackgroundColor(col color.RGBA) {
 	c.backgroundColor = col
+}
+
+func (c *Widget) SetAllowScroll(allowX bool, allowY bool) {
+	c.allowScrollX = allowX
+	c.allowScrollY = allowY
 }
 
 func (c *Widget) SetMouseCursor(cursor nuimouse.MouseCursor) {
@@ -180,6 +192,7 @@ func (c *Widget) SetSize(w, h int) {
 	c.updateLayout(c.w, c.h, w, h)
 	c.w = w
 	c.h = h
+	c.checkScrolls() // Update scroll position if needed
 }
 
 func (c *Widget) SetAnchors(left, top, right, bottom bool) {
@@ -230,6 +243,9 @@ func (c *Widget) SetOnMouseWheel(f func(deltaX, deltaY int)) {
 }
 
 func (c *Widget) getWidgetAt(x, y int) *Widget {
+	x += c.scrollX
+	y += c.scrollY
+
 	for _, w := range c.widgets {
 		if x >= w.x && x < w.x+w.w && y >= w.y && y < w.y+w.h {
 			return w
@@ -247,45 +263,34 @@ func (c *Widget) findWidgetAt(x, y int) *Widget {
 }
 
 func (c *Widget) processPaint(cnv *Canvas) {
+	// Draw the background color if set
 	if c.backgroundColor.A > 0 {
 		cnv.SetColor(c.backgroundColor)
 		cnv.FillRect(0, 0, c.w, c.h, c.backgroundColor)
 	}
 
+	// Draw using the custom paint function if set
+	cnv.Save()
+	cnv.Translate(-c.scrollX, -c.scrollY)
+
 	if c.onCustomPaint != nil {
 		c.onCustomPaint(cnv)
 	}
 
+	// Draw all child widgets
 	for _, w := range c.widgets {
 		cnv.Save()
 		cnv.Translate(w.x, w.y)
-		cnv.SetClip(w.x, w.y, w.w, w.h)
+		//cnv.SetClip(0, 0, 1000, 1000)
 		w.processPaint(cnv)
 		cnv.Restore()
 	}
-
-	/*if c.IsHovered() {
-		cnv.SetColor(color.RGBA{255, 255, 255, 255})
-		for x := 0; x < c.w; x++ {
-			cnv.SetPixel(x, 0)
-			cnv.SetPixel(x, 1)
-		}
-	}*/
-
-	/*if c.IsFocused() {
-		cnv.SetColor(color.RGBA{0, 255, 0, 255})
-		for x := 0; x < c.w; x++ {
-			cnv.SetPixel(x, 0)
-			cnv.SetPixel(x, c.h-1)
-		}
-		for y := 0; y < c.h; y++ {
-			cnv.SetPixel(0, y)
-			cnv.SetPixel(c.w-1, y)
-		}
-	}*/
+	cnv.Restore()
 }
 
 func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int) {
+	x += c.scrollX
+	y += c.scrollY
 	if c.onMouseDown != nil {
 		c.onMouseDown(button, x, y)
 	}
@@ -300,6 +305,9 @@ func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int) {
+	x += c.scrollX
+	y += c.scrollY
+
 	if c.onMouseUp != nil {
 		c.onMouseUp(button, x, y)
 	}
@@ -310,6 +318,9 @@ func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Widget) processMouseMove(x int, y int) {
+	x += c.scrollX
+	y += c.scrollY
+
 	c.lastMouseX = x
 	c.lastMouseY = y
 	if c.onMouseMove != nil {
@@ -362,6 +373,9 @@ func (c *Widget) processKeyUp(key nuikey.Key) {
 }
 
 func (c *Widget) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
+	x += c.scrollX
+	y += c.scrollY
+
 	if c.onMouseUp != nil {
 		c.onMouseUp(button, x, y)
 	}
@@ -379,13 +393,40 @@ func (c *Widget) processChar(char rune) {
 	}
 }
 
-func (c *Widget) processMouseWheel(deltaX, deltaY int) {
-	if c.onMouseWheel != nil {
-		c.onMouseWheel(deltaX, deltaY)
+func (c *Widget) processMouseWheel(deltaX, deltaY int) bool {
+	hoverWidget := c.getWidgetAt(c.lastMouseX, c.lastMouseY)
+	if hoverWidget != nil {
+		processed := hoverWidget.processMouseWheel(deltaX, deltaY)
+		if processed {
+			return true
+		}
 	}
 
-	for _, w := range c.widgets {
-		w.processMouseWheel(deltaX, deltaY)
+	if c.onMouseWheel != nil {
+		c.onMouseWheel(deltaX, deltaY)
+		return true
+	}
+
+	if c.allowScrollY {
+		c.scrollY -= deltaY * 30
+		c.checkScrolls()
+		return true
+	}
+
+	return false
+}
+
+func (c *Widget) checkScrolls() {
+	if c.allowScrollY {
+		if c.scrollY > c.innerHeight-c.h {
+			c.scrollY = c.innerHeight - c.h
+		}
+		if c.scrollY < 0 {
+			c.scrollY = 0
+		}
+		if c.innerHeight < c.h {
+			c.scrollY = 0
+		}
 	}
 }
 
