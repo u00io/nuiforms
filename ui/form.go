@@ -2,6 +2,9 @@ package ui
 
 import (
 	"image"
+	"runtime"
+	"runtime/debug"
+	"time"
 
 	"github.com/u00io/nui/nui"
 	"github.com/u00io/nui/nuikey"
@@ -22,7 +25,8 @@ type Form struct {
 	hoverWidget   *Widget
 	focusedWidget *Widget
 
-	timers []*timer
+	timers             []*timer
+	lastFreeMemoryTime time.Time
 }
 
 var MainForm *Form
@@ -202,4 +206,14 @@ func (c *Form) processTimer() {
 	for _, t := range c.timers {
 		t.tick()
 	}
+
+	if time.Since(c.lastFreeMemoryTime) > 5*time.Second {
+		c.freeMemory()
+		c.lastFreeMemoryTime = time.Now()
+	}
+}
+
+func (c *Form) freeMemory() {
+	runtime.GC()
+	debug.FreeOSMemory()
 }

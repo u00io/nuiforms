@@ -1,9 +1,7 @@
 package main
 
-import (
-	"github.com/u00io/nuiforms/examples/ex02widget"
-)
+import "github.com/u00io/nuiforms/examples/ex03masterdetail"
 
 func main() {
-	ex02widget.Run()
+	ex03masterdetail.Run()
 }

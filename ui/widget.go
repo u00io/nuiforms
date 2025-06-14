@@ -3,6 +3,7 @@ package ui
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"image/color"
 	"strings"
 
 	"github.com/u00io/nui/nuikey"
@@ -38,6 +39,8 @@ type Widget struct {
 
 	mouseCursor nuimouse.MouseCursor
 
+	backgroundColor color.RGBA
+
 	// callbacks
 	onCustomPaint func(cnv *Canvas)
 	onMouseDown   func(button nuimouse.MouseButton, x int, y int)
@@ -57,6 +60,17 @@ func NewWidget() *Widget {
 	rand.Read(randomBytes)
 	c.name = "Widget-" + strings.ToUpper(hex.EncodeToString(randomBytes))
 	c.props = make(map[string]interface{})
+	c.x = 0
+	c.y = 0
+	c.w = 300
+	c.h = 200
+	c.anchorLeft = true
+	c.anchorTop = true
+	c.anchorRight = false
+	c.anchorBottom = false
+	c.widgets = make([]*Widget, 0)
+	c.mouseCursor = nuimouse.MouseCursorArrow
+	c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0} // transparent by default
 	return &c
 }
 
@@ -66,6 +80,19 @@ func (c *Widget) SetName(name string) {
 
 func (c *Widget) AddWidget(w *Widget) {
 	c.widgets = append(c.widgets, w)
+}
+
+func (c *Widget) RemoveWidget(w *Widget) {
+	for i, widget := range c.widgets {
+		if widget == w {
+			c.widgets = append(c.widgets[:i], c.widgets[i+1:]...)
+			return
+		}
+	}
+}
+
+func (c *Widget) SetBackgroundColor(col color.RGBA) {
+	c.backgroundColor = col
 }
 
 func (c *Widget) SetMouseCursor(cursor nuimouse.MouseCursor) {
@@ -219,6 +246,11 @@ func (c *Widget) findWidgetAt(x, y int) *Widget {
 }
 
 func (c *Widget) processPaint(cnv *Canvas) {
+	if c.backgroundColor.A > 0 {
+		cnv.SetColor(c.backgroundColor)
+		cnv.FillRect(0, 0, c.w, c.h, c.backgroundColor)
+	}
+
 	if c.onCustomPaint != nil {
 		c.onCustomPaint(cnv)
 	}
