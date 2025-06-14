@@ -147,6 +147,11 @@ func (c *Widget) H() int {
 	return c.h
 }
 
+func (c *Widget) SetInnerSize(width, height int) {
+	c.innerWidth = width
+	c.innerHeight = height
+}
+
 func (c *Widget) SetProp(key string, value interface{}) {
 	c.props[key] = value
 }
@@ -573,8 +578,13 @@ func (c *Widget) processMouseWheel(deltaX, deltaY int) bool {
 		return true
 	}
 
-	if c.allowScrollY {
-		c.scrollY -= deltaY * 30
+	if c.allowScrollX || c.allowScrollY {
+		if c.allowScrollX {
+			c.scrollX -= deltaX * 30
+		}
+		if c.allowScrollY {
+			c.scrollY -= deltaY * 30
+		}
 		c.checkScrolls()
 		return true
 	}

@@ -9,7 +9,7 @@ func Run() {
 	form.SetTitle("Scrolling Example")
 	form.SetSize(800, 600)
 
-	scrollWidget := ui.NewScrollView()
+	scrollWidget := NewBigWidget()
 	scrollWidget.SetPosition(0, 0)
 	scrollWidget.SetSize(800, 600)
 	scrollWidget.SetAnchors(true, true, true, true)

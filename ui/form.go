@@ -21,6 +21,8 @@ type Form struct {
 	lastMouseY      int
 	lastMouseCursor nuimouse.MouseCursor
 
+	lastKeyboardModifiers nuikey.KeyModifiers
+
 	mouseLeftButtonPressed       bool
 	mouseLeftButtonPressedWidget *Widget
 
@@ -191,6 +193,10 @@ func (c *Form) processMouseEnter() {
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
+	if c.lastKeyboardModifiers != mods {
+		c.lastKeyboardModifiers = mods
+	}
+
 	if c.focusedWidget != nil {
 		c.focusedWidget.processKeyDown(keyCode)
 		return
@@ -199,6 +205,9 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 }
 
 func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
+	if c.lastKeyboardModifiers != mods {
+		c.lastKeyboardModifiers = mods
+	}
 	if c.focusedWidget != nil {
 		c.focusedWidget.processKeyUp(keyCode)
 		return
@@ -223,6 +232,9 @@ func (c *Form) processChar(char rune) {
 }
 
 func (c *Form) processMouseWheel(deltaX int, deltaY int) {
+	if c.lastKeyboardModifiers.Shift {
+		deltaX, deltaY = deltaY, deltaX // Swap for horizontal scrolling
+	}
 	c.topWidget.processMouseWheel(deltaX, deltaY)
 	c.Update()
 }
