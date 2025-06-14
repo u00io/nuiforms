@@ -3,6 +3,7 @@ package ui
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"image/color"
 	"strings"
 
@@ -325,6 +326,7 @@ func (c *Widget) processMouseMove(x int, y int) {
 }
 
 func (c *Widget) processMouseLeave() {
+	fmt.Println("Widget", c.name, "mouse leave")
 	if c.onMouseLeave != nil {
 		c.onMouseLeave()
 	}
@@ -332,6 +334,7 @@ func (c *Widget) processMouseLeave() {
 }
 
 func (c *Widget) processMouseEnter() {
+	fmt.Println("Widget", c.name, "mouse enter")
 	if c.onMouseEnter != nil {
 		c.onMouseEnter()
 	}

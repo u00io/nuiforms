@@ -1,11 +1,14 @@
 package ui
 
 import (
+	"time"
+
 	"github.com/u00io/nui/nuimouse"
 )
 
 func NewButton() *Widget {
 	c := NewWidget()
+	c.SetName("Button-" + time.Now().Format("20060102150405"))
 	c.SetSize(100, 30)
 	c.SetOnPaint(func(cnv *Canvas) {
 		backColor := GetThemeColor("background", DefaultBackground)

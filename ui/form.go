@@ -38,6 +38,7 @@ func NewForm() *Form {
 	c.width = 800
 	c.height = 600
 	c.topWidget = NewWidget()
+	c.topWidget.SetName("FormTopWidget")
 	c.topWidget.SetPosition(0, 0)
 	c.topWidget.SetSize(c.width, c.height)
 	c.topWidget.SetAnchors(true, true, true, true)
@@ -156,6 +157,13 @@ func (c *Form) processMouseMove(x int, y int) {
 
 func (c *Form) processMouseLeave() {
 	c.topWidget.processMouseLeave()
+
+	if c.hoverWidget != nil {
+		c.hoverWidget.processMouseLeave()
+		c.hoverWidget = nil
+	}
+
+	c.Update()
 }
 
 func (c *Form) processMouseEnter() {
