@@ -949,11 +949,7 @@ func addFont(name string, data []byte) {
 	if err != nil {
 		return
 	}
-	if err == nil {
-		val.fontRegular = f
-	}
-
-	return
+	val.fontRegular = f
 }
 
 func Font(family string, size float64, bold bool, italic bool) (result *truetype.Font, face font.Face, err error) {

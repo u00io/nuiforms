@@ -21,12 +21,15 @@ type Form struct {
 	topWidget     *Widget
 	hoverWidget   *Widget
 	focusedWidget *Widget
+
+	timers []*timer
 }
 
 var MainForm *Form
 
 func NewForm() *Form {
 	var c Form
+	c.timers = make([]*timer, 0)
 	c.title = "Form"
 	c.width = 800
 	c.height = 600
@@ -56,6 +59,14 @@ func (c *Form) Panel() *Widget {
 	return c.topWidget
 }
 
+func (c *Form) AddTimer(intervalMs int, callback func()) {
+	t := &timer{
+		intervalMs: intervalMs,
+		callback:   callback,
+	}
+	c.timers = append(c.timers, t)
+}
+
 func (c *Form) Exec() {
 	c.wnd = nui.CreateWindow(c.title, c.width, c.height, true)
 
@@ -73,6 +84,7 @@ func (c *Form) Exec() {
 	c.wnd.OnKeyDown(c.processKeyDown)
 	c.wnd.OnKeyUp(c.processKeyUp)
 	c.wnd.OnChar(c.processChar)
+	c.wnd.OnTimer(c.processTimer)
 
 	c.wnd.Show()
 	c.wnd.EventLoop()
@@ -184,4 +196,10 @@ func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 		return
 	}
 	c.topWidget.processMouseWheel(deltaX, deltaY)
+}
+
+func (c *Form) processTimer() {
+	for _, t := range c.timers {
+		t.tick()
+	}
 }
