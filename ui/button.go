@@ -3,6 +3,7 @@ package ui
 import (
 	"time"
 
+	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
 
@@ -24,11 +25,11 @@ func NewButton() *Widget {
 
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 
-	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int) {
+	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
 		c.SetProp("pressed", true)
 	})
 
-	c.SetOnMouseUp(func(button nuimouse.MouseButton, x int, y int) {
+	c.SetOnMouseUp(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
 		c.SetProp("pressed", false)
 		if MainForm.hoverWidget == c {
 			fnOnClick, ok := c.GetProp("onClick").(func())

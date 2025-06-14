@@ -1013,3 +1013,23 @@ func FontContext(family string, size float64, bold bool, italic bool, color colo
 	c.SetSrc(fg)
 	return c, nil
 }
+
+func CharPositions(family string, size float64, bold bool, italic bool, text string) ([]int, error) {
+	runes := []rune(text)
+	result := make([]int, len(runes)+1)
+	for pos := range runes {
+		safeSubstring := string(runes[0:pos])
+		w, _, err := MeasureText(family, size, bold, italic, safeSubstring, false)
+		if err != nil {
+			return nil, err
+		}
+		result[pos] = w
+	}
+	w, _, err := MeasureText(family, size, bold, italic, text, false)
+	if err != nil {
+		return nil, err
+	}
+	result[len(runes)] = w
+
+	return result, err
+}

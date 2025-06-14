@@ -30,15 +30,19 @@ type Form struct {
 	hoverWidget   *Widget
 	focusedWidget *Widget
 
-	timers             []*timer
 	lastFreeMemoryTime time.Time
 }
 
 var MainForm *Form
 
+func UpdateMainForm() {
+	if MainForm != nil {
+		MainForm.Update()
+	}
+}
+
 func NewForm() *Form {
 	var c Form
-	c.timers = make([]*timer, 0)
 	c.title = "Form"
 	c.width = 800
 	c.height = 600
@@ -67,14 +71,6 @@ func (c *Form) SetSize(width, height int) {
 
 func (c *Form) Panel() *Widget {
 	return c.topWidget
-}
-
-func (c *Form) AddTimer(intervalMs int, callback func()) {
-	t := &timer{
-		intervalMs: intervalMs,
-		callback:   callback,
-	}
-	c.timers = append(c.timers, t)
 }
 
 func (c *Form) Exec() {
@@ -129,7 +125,7 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
-	c.topWidget.processMouseDown(button, x, y)
+	c.topWidget.processMouseDown(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -138,17 +134,18 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressed = false
 		c.mouseLeftButtonPressedWidget = nil
 	}
-	c.topWidget.processMouseUp(button, x, y)
+	c.topWidget.processMouseUp(button, x, y, c.lastKeyboardModifiers)
+	c.Update()
 }
 
 func (c *Form) processMouseMove(x int, y int) {
-	if c.mouseLeftButtonPressedWidget != nil {
-		c.mouseLeftButtonPressedWidget.processMouseMove(x, y)
+	/*if c.mouseLeftButtonPressedWidget != nil {
+		c.mouseLeftButtonPressedWidget.processMouseMove(x, y, c.lastKeyboardModifiers)
 		c.Update()
 		return
-	}
+	}*/
 
-	c.topWidget.processMouseMove(x, y)
+	c.topWidget.processMouseMove(x, y, c.lastKeyboardModifiers)
 	c.lastMouseX = x
 	c.lastMouseY = y
 	hoverWidget := c.topWidget.findWidgetAt(x, y)
@@ -198,10 +195,12 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 	}
 
 	if c.focusedWidget != nil {
-		c.focusedWidget.processKeyDown(keyCode)
+		c.focusedWidget.processKeyDown(keyCode, mods)
+		c.Update()
 		return
 	}
-	c.topWidget.processKeyDown(keyCode)
+	c.topWidget.processKeyDown(keyCode, mods)
+	c.Update()
 }
 
 func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
@@ -209,26 +208,31 @@ func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.lastKeyboardModifiers = mods
 	}
 	if c.focusedWidget != nil {
-		c.focusedWidget.processKeyUp(keyCode)
+		c.focusedWidget.processKeyUp(keyCode, mods)
+		c.Update()
 		return
 	}
-	c.topWidget.processKeyUp(keyCode)
+	c.topWidget.processKeyUp(keyCode, mods)
+	c.Update()
 }
 
 func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
 	if c.focusedWidget != nil {
-		c.focusedWidget.processMouseDblClick(button, x, y)
+		c.focusedWidget.processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+		c.Update()
 		return
 	}
-	c.topWidget.processMouseDblClick(button, x, y)
+	c.topWidget.processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+	c.Update()
 }
 
 func (c *Form) processChar(char rune) {
 	if c.focusedWidget != nil {
-		c.focusedWidget.processChar(char)
+		c.focusedWidget.processChar(char, c.lastKeyboardModifiers)
+		c.Update()
 		return
 	}
-	c.topWidget.processChar(char)
+	c.topWidget.processChar(char, c.lastKeyboardModifiers)
 }
 
 func (c *Form) processMouseWheel(deltaX int, deltaY int) {
@@ -240,14 +244,13 @@ func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 }
 
 func (c *Form) processTimer() {
-	for _, t := range c.timers {
-		t.tick()
-	}
 
 	if time.Since(c.lastFreeMemoryTime) > 5*time.Second {
 		c.freeMemory()
 		c.lastFreeMemoryTime = time.Now()
 	}
+
+	c.topWidget.processTimer()
 }
 
 func (c *Form) freeMemory() {

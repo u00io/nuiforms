@@ -1,9 +1,7 @@
 package main
 
-import (
-	"github.com/u00io/nuiforms/examples/ex04scrolling"
-)
+import "github.com/u00io/nuiforms/examples/ex05textbox"
 
 func main() {
-	ex04scrolling.Run()
+	ex05textbox.Run()
 }
