@@ -37,7 +37,11 @@ type Widget struct {
 	scrollX      int
 	scrollY      int
 	//innerWidth   int
-	innerHeight int
+	innerHeight               int
+	scrollBarYSize            int
+	scrollingY                bool
+	scrollingYInitial         int
+	scrollingYInitialMousePos int
 
 	props map[string]interface{}
 
@@ -72,6 +76,7 @@ func NewWidget() *Widget {
 	c.y = 0
 	c.w = 300
 	c.h = 200
+	c.scrollBarYSize = 16
 	c.anchorLeft = true
 	c.anchorTop = true
 	c.anchorRight = false
@@ -285,10 +290,59 @@ func (c *Widget) processPaint(cnv *Canvas) {
 		w.processPaint(cnv)
 		cnv.Restore()
 	}
+
 	cnv.Restore()
+
+	// Draw ScrollBarY
+	if c.allowScrollY && c.innerHeight > c.h {
+		scrollBarHeight := c.h * c.h / c.innerHeight
+		scrollBarY := c.scrollY * (c.h - scrollBarHeight) / (c.innerHeight - c.h)
+
+		cnv.SetColor(color.RGBA{R: 200, G: 200, B: 200, A: 255})
+		cnv.FillRect(c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, color.RGBA{R: 200, G: 200, B: 200, A: 255})
+	}
+
 }
 
 func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int) {
+	// Determine if the click is within the vertical scroll bar area
+	if c.allowScrollY && c.innerHeight > c.h && x >= c.w-c.scrollBarYSize {
+		isUpperBar := y < c.h*c.scrollY/c.innerHeight
+		if isUpperBar {
+			// Clicked in the upper part of the scroll bar
+			pageSize := c.h * c.h / c.innerHeight
+			c.scrollY -= pageSize // Scroll up
+			if c.scrollY < 0 {
+				c.scrollY = 0
+			}
+			c.checkScrolls()
+			return
+		}
+
+		isLowerBar := y >= c.h*(c.scrollY+c.h)/c.innerHeight
+		if isLowerBar {
+			// Clicked in the lower part of the scroll bar
+			pageSize := c.h * c.h / c.innerHeight
+			c.scrollY += pageSize // Scroll down
+			if c.scrollY > c.innerHeight-c.h {
+				c.scrollY = c.innerHeight - c.h
+			}
+			c.checkScrolls()
+			return
+		}
+
+		// Clicked in the scroll bar
+		scrollBarHeight := c.h * c.h / c.innerHeight
+		scrollBarY := c.scrollY * (c.h - scrollBarHeight) / (c.innerHeight - c.h)
+		if y >= scrollBarY && y < scrollBarY+scrollBarHeight {
+			c.scrollingY = true
+			c.scrollingYInitial = c.scrollY
+			c.scrollingYInitialMousePos = y
+			fmt.Println("Started scrollingY", c.scrollingYInitial, c.scrollingYInitialMousePos)
+			return
+		}
+	}
+
 	x += c.scrollX
 	y += c.scrollY
 	if c.onMouseDown != nil {
@@ -305,6 +359,12 @@ func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int) {
+	// If scrolling is active, stop it
+	if c.scrollingY {
+		c.scrollingY = false
+		return
+	}
+
 	x += c.scrollX
 	y += c.scrollY
 
@@ -318,6 +378,17 @@ func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Widget) processMouseMove(x int, y int) {
+	if c.scrollingY {
+		if c.allowScrollY && c.innerHeight > c.h {
+			k := float64(c.innerHeight) / float64(c.h)
+			newScrollFloat64 := float64(c.scrollingYInitial) + float64(y-c.scrollingYInitialMousePos)*k
+			c.scrollY = int(newScrollFloat64)
+			c.checkScrolls()
+			return
+		}
+		return
+	}
+
 	x += c.scrollX
 	y += c.scrollY
 
