@@ -36,8 +36,16 @@ type Widget struct {
 	allowScrollY bool
 	scrollX      int
 	scrollY      int
-	//innerWidth   int
-	innerHeight               int
+	innerWidth   int
+	innerHeight  int
+
+	scrollBarXColor           color.RGBA
+	scrollBarXSize            int
+	scrollingX                bool
+	scrollingXInitial         int
+	scrollingXInitialMousePos int
+
+	scrollBarYColor           color.RGBA
 	scrollBarYSize            int
 	scrollingY                bool
 	scrollingYInitial         int
@@ -46,8 +54,10 @@ type Widget struct {
 	props map[string]interface{}
 
 	// temp
-	lastMouseX int
-	lastMouseY int
+	lastMouseX       int // After scrolling
+	lastMouseY       int // After scrolling
+	lastMouseAbsPosX int // Last mouse position relative to the widget
+	lastMouseAbsPosY int // Last mouse position relative to the widget
 
 	mouseCursor nuimouse.MouseCursor
 
@@ -71,12 +81,16 @@ func NewWidget() *Widget {
 	randomBytes := make([]byte, 8)
 	rand.Read(randomBytes)
 	c.name = "Widget-" + strings.ToUpper(hex.EncodeToString(randomBytes))
-	c.props = make(map[string]interface{})
+	c.props = make(map[string]any)
 	c.x = 0
 	c.y = 0
 	c.w = 300
 	c.h = 200
-	c.scrollBarYSize = 16
+	c.scrollBarXSize = 10
+	c.scrollBarYSize = 10
+	c.scrollBarXColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
+	c.scrollBarYColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
+	c.innerWidth = 0
 	c.anchorLeft = true
 	c.anchorTop = true
 	c.anchorRight = false
@@ -260,6 +274,14 @@ func (c *Widget) getWidgetAt(x, y int) *Widget {
 }
 
 func (c *Widget) findWidgetAt(x, y int) *Widget {
+	// if it is the bar area, return self
+	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
+		return c
+	}
+	if c.allowScrollY && c.innerHeight > c.h && x >= c.w-c.scrollBarYSize {
+		return c
+	}
+
 	innerWidget := c.getWidgetAt(x, y)
 	if innerWidget != nil {
 		return innerWidget.findWidgetAt(x-innerWidget.x, y-innerWidget.y)
@@ -293,18 +315,73 @@ func (c *Widget) processPaint(cnv *Canvas) {
 
 	cnv.Restore()
 
+	// Draw ScrollBarX
+	if c.allowScrollX && c.innerWidth > c.w {
+		scrollBarWidth := c.w * c.w / c.innerWidth
+		scrollBarX := c.scrollX * (c.w - scrollBarWidth) / (c.innerWidth - c.w)
+
+		barColor := c.scrollBarXColor
+		if c.lastMouseAbsPosY >= c.h-c.scrollBarXSize && c.lastMouseAbsPosY < c.h {
+			barColor = color.RGBA{R: barColor.R, G: barColor.G, B: barColor.B, A: 200} // Darker color when hovered
+		}
+
+		cnv.FillRect(scrollBarX, c.h-c.scrollBarXSize, scrollBarWidth, c.scrollBarXSize, barColor)
+	}
+
 	// Draw ScrollBarY
 	if c.allowScrollY && c.innerHeight > c.h {
 		scrollBarHeight := c.h * c.h / c.innerHeight
 		scrollBarY := c.scrollY * (c.h - scrollBarHeight) / (c.innerHeight - c.h)
 
-		cnv.SetColor(color.RGBA{R: 200, G: 200, B: 200, A: 255})
-		cnv.FillRect(c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, color.RGBA{R: 200, G: 200, B: 200, A: 255})
+		barColor := c.scrollBarYColor
+		if c.lastMouseAbsPosX >= c.w-c.scrollBarYSize && c.lastMouseAbsPosX < c.w {
+			barColor = color.RGBA{R: barColor.R, G: barColor.G, B: barColor.B, A: 200} // Darker color when hovered
+		}
+
+		cnv.FillRect(c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, barColor)
 	}
 
 }
 
 func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int) {
+	// Determine if the click is within the horizontal scroll bar area
+	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
+		isLeftBar := x < c.w*c.scrollX/c.innerWidth
+		if isLeftBar {
+			// Clicked in the left part of the scroll bar
+			pageSize := c.w * c.w / c.innerWidth
+			c.scrollX -= pageSize // Scroll left
+			if c.scrollX < 0 {
+				c.scrollX = 0
+			}
+			c.checkScrolls()
+			return
+		}
+
+		isRightBar := x >= c.w*(c.scrollX+c.w)/c.innerWidth
+		if isRightBar {
+			// Clicked in the right part of the scroll bar
+			pageSize := c.w * c.w / c.innerWidth
+			c.scrollX += pageSize // Scroll right
+			if c.scrollX > c.innerWidth-c.w {
+				c.scrollX = c.innerWidth - c.w
+			}
+			c.checkScrolls()
+			return
+		}
+
+		// Clicked in the scroll bar
+		scrollBarWidth := c.w * c.w / c.innerWidth
+		scrollBarX := c.scrollX * (c.w - scrollBarWidth) / (c.innerWidth - c.w)
+		if x >= scrollBarX && x < scrollBarX+scrollBarWidth {
+			c.scrollingX = true
+			c.scrollingXInitial = c.scrollX
+			c.scrollingXInitialMousePos = x
+			fmt.Println("Started scrollingX", c.scrollingXInitial, c.scrollingXInitialMousePos)
+			return
+		}
+	}
+
 	// Determine if the click is within the vertical scroll bar area
 	if c.allowScrollY && c.innerHeight > c.h && x >= c.w-c.scrollBarYSize {
 		isUpperBar := y < c.h*c.scrollY/c.innerHeight
@@ -360,6 +437,12 @@ func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 
 func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 	// If scrolling is active, stop it
+	if c.scrollingX {
+		c.scrollingX = false
+		return
+	}
+
+	// If scrolling is active, stop it
 	if c.scrollingY {
 		c.scrollingY = false
 		return
@@ -378,6 +461,17 @@ func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Widget) processMouseMove(x int, y int) {
+	if c.scrollingX {
+		if c.allowScrollX && c.innerWidth > c.w {
+			k := float64(c.innerWidth) / float64(c.w)
+			newScrollFloat64 := float64(c.scrollingXInitial) + float64(x-c.scrollingXInitialMousePos)*k
+			c.scrollX = int(newScrollFloat64)
+			c.checkScrolls()
+			return
+		}
+		return
+	}
+
 	if c.scrollingY {
 		if c.allowScrollY && c.innerHeight > c.h {
 			k := float64(c.innerHeight) / float64(c.h)
@@ -389,6 +483,9 @@ func (c *Widget) processMouseMove(x int, y int) {
 		return
 	}
 
+	c.lastMouseAbsPosX = x
+	c.lastMouseAbsPosY = y
+
 	x += c.scrollX
 	y += c.scrollY
 
@@ -399,10 +496,8 @@ func (c *Widget) processMouseMove(x int, y int) {
 	}
 
 	for _, w := range c.widgets {
-		//widgetInArea := false
 		if x >= w.x && x < w.x+w.w && y >= w.y && y < w.y+w.h {
 			w.processMouseMove(x-w.x, y-w.y)
-			//widgetInArea = true
 		}
 	}
 }
@@ -488,6 +583,18 @@ func (c *Widget) processMouseWheel(deltaX, deltaY int) bool {
 }
 
 func (c *Widget) checkScrolls() {
+	if c.allowScrollX {
+		if c.scrollX > c.innerWidth-c.w {
+			c.scrollX = c.innerWidth - c.w
+		}
+		if c.scrollX < 0 {
+			c.scrollX = 0
+		}
+		if c.innerWidth < c.w {
+			c.scrollX = 0
+		}
+	}
+
 	if c.allowScrollY {
 		if c.scrollY > c.innerHeight-c.h {
 			c.scrollY = c.innerHeight - c.h

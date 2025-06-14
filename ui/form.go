@@ -21,6 +21,9 @@ type Form struct {
 	lastMouseY      int
 	lastMouseCursor nuimouse.MouseCursor
 
+	mouseLeftButtonPressed       bool
+	mouseLeftButtonPressedWidget *Widget
+
 	topWidget     *Widget
 	hoverWidget   *Widget
 	focusedWidget *Widget
@@ -114,7 +117,13 @@ func (c *Form) processResize(width, height int) {
 }
 
 func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
+	if button == nuimouse.MouseButtonLeft {
+		c.mouseLeftButtonPressed = true
+	}
 	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
+	if c.mouseLeftButtonPressed {
+		c.mouseLeftButtonPressedWidget = widgetAtCoords
+	}
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
@@ -123,10 +132,20 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
+	if button == nuimouse.MouseButtonLeft {
+		c.mouseLeftButtonPressed = false
+		c.mouseLeftButtonPressedWidget = nil
+	}
 	c.topWidget.processMouseUp(button, x, y)
 }
 
 func (c *Form) processMouseMove(x int, y int) {
+	if c.mouseLeftButtonPressedWidget != nil {
+		c.mouseLeftButtonPressedWidget.processMouseMove(x, y)
+		c.Update()
+		return
+	}
+
 	c.topWidget.processMouseMove(x, y)
 	c.lastMouseX = x
 	c.lastMouseY = y

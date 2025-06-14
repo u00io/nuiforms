@@ -9,7 +9,8 @@ func NewScrollView() *Widget {
 	widget := NewWidget()
 	widget.SetBackgroundColor(color.RGBA{R: 255, G: 255, B: 255, A: 255})
 	widget.SetSize(1000, 1000)
-	widget.SetAllowScroll(false, true)
+	widget.SetAllowScroll(true, true)
+	widget.innerWidth = 1000 // Set a large inner width to enable horizontal scrolling
 	widget.innerHeight = 900 // Set a large inner height to enable scrolling
 
 	widget.SetOnPaint(func(cnv *Canvas) {
