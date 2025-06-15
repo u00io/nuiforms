@@ -112,6 +112,13 @@ func NewForm() *Form {
 	return &c
 }
 
+func (c *Form) Close() {
+	if c.wnd != nil {
+		c.wnd.Close()
+		c.wnd = nil
+	}
+}
+
 func (c *Form) SetTitle(title string) {
 	c.title = title
 	if c.wnd != nil {
