@@ -24,16 +24,73 @@ type Form struct {
 	lastKeyboardModifiers nuikey.KeyModifiers
 
 	mouseLeftButtonPressed       bool
-	mouseLeftButtonPressedWidget *Widget
+	mouseLeftButtonPressedWidget Widgeter
 
-	topWidget     *Widget
-	hoverWidget   *Widget
-	focusedWidget *Widget
+	topWidget     *Panel
+	hoverWidget   Widgeter
+	focusedWidget Widgeter
 
 	lastFreeMemoryTime time.Time
 }
 
 var MainForm *Form
+
+type Widgeter interface {
+	X() int
+	Y() int
+	Width() int
+	Height() int
+
+	SetName(name string)
+	SetPosition(x, y int)
+	SetSize(width, height int)
+	SetAnchors(left, top, right, bottom bool)
+
+	getWidgetAt(x, y int) Widgeter
+	findWidgetAt(x, y int) Widgeter
+	Focus()
+
+	processPaint(cnv *Canvas)
+	processMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
+	processMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
+	processMouseMove(x int, y int, mods nuikey.KeyModifiers)
+	processMouseLeave()
+	processMouseEnter()
+	processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers)
+	processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers)
+	processMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
+	processChar(char rune, mods nuikey.KeyModifiers)
+	processMouseWheel(deltaX int, deltaY int) bool
+	processTimer()
+
+	SetMouseCursor(cursor nuimouse.MouseCursor)
+	MouseCursor() nuimouse.MouseCursor
+
+	Anchors() (left, top, right, bottom bool)
+
+	AddWidget(widget any)
+	AddWidgetOnGrid(widget any, gridX, gridY int)
+	RemoveWidget(widget any)
+
+	IsVisible() bool
+
+	GridX() int
+	GridY() int
+	SetGridPosition(x, y int)
+
+	XExpandable() bool
+	YExpandable() bool
+
+	MinWidth() int
+	MinHeight() int
+
+	MaxWidth() int
+	MaxHeight() int
+
+	SetAbsolutePositioning(absolute bool)
+	SetXExpandable(expandable bool)
+	SetYExpandable(expandable bool)
+}
 
 func UpdateMainForm() {
 	if MainForm != nil {
@@ -46,11 +103,12 @@ func NewForm() *Form {
 	c.title = "Form"
 	c.width = 800
 	c.height = 600
-	c.topWidget = NewWidget()
-	c.topWidget.SetName("FormTopWidget")
-	c.topWidget.SetPosition(0, 0)
-	c.topWidget.SetSize(c.width, c.height)
-	c.topWidget.SetAnchors(true, true, true, true)
+	topWidget := NewPanel()
+	topWidget.SetName("FormTopWidget")
+	topWidget.SetPosition(0, 0)
+	topWidget.SetSize(c.width, c.height)
+	topWidget.SetAnchors(true, true, true, true)
+	c.topWidget = topWidget
 	return &c
 }
 
@@ -69,7 +127,7 @@ func (c *Form) SetSize(width, height int) {
 	}
 }
 
-func (c *Form) Panel() *Widget {
+func (c *Form) Panel() *Panel {
 	return c.topWidget
 }
 
@@ -105,27 +163,28 @@ func (c *Form) Update() {
 func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
 	cnv.SetClip(0, 0, c.width, c.height)
-	c.topWidget.processPaint(cnv)
+	GetWidgeter(c.topWidget).processPaint(cnv)
 }
 
 func (c *Form) processResize(width, height int) {
-	c.topWidget.SetSize(width, height)
+	GetWidgeter(c.topWidget).SetSize(width, height)
 	c.width = width
 	c.height = height
+	UpdateMainForm()
 }
 
 func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = true
 	}
-	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
+	widgetAtCoords := GetWidgeter(c.topWidget).findWidgetAt(x, y)
 	if c.mouseLeftButtonPressed {
 		c.mouseLeftButtonPressedWidget = widgetAtCoords
 	}
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
-	c.topWidget.processMouseDown(button, x, y, c.lastKeyboardModifiers)
+	GetWidgeter(c.topWidget).processMouseDown(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -134,7 +193,7 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressed = false
 		c.mouseLeftButtonPressedWidget = nil
 	}
-	c.topWidget.processMouseUp(button, x, y, c.lastKeyboardModifiers)
+	GetWidgeter(c.topWidget).processMouseUp(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -145,10 +204,10 @@ func (c *Form) processMouseMove(x int, y int) {
 		return
 	}*/
 
-	c.topWidget.processMouseMove(x, y, c.lastKeyboardModifiers)
+	GetWidgeter(c.topWidget).processMouseMove(x, y, c.lastKeyboardModifiers)
 	c.lastMouseX = x
 	c.lastMouseY = y
-	hoverWidget := c.topWidget.findWidgetAt(x, y)
+	hoverWidget := GetWidgeter(c.topWidget).findWidgetAt(x, y)
 	if hoverWidget != c.hoverWidget {
 		if c.hoverWidget != nil {
 			c.hoverWidget.processMouseLeave()
@@ -161,8 +220,8 @@ func (c *Form) processMouseMove(x int, y int) {
 
 	newCursor := nuimouse.MouseCursorArrow
 	if c.hoverWidget != nil {
-		if c.hoverWidget.mouseCursor != nuimouse.MouseCursorNotDefined {
-			newCursor = c.hoverWidget.mouseCursor
+		if c.hoverWidget.MouseCursor() != nuimouse.MouseCursorNotDefined {
+			newCursor = c.hoverWidget.MouseCursor()
 		}
 	}
 
@@ -175,7 +234,7 @@ func (c *Form) processMouseMove(x int, y int) {
 }
 
 func (c *Form) processMouseLeave() {
-	c.topWidget.processMouseLeave()
+	GetWidgeter(c.topWidget).processMouseLeave()
 
 	if c.hoverWidget != nil {
 		c.hoverWidget.processMouseLeave()
@@ -186,7 +245,7 @@ func (c *Form) processMouseLeave() {
 }
 
 func (c *Form) processMouseEnter() {
-	c.topWidget.processMouseEnter()
+	GetWidgeter(c.topWidget).processMouseEnter()
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
@@ -199,7 +258,7 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.Update()
 		return
 	}
-	c.topWidget.processKeyDown(keyCode, mods)
+	GetWidgeter(c.topWidget).processKeyDown(keyCode, mods)
 	c.Update()
 }
 
@@ -212,7 +271,7 @@ func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.Update()
 		return
 	}
-	c.topWidget.processKeyUp(keyCode, mods)
+	GetWidgeter(c.topWidget).processKeyUp(keyCode, mods)
 	c.Update()
 }
 
@@ -222,7 +281,7 @@ func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
 		c.Update()
 		return
 	}
-	c.topWidget.processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+	GetWidgeter(c.topWidget).processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -232,14 +291,14 @@ func (c *Form) processChar(char rune) {
 		c.Update()
 		return
 	}
-	c.topWidget.processChar(char, c.lastKeyboardModifiers)
+	GetWidgeter(c.topWidget).processChar(char, c.lastKeyboardModifiers)
 }
 
 func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 	if c.lastKeyboardModifiers.Shift {
 		deltaX, deltaY = deltaY, deltaX // Swap for horizontal scrolling
 	}
-	c.topWidget.processMouseWheel(deltaX, deltaY)
+	GetWidgeter(c.topWidget).processMouseWheel(deltaX, deltaY)
 	c.Update()
 }
 
@@ -250,7 +309,7 @@ func (c *Form) processTimer() {
 		c.lastFreeMemoryTime = time.Now()
 	}
 
-	c.topWidget.processTimer()
+	GetWidgeter(c.topWidget).processTimer()
 }
 
 func (c *Form) freeMemory() {

@@ -24,7 +24,7 @@ func Run() {
 		closeCurrentTab()
 		tabWidget = NewTab1Widget()
 		tabWidget.SetPosition(300, 0)
-		tabWidget.SetSize(form.Panel().W()-leftPanelWidth, form.Panel().H())
+		tabWidget.SetSize(form.Panel().Width()-leftPanelWidth, form.Panel().Height())
 		tabWidget.SetAnchors(true, true, true, true)
 		form.Panel().AddWidget(tabWidget)
 	}
@@ -33,14 +33,14 @@ func Run() {
 		closeCurrentTab()
 		tabWidget = NewTab2Widget()
 		tabWidget.SetPosition(300, 0)
-		tabWidget.SetSize(form.Panel().W()-leftPanelWidth, form.Panel().H())
+		tabWidget.SetSize(form.Panel().Width()-leftPanelWidth, form.Panel().Height())
 		tabWidget.SetAnchors(true, true, true, true)
 		form.Panel().AddWidget(tabWidget)
 	}
 
 	masterWidget := NewMasterWidget()
 	masterWidget.SetPosition(0, 0)
-	masterWidget.SetSize(leftPanelWidth, form.Panel().H())
+	masterWidget.SetSize(leftPanelWidth, form.Panel().Height())
 	masterWidget.SetAnchors(true, true, false, true)
 	masterWidget.SetProp("open1", openTab1)
 	masterWidget.SetProp("open2", openTab2)

@@ -10,8 +10,8 @@ import (
 )
 
 type TextBox struct {
-	//Control
-	lines []string
+	widget Widget
+	lines  []string
 
 	cursorPosX          int
 	cursorPosY          int
@@ -54,40 +54,51 @@ type TextBoxSelection struct {
 	Text           string
 }
 
-func NewTextBox() *Widget {
-	c := NewWidget()
-	c.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
-	txtBox := newTextBox(c)
+func NewTextBox() *TextBox {
+	var c TextBox
+	c.widget.InitWidget()
 
-	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) {
-		txtBox.KeyDown(c, key, mods)
+	c.widget.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
+	txtBox := newTextBox(&c.widget)
+
+	c.widget.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) {
+		txtBox.KeyDown(&c.widget, key, mods)
 	})
 
-	c.SetOnChar(func(char rune, mods nuikey.KeyModifiers) {
-		txtBox.KeyChar(c, char, mods)
+	c.widget.SetOnChar(func(char rune, mods nuikey.KeyModifiers) {
+		txtBox.KeyChar(&c.widget, char, mods)
 	})
 
-	c.SetOnPaint(func(cnv *Canvas) {
-		txtBox.Draw(c, cnv, c.innerWidth, c.innerHeight)
+	c.widget.SetOnPaint(func(cnv *Canvas) {
+		txtBox.Draw(&c.widget, cnv, c.widget.innerWidth, c.widget.innerHeight)
 	})
 
-	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
-		txtBox.MouseDown(c, button, x, y, mods)
+	c.widget.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+		txtBox.MouseDown(&c.widget, button, x, y, mods)
 	})
 
-	c.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) {
-		txtBox.MouseMove(c, x, y, mods)
+	c.widget.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) {
+		txtBox.MouseMove(&c.widget, x, y, mods)
 	})
 
-	c.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
-		txtBox.MouseUp(c, button, x, y, mods)
+	c.widget.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+		txtBox.MouseUp(&c.widget, button, x, y, mods)
 	})
 
-	c.AddTimer(250, func() {
-		txtBox.timerCursorBlinking(c)
+	c.widget.AddTimer(250, func() {
+		txtBox.timerCursorBlinking(&c.widget)
 	})
 
-	return c
+	c.multiline = false
+	c.widget.SetXExpandable(true)
+	c.widget.SetYExpandable(false)
+	c.widget.SetMinSize(100, 30)
+
+	return &c
+}
+
+func (c *TextBox) Widgeter() any {
+	return &c.widget
 }
 
 func newTextBox(w *Widget) *TextBox {
@@ -175,8 +186,13 @@ func (c *TextBox) SetMultiline(multiline bool, w *Widget) {
 	if c.multiline {
 		w.allowScrollX = true
 		w.allowScrollY = true
+		w.SetXExpandable(true)
+		w.SetYExpandable(true)
 		//c.verticalScrollVisible.SetOwnValue(true)
 		//c.horizontalScrollVisible.SetOwnValue(true)
+	} else {
+		w.SetXExpandable(true)
+		w.SetYExpandable(false)
 	}
 	c.updateInnerSize(w)
 	UpdateMainForm()

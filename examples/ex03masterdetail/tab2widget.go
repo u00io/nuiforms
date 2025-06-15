@@ -1,7 +1,6 @@
 package ex03masterdetail
 
 import (
-	"fmt"
 	"image/color"
 
 	"github.com/u00io/nuiforms/ui"
@@ -14,12 +13,7 @@ func NewTab2Widget() *ui.Widget {
 	c.SetBackgroundColor(col)
 
 	btn1 := ui.NewButton()
-	btn1.SetSize(80, 30)
 	btn1.SetPosition(8, 8)
-	btn1.SetProp("text", "OK")
-	btn1.SetProp("onClick", func() {
-		fmt.Println("Button OK clicked")
-	})
 	c.AddWidget(btn1)
 
 	return c

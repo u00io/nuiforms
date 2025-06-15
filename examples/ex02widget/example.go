@@ -40,11 +40,6 @@ func Run() {
 
 		btn := ui.NewButton()
 		btn.SetPosition(450, 30)
-		btn.SetSize(130, 30)
-		btn.SetProp("text", "Button")
-		btn.SetProp("onClick", func() {
-			txt.SetProp("text", "Hello,\r\nWorld!")
-		})
 		myWidget.AddWidget(btn)
 	}
 
