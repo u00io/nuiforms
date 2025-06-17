@@ -181,7 +181,7 @@ func (c *Form) Update() {
 
 func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
-	cnv.SetClip(0, 0, c.width, c.height)
+	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	GetWidgeter(c.topWidget).processPaint(cnv)
 }
 

@@ -3,5 +3,5 @@ package main
 import "github.com/u00io/nuiforms/examples/ex08dialog"
 
 func main() {
-	ex08dialog.Run() // Run the example dialog application
+	ex08dialog.Run()
 }

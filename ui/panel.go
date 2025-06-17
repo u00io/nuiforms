@@ -40,6 +40,10 @@ func (c *Panel) SetSize(w, h int) {
 	c.widget.SetSize(w, h)
 }
 
+func (c *Panel) SetPanelPadding(padding int) {
+	c.widget.SetPanelPadding(padding)
+}
+
 func (c *Panel) SetAnchors(left, right, top, bottom bool) {
 	c.widget.SetAnchors(left, right, top, bottom)
 }

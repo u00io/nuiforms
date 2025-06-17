@@ -268,6 +268,10 @@ func GetWidgeter(w any) Widgeter {
 	return nil
 }
 
+func (c *Widget) SetPanelPadding(padding int) {
+	c.panelPadding = padding
+}
+
 func (c *Widget) AddWidgetOnGrid(w any, gridX, gridY int) {
 	// Get field Widget (w.Widget) as Widgeter
 
@@ -493,7 +497,9 @@ func (c *Widget) processPaint(cnv *Canvas) {
 
 	// Draw using the custom paint function if set
 	cnv.Save()
-	cnv.Translate(-c.scrollX, -c.scrollY)
+
+	cnv.state.translateX -= c.scrollX
+	cnv.state.translateY -= c.scrollY
 
 	if c.onCustomPaint != nil {
 		c.onCustomPaint(cnv)
@@ -502,9 +508,9 @@ func (c *Widget) processPaint(cnv *Canvas) {
 	// Draw all child widgets
 	for _, wObj := range c.widgets {
 		w := GetWidgeter(wObj)
+
 		cnv.Save()
-		cnv.Translate(w.X(), w.Y())
-		//cnv.SetClip(0, 0, 1000, 1000)
+		cnv.TranslateAndClip(w.X(), w.Y(), w.Width(), w.Height())
 		w.processPaint(cnv)
 		cnv.Restore()
 	}

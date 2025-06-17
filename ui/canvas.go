@@ -71,16 +71,53 @@ func (c *Canvas) SetColor(col color.RGBA) {
 	c.state.col = col
 }
 
-func (c *Canvas) SetClip(x, y, w, h int) {
-	c.state.clipX += x
-	c.state.clipY += y
+func (c *Canvas) SetDirectTranslateAndClip(x, y, w, h int) {
+	c.state.translateX = x
+	c.state.translateY = y
+	c.state.clipX = x
+	c.state.clipY = y
 	c.state.clipW = w
 	c.state.clipH = h
 }
 
-func (c *Canvas) Translate(x, y int) {
+func (c *Canvas) TranslateAndClip(x, y int, w, h int) {
 	c.state.translateX += x
 	c.state.translateY += y
+
+	clipX := c.state.translateX
+	clipY := c.state.translateY
+	clipW := w
+	clipH := h
+
+	if clipX < c.state.clipX {
+		clipW -= c.state.clipX - clipX
+		clipX = c.state.clipX
+	}
+
+	if clipY < c.state.clipY {
+		clipH -= c.state.clipY - clipY
+		clipY = c.state.clipY
+	}
+
+	if clipX+clipW > c.state.clipX+c.state.clipW {
+		clipW -= (clipX + clipW) - (c.state.clipX + c.state.clipW)
+	}
+
+	if clipY+clipH > c.state.clipY+c.state.clipH {
+		clipH -= (clipY + clipH) - (c.state.clipY + c.state.clipH)
+	}
+
+	if clipW < 0 {
+		clipW = 0
+	}
+	if clipH < 0 {
+		clipH = 0
+	}
+
+	c.state.clipX = clipX
+	c.state.clipY = clipY
+	c.state.clipW = clipW
+	c.state.clipH = clipH
 }
 
 func (c *Canvas) SetPixel(x, y int) {
@@ -726,44 +763,6 @@ func (c *Canvas) TranslatedY() int {
 	return c.state.translateY
 }
 
-func (c *Canvas) ClipIn(x, y, width, height int) {
-	nClipX := x
-	nClipY := y
-	nClipW := width
-	nClipH := height
-
-	if nClipX < c.state.clipX {
-		nClipW -= c.state.clipX - nClipX
-		nClipX = c.state.clipX
-	}
-
-	if nClipX+nClipW > c.state.clipX+c.state.clipW {
-		nClipW -= (nClipX + nClipW) - (c.state.clipX + c.state.clipW)
-	}
-
-	if nClipY < c.state.clipY {
-		nClipH -= c.state.clipY - nClipY
-		nClipY = c.state.clipY
-	}
-
-	if nClipY+nClipH > c.state.clipY+c.state.clipH {
-		nClipH -= (nClipY + nClipH) - (c.state.clipY + c.state.clipH)
-	}
-
-	if nClipW < 0 {
-		nClipW = 0
-	}
-
-	if nClipH < 0 {
-		nClipH = 0
-	}
-
-	c.state.clipX = nClipX
-	c.state.clipY = nClipY
-	c.state.clipW = nClipW
-	c.state.clipH = nClipH
-}
-
 func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign HAlign, vAlign VAlign, text string, colr color.Color, fontFamily string, fontSize float64, underline bool) {
 	lines := strings.Split(text, "\r\n")
 
@@ -788,7 +787,9 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 	}
 
 	c.Save()
-	c.ClipIn(x+c.TranslatedX(), y+c.TranslatedY(), width, height)
+	c.TranslateAndClip(x, y, width, height)
+	x = 0
+	y = 0
 
 	for _, str := range lines {
 		xx := x
@@ -809,6 +810,7 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 			}
 		}
 
+		//c.DrawText(xx, yOffset+y, str, fontFamily, fontSize, colr, underline)
 		c.DrawText(xx, yOffset+y, str, fontFamily, fontSize, colr, underline)
 
 		if underline {

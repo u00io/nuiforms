@@ -1,29 +1,43 @@
 package ex08dialog
 
-import "github.com/u00io/nuiforms/ui"
+import (
+	"fmt"
+
+	"github.com/u00io/nuiforms/ui"
+)
 
 func Run() {
 	form := ui.NewForm()
 	panel := form.Panel()
 
 	panel1 := ui.NewPanel()
+	panel1.SetPanelPadding(10)
 	panel.AddWidgetOnGrid(panel1, 0, 0)
 	txtBox := ui.NewTextBox()
 	panel1.AddWidgetOnGrid(txtBox, 0, 0)
 
 	panel2 := ui.NewPanel()
 	panel.AddWidgetOnGrid(panel2, 0, 1)
+
+	//panel2.AddWidgetOnGrid(ui.NewVSpacer(), 0, 0)
 	table := ui.NewTable()
 
-	table.SetRowCount(3)
-	table.SetColumnCount(2)
+	colCount := 5
+	rowCount := 50
 
-	table.SetCellText(0, 0, "Row 1, Col 1")
-	table.SetCellText(0, 1, "Row 1, Col 2")
-	table.SetCellText(1, 0, "Row 2, Col 1")
-	table.SetCellText(1, 1, "Row 2, Col 2")
-	table.SetCellText(2, 0, "Row 3, Col 1")
-	table.SetCellText(2, 1, "Row 3, Col 2")
+	table.SetRowCount(rowCount)
+	table.SetColumnCount(colCount)
+
+	for i := 0; i < colCount; i++ {
+		table.SetColumnName(i, "Column "+fmt.Sprint(i+1))
+		table.SetColumnWidth(i, 100)
+	}
+
+	for r := 0; r < rowCount; r++ {
+		for column := 0; column < colCount; column++ {
+			table.SetCellText(r, column, fmt.Sprintf("%dx%d", r+1, column+1))
+		}
+	}
 
 	panel2.AddWidgetOnGrid(table, 0, 0)
 
