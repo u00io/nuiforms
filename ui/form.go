@@ -30,7 +30,10 @@ type Form struct {
 	hoverWidget   Widgeter
 	focusedWidget Widgeter
 
+	needUpdate         bool
 	lastFreeMemoryTime time.Time
+
+	lastUpdateTime time.Time
 }
 
 var MainForm *Form
@@ -161,9 +164,18 @@ func (c *Form) Exec() {
 	c.wnd.EventLoop()
 }
 
-func (c *Form) Update() {
-	if c.wnd != nil {
+func (c *Form) realUpdate() {
+	if c.wnd != nil && c.needUpdate {
 		c.wnd.Update()
+		c.needUpdate = false
+		c.lastUpdateTime = time.Now()
+	}
+}
+
+func (c *Form) Update() {
+	c.needUpdate = true
+	if time.Since(c.lastUpdateTime) > 50*time.Millisecond {
+		c.realUpdate()
 	}
 }
 
@@ -317,6 +329,10 @@ func (c *Form) processTimer() {
 	}
 
 	GetWidgeter(c.topWidget).processTimer()
+
+	if c.needUpdate {
+		c.realUpdate()
+	}
 }
 
 func (c *Form) freeMemory() {

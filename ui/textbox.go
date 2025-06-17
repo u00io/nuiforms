@@ -34,7 +34,8 @@ type TextBox struct {
 	//selectionBackground *uiproperties.Property
 
 	//timerBlink    *FormTimer
-	cursorVisible bool
+	cursorVisible         bool
+	skipOneCursorBlinking bool
 
 	OnTextChanged    func(txtBox *TextBox, oldValue string, newValue string)
 	onValidateNeeded func(oldValue string, newValue string) bool
@@ -152,8 +153,11 @@ func (c *TextBox) SetIsPassword(isPassword bool) {
 
 func (c *TextBox) timerCursorBlinking(w *Widget) {
 	if MainForm.focusedWidget == w {
-		c.cursorVisible = !c.cursorVisible
-		UpdateMainForm()
+		if !c.skipOneCursorBlinking {
+			c.cursorVisible = !c.cursorVisible
+			UpdateMainForm()
+		}
+		c.skipOneCursorBlinking = false
 	}
 }
 
@@ -442,6 +446,8 @@ func (c *TextBox) MouseDown(w *Widget, button nuimouse.MouseButton, x int, y int
 		c.selectionRightX = c.cursorPosX
 		c.selectionRightY = c.cursorPosY
 		c.dragingCursor = true
+		c.cursorVisible = true
+		c.skipOneCursorBlinking = true
 		UpdateMainForm()
 	}
 }
