@@ -48,12 +48,14 @@ type Widget struct {
 	minHeight int // Minimum height
 	maxHeight int // Maximum height
 
-	allowScrollX bool
-	allowScrollY bool
-	scrollX      int
-	scrollY      int
-	innerWidth   int
-	innerHeight  int
+	allowScrollX   bool
+	allowScrollY   bool
+	hideScrollbarX bool
+	hideScrollbarY bool
+	scrollX        int
+	scrollY        int
+	innerWidth     int
+	innerHeight    int
 
 	scrollBarXColor           color.RGBA
 	scrollBarXSize            int
@@ -535,7 +537,7 @@ func (c *Widget) processPaint(cnv *Canvas) {
 	cnv.Restore()
 
 	// Draw ScrollBarX
-	if c.allowScrollX && c.innerWidth > c.w {
+	if !c.hideScrollbarX && c.allowScrollX && c.innerWidth > c.w {
 		scrollBarWidth := c.w * c.w / c.innerWidth
 		scrollBarX := c.scrollX * (c.w - scrollBarWidth) / (c.innerWidth - c.w)
 
@@ -548,7 +550,7 @@ func (c *Widget) processPaint(cnv *Canvas) {
 	}
 
 	// Draw ScrollBarY
-	if c.allowScrollY && c.innerHeight > c.h {
+	if !c.hideScrollbarY && c.allowScrollY && c.innerHeight > c.h {
 		scrollBarHeight := c.h * c.h / c.innerHeight
 		scrollBarY := c.scrollY * (c.h - scrollBarHeight) / (c.innerHeight - c.h)
 

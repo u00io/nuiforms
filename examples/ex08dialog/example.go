@@ -15,6 +15,7 @@ func Run() {
 	panel.AddWidgetOnGrid(panel1, 0, 0)
 	txtBox := ui.NewTextBox()
 	panel1.AddWidgetOnGrid(txtBox, 0, 0)
+	txtBox.SetText("1394 23094 23p4 284328 09138 4082401 2384032c09iwepdokcf;ld fljfsdlk;fj lkfjasdkl fadslfjasdkjh ")
 
 	panel2 := ui.NewPanel()
 	panel.AddWidgetOnGrid(panel2, 0, 1)
@@ -43,8 +44,8 @@ func Run() {
 
 	panel3 := ui.NewPanel()
 	panel.AddWidgetOnGrid(panel3, 0, 2)
-	//panel3.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
-	panel3.AddWidgetOnGrid(ui.NewTextBox(), 0, 0)
+	panel3.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
+	//panel3.AddWidgetOnGrid(ui.NewTextBox(), 0, 0)
 	btnOK := ui.NewButton()
 	btnOK.SetText("OK")
 	panel3.AddWidgetOnGrid(btnOK, 1, 0)

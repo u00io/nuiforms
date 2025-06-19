@@ -31,6 +31,8 @@ type TextBox struct {
 	blockUpdate bool
 	emptyText   string
 
+	padding int
+
 	//selectionBackground *uiproperties.Property
 
 	//timerBlink    *FormTimer
@@ -60,40 +62,53 @@ func NewTextBox() *TextBox {
 	c.widget.InitWidget()
 
 	c.widget.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
-	txtBox := newTextBox(&c.widget)
+	//txtBox := newTextBox(&c.widget)
 
 	c.widget.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) {
-		txtBox.KeyDown(&c.widget, key, mods)
+		c.KeyDown(&c.widget, key, mods)
 	})
 
 	c.widget.SetOnChar(func(char rune, mods nuikey.KeyModifiers) {
-		txtBox.KeyChar(&c.widget, char, mods)
+		c.KeyChar(&c.widget, char, mods)
 	})
 
 	c.widget.SetOnPaint(func(cnv *Canvas) {
-		txtBox.Draw(&c.widget, cnv, c.widget.innerWidth, c.widget.innerHeight)
+		c.Draw(&c.widget, cnv, c.widget.innerWidth, c.widget.innerHeight)
 	})
 
 	c.widget.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
-		txtBox.MouseDown(&c.widget, button, x, y, mods)
+		c.MouseDown(&c.widget, button, x, y, mods)
 	})
 
 	c.widget.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) {
-		txtBox.MouseMove(&c.widget, x, y, mods)
+		c.MouseMove(&c.widget, x, y, mods)
 	})
 
 	c.widget.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
-		txtBox.MouseUp(&c.widget, button, x, y, mods)
+		c.MouseUp(&c.widget, button, x, y, mods)
 	})
 
 	c.widget.AddTimer(250, func() {
-		txtBox.timerCursorBlinking(&c.widget)
+		c.timerCursorBlinking(&c.widget)
 	})
 
 	c.multiline = false
 	c.widget.SetXExpandable(true)
 	c.widget.SetYExpandable(false)
 	c.widget.SetMinSize(100, 30)
+
+	c.lines = make([]string, 1)
+	c.cursorWidth = 1
+	c.leftAndRightPadding = 0
+	c.multiline = false
+	c.cursorVisible = true
+	c.SetText("HELLO111")
+	c.SetText("asdasdasdasd")
+	c.ScrollToBegin()
+	c.updateInnerSize(&c.widget)
+	c.emptyText = "Type here..."
+
+	c.padding = 4
 
 	return &c
 }
@@ -104,20 +119,6 @@ func (c *TextBox) Widgeter() any {
 
 func newTextBox(w *Widget) *TextBox {
 	var b TextBox
-	b.lines = make([]string, 1)
-	b.cursorWidth = 1
-	b.leftAndRightPadding = 3
-	b.multiline = false
-	b.cursorVisible = true
-	b.SetText("HELLO", w)
-
-	//b.timerBlink = b.Window().NewTimer(250, b.timerCursorBlinking)
-	//b.timerBlink.StartTimer()
-
-	b.ScrollToBegin()
-	//b.SetMultiline(b.multiline)
-	b.updateInnerSize(w)
-	b.emptyText = "Type here..."
 	//b.verticalScrollVisible.SetOwnValue(true)
 
 	/*menu := NewPopupMenu(&b)
@@ -164,11 +165,11 @@ func (c *TextBox) timerCursorBlinking(w *Widget) {
 func (c *TextBox) redraw() {
 }
 
-func (c *TextBox) SetText(text string, w *Widget) {
+func (c *TextBox) SetText(text string) {
 	c.redraw()
 	var modifiers nuikey.KeyModifiers
-	c.modifyText(w, textboxModifyCommandSetText, modifiers, text)
-	c.updateInnerSize(w)
+	c.modifyText(&c.widget, textboxModifyCommandSetText, modifiers, text)
+	c.updateInnerSize(&c.widget)
 	c.ScrollToBegin()
 	UpdateMainForm()
 }
@@ -658,8 +659,8 @@ func (c *TextBox) removeSelectedText(modifiers nuikey.KeyModifiers) (bool, []str
 }
 
 func (c *TextBox) ensureVisibleCursor() {
-	/*_, oneLineHeight, _ := MeasureText(c.FontFamily(), c.FontSize(), c.FontBold(), c.FontItalic(), "Q", false)
-	charPos, err := CharPositions(c.FontFamily(), c.fontSize.Float64(), c.FontBold(), c.FontItalic(), c.lines[c.cursorPosY])
+	_, oneLineHeight, _ := MeasureText(c.FontFamily(), c.FontSize(), false, false, "Q", false)
+	charPos, err := CharPositions(c.FontFamily(), c.FontSize(), false, false, c.lines[c.cursorPosY])
 	for i := 0; i < len(charPos); i++ {
 		charPos[i] = charPos[i] + c.leftAndRightPadding
 	}
@@ -670,8 +671,10 @@ func (c *TextBox) ensureVisibleCursor() {
 	curX := cursorPosInPixels - (c.cursorWidth / 2)
 	curY := c.cursorPosY * oneLineHeight
 	// ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight)
-	c.ScrollEnsureVisible(curX, curY)
-	c.ScrollEnsureVisible(curX+c.cursorWidth, curY+oneLineHeight)*/
+	//c.ScrollEnsureVisible(curX, curY)
+	//c.ScrollEnsureVisible(curX+c.cursorWidth, curY+oneLineHeight)
+	c.widget.ScrollEnsureVisible(curX, curY)
+	c.widget.ScrollEnsureVisible(curX+c.cursorWidth, curY+oneLineHeight)
 }
 
 func (c *TextBox) clearSelection() {
@@ -813,6 +816,8 @@ func (c *TextBox) SelectAllText() {
 }
 
 func (c *TextBox) ScrollToBegin() {
+	c.widget.ScrollEnsureVisible(0, 0)
+	c.widget.ScrollEnsureVisible(0, 1)
 	//c.ScrollEnsureVisible(0, 0)
 	//c.ScrollEnsureVisible(0, 1)
 }
