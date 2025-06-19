@@ -415,6 +415,7 @@ func (c *Table) updateInnerSize() {
 		width += colWidth
 	}
 	c.widget.SetInnerSize(width, c.headerHeight()+c.rowCount*c.rowHeight)
+	c.widget.checkScrolls()
 }
 
 func (c *Table) headerColumnBorderByPosition(x int, y int) int {
