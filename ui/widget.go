@@ -272,7 +272,7 @@ func (c *Widget) SetPanelPadding(padding int) {
 	c.panelPadding = padding
 }
 
-func (c *Widget) AddWidgetOnGrid(w any, gridX, gridY int) {
+func (c *Widget) AddWidgetOnGrid(w any, gridX int, gridY int) {
 	// Get field Widget (w.Widget) as Widgeter
 
 	GetWidgeter(w).SetGridPosition(gridX, gridY)

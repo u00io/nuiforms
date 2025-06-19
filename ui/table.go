@@ -120,7 +120,7 @@ func (c *Table) SetColumnName(col int, name string) {
 	c.updateInnerSize()
 }
 
-func (c *Table) SetCellText(row, col int, text string) {
+func (c *Table) SetCellText(col int, row int, text string) {
 	rowObj, exists := c.rows[row]
 	if !exists {
 		rowObj = &tableRow{cells: make(map[int]*tableCell)}
@@ -135,7 +135,7 @@ func (c *Table) SetCellText(row, col int, text string) {
 	UpdateMainForm()
 }
 
-func (c *Table) SetCurrentCell(row, col int) {
+func (c *Table) SetCurrentCell(col int, row int) {
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
@@ -178,9 +178,9 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 		return
 	}
 
-	row, col := c.cellByPosition(x, y)
+	col, row := c.cellByPosition(x, y)
 	if row >= 0 && col >= 0 {
-		c.SetCurrentCell(row, col)
+		c.SetCurrentCell(col, row)
 	}
 }
 
@@ -191,39 +191,39 @@ func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey
 func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 	if key == nuikey.KeyArrowLeft {
 		if c.currentCellX > 0 {
-			c.SetCurrentCell(c.currentCellY, c.currentCellX-1)
+			c.SetCurrentCell(c.currentCellX-1, c.currentCellY)
 			UpdateMainForm()
 		}
 	}
 
 	if key == nuikey.KeyArrowRight {
 		if c.currentCellX < c.columnCount-1 {
-			c.SetCurrentCell(c.currentCellY, c.currentCellX+1)
+			c.SetCurrentCell(c.currentCellX+1, c.currentCellY)
 			UpdateMainForm()
 		}
 	}
 
 	if key == nuikey.KeyArrowUp {
 		if c.currentCellY > 0 {
-			c.SetCurrentCell(c.currentCellY-1, c.currentCellX)
+			c.SetCurrentCell(c.currentCellX, c.currentCellY-1)
 			UpdateMainForm()
 		}
 	}
 
 	if key == nuikey.KeyArrowDown {
 		if c.currentCellY < c.rowCount-1 {
-			c.SetCurrentCell(c.currentCellY+1, c.currentCellX)
+			c.SetCurrentCell(c.currentCellX, c.currentCellY+1)
 			UpdateMainForm()
 		}
 	}
 
 	if key == nuikey.KeyHome {
-		c.SetCurrentCell(0, c.currentCellX)
+		c.SetCurrentCell(c.currentCellX, 0)
 		UpdateMainForm()
 	}
 
 	if key == nuikey.KeyEnd {
-		c.SetCurrentCell(c.rowCount-1, c.currentCellX)
+		c.SetCurrentCell(c.currentCellX, c.rowCount-1)
 		UpdateMainForm()
 	}
 
@@ -234,7 +234,7 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 			targetRow = 0
 		}
 		if targetRow != c.currentCellY {
-			c.SetCurrentCell(targetRow, c.currentCellX)
+			c.SetCurrentCell(c.currentCellX, targetRow)
 			UpdateMainForm()
 		}
 	}
@@ -246,7 +246,7 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 			targetRow = c.rowCount - 1
 		}
 		if targetRow != c.currentCellY {
-			c.SetCurrentCell(targetRow, c.currentCellX)
+			c.SetCurrentCell(c.currentCellX, targetRow)
 			UpdateMainForm()
 		}
 	}
@@ -459,11 +459,8 @@ func (c *Table) headerColumnByPosition(x int, y int) int {
 	return -1
 }
 
-func (c *Table) cellByPosition(x, y int) (int, int) {
-	/*if y < c.widget.scrollY || y >= c.widget.scrollY+c.rowCount*c.rowHeight {
-		return -1, -1
-	}*/
-	col := 0
+func (c *Table) cellByPosition(x, y int) (col int, row int) {
+	col = 0
 	for col < c.columnCount {
 		colOffset := c.columnOffset(col)
 		colWidth := c.columnWidth(col)
@@ -475,11 +472,11 @@ func (c *Table) cellByPosition(x, y int) (int, int) {
 	if col >= c.columnCount {
 		return -1, -1
 	}
-	row := (y - c.headerHeight()) / c.rowHeight
+	row = (y - c.headerHeight()) / c.rowHeight
 	if row < 0 || row >= c.rowCount {
 		return -1, -1
 	}
-	return row, col
+	return col, row
 }
 
 func (c *Table) headerHeight() int {
