@@ -719,7 +719,10 @@ func (c *Widget) processMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 
 	for _, wObj := range c.widgets {
 		w := GetWidgeter(wObj)
-		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
+		// Temporary process in the all widgets - perrormance issue
+		inWidget := true
+		//inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
+		if inWidget {
 			w.processMouseMove(x-w.X(), y-w.Y(), mods)
 		}
 	}

@@ -28,6 +28,9 @@ type Table struct {
 
 	cellPadding int
 
+	selectingRow  bool
+	selectingCell bool
+
 	// Selection
 	currentCellX int
 	currentCellY int
@@ -70,6 +73,9 @@ func NewTable() *Table {
 	c.cellBorderWidth = 1
 	c.cellBorderColor = color.RGBA{R: 100, G: 100, B: 100, A: 255}
 	c.cellPadding = 3
+
+	c.selectingRow = true
+	c.selectingCell = true
 
 	return &c
 }
@@ -133,7 +139,11 @@ func (c *Table) SetCurrentCell(row, col int) {
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
-	c.currentCellX = col
+	if c.selectingCell {
+		c.currentCellX = col
+	} else {
+		c.currentCellX = 0
+	}
 	c.currentCellY = row
 	c.ScrollToCell(row, col)
 	UpdateMainForm()
@@ -296,10 +306,28 @@ func (c *Table) draw(cnv *Canvas) {
 					y := yOffset
 
 					columnWidth := c.columnWidth(colIndex)
-					selected := c.currentCellX == colIndex && c.currentCellY == rowIndex
+
+					/*selected := c.currentCellX == colIndex && c.currentCellY == rowIndex
+					if c.selectingRow {
+						selected = c.currentCellY == rowIndex
+					}*/
+
+					rowIsSelected := c.currentCellY == rowIndex
+					if !c.selectingRow {
+						rowIsSelected = false
+					}
+
+					cellIsSelected := c.currentCellX == colIndex && c.currentCellY == rowIndex
+					if !c.selectingCell {
+						cellIsSelected = false
+					}
+
 					backColor := color.RGBA{R: 50, G: 60, B: 70, A: 255}
-					if selected {
+					if rowIsSelected {
 						backColor = color.RGBA{R: 80, G: 90, B: 100, A: 255}
+					}
+					if cellIsSelected {
+						backColor = color.RGBA{R: 100, G: 110, B: 120, A: 255}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight, backColor)
 					cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, cellObj.text, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)

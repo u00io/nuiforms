@@ -159,6 +159,7 @@ func (c *Form) Exec() {
 	c.wnd.OnKeyUp(c.processKeyUp)
 	c.wnd.OnChar(c.processChar)
 	c.wnd.OnTimer(c.processTimer)
+	c.wnd.OnMove(c.processWindowMove)
 
 	c.wnd.Show()
 	c.wnd.EventLoop()
@@ -179,6 +180,11 @@ func (c *Form) Update() {
 	}
 }
 
+func (c *Form) forceUpdate() {
+	c.needUpdate = true
+	c.realUpdate()
+}
+
 func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
@@ -189,7 +195,7 @@ func (c *Form) processResize(width, height int) {
 	GetWidgeter(c.topWidget).SetSize(width, height)
 	c.width = width
 	c.height = height
-	UpdateMainForm()
+	c.forceUpdate()
 }
 
 func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
@@ -217,8 +223,11 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Form) processMouseMove(x int, y int) {
+
+	// TODO:
 	/*if c.mouseLeftButtonPressedWidget != nil {
-		c.mouseLeftButtonPressedWidget.processMouseMove(x, y, c.lastKeyboardModifiers)
+		widgetX, widgetY := GetWidgeter(c.topWidget).absolutePositionOfWidget(0, 0, GetWidgeter(c.mouseLeftButtonPressedWidget))
+		c.mouseLeftButtonPressedWidget.processMouseMove(x-widgetX, y-widgetY, c.lastKeyboardModifiers)
 		c.Update()
 		return
 	}*/
@@ -333,6 +342,10 @@ func (c *Form) processTimer() {
 	if c.needUpdate {
 		c.realUpdate()
 	}
+}
+
+func (c *Form) processWindowMove(x, y int) {
+	c.forceUpdate()
 }
 
 func (c *Form) freeMemory() {
