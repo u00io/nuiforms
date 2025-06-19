@@ -21,6 +21,13 @@ type Table struct {
 	rowCount    int
 	columnCount int
 
+	columnResizingIndex int
+
+	cellBorderWidth int
+	cellBorderColor color.RGBA
+
+	cellPadding int
+
 	// Selection
 	currentCellX int
 	currentCellY int
@@ -51,11 +58,18 @@ func NewTable() *Table {
 	c.widget.SetOnMouseUp(c.onMouseUp)
 	c.widget.SetOnKeyDown(c.onKeyDown)
 	c.widget.SetOnKeyUp(c.onKeyUp)
+	c.widget.SetOnMouseMove(c.onMouseMove)
 
 	c.rows = make(map[int]*tableRow)
 	c.rowHeight = 30
 	c.cols = make(map[int]*tableColumn)
 	c.defaultColumnWidth = 200
+
+	c.columnResizingIndex = -1
+
+	c.cellBorderWidth = 1
+	c.cellBorderColor = color.RGBA{R: 100, G: 100, B: 100, A: 255}
+	c.cellPadding = 3
 
 	return &c
 }
@@ -144,6 +158,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
 		fmt.Println("Header column border clicked:", headerColumnBorder)
+		c.columnResizingIndex = headerColumnBorder
 		return
 	}
 
@@ -160,6 +175,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 }
 
 func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+	c.columnResizingIndex = -1
 }
 
 func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
@@ -192,17 +208,13 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 	}
 
 	if key == nuikey.KeyHome {
-		if c.currentCellX != 0 {
-			c.SetCurrentCell(0, 0)
-			UpdateMainForm()
-		}
+		c.SetCurrentCell(0, c.currentCellX)
+		UpdateMainForm()
 	}
 
 	if key == nuikey.KeyEnd {
-		if c.currentCellY != c.rowCount-1 {
-			c.SetCurrentCell(c.currentCellX, c.columnCount-1)
-			UpdateMainForm()
-		}
+		c.SetCurrentCell(c.rowCount-1, c.currentCellX)
+		UpdateMainForm()
 	}
 
 	if key == nuikey.KeyPageUp {
@@ -233,12 +245,48 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 func (c *Table) onKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) {
 }
 
+func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) {
+	if c.columnResizingIndex >= 0 {
+		if c.columnResizingIndex < 0 || c.columnResizingIndex >= c.columnCount {
+			return
+		}
+		colInfo, exists := c.cols[c.columnResizingIndex]
+		if !exists {
+			colInfo = &tableColumn{name: "", width: c.defaultColumnWidth}
+			c.cols[c.columnResizingIndex] = colInfo
+		}
+		newWidth := x - c.columnOffset(c.columnResizingIndex)
+		if newWidth < 50 {
+			newWidth = 50
+		}
+		if newWidth != colInfo.width {
+			colInfo.width = newWidth
+			c.updateInnerSize()
+			c.widget.SetMouseCursor(nuimouse.MouseCursorResizeHor)
+			UpdateMainForm()
+		}
+		return
+	}
+
+	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
+	if headerColumnBorder >= 0 {
+		c.widget.SetMouseCursor(nuimouse.MouseCursorResizeHor)
+		return
+	}
+	c.widget.SetMouseCursor(nuimouse.MouseCursorArrow)
+}
+
 func (c *Table) draw(cnv *Canvas) {
 	yOffset := 0
 
 	yOffset += c.rowHeight
 
-	for rowIndex := 0; rowIndex < c.rowCount; rowIndex++ {
+	visibleRow1, visibleRow2 := c.visibleRows()
+	fmt.Println("Visible rows:", visibleRow1, visibleRow2)
+
+	yOffset += visibleRow1 * c.rowHeight
+
+	for rowIndex := visibleRow1; rowIndex < visibleRow2; rowIndex++ {
 		rowObj, exists := c.rows[rowIndex]
 		if exists {
 			for colIndex := 0; colIndex < c.columnCount; colIndex++ {
@@ -254,7 +302,7 @@ func (c *Table) draw(cnv *Canvas) {
 						backColor = color.RGBA{R: 80, G: 90, B: 100, A: 255}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight, backColor)
-					cnv.DrawTextMultiline(x, y, columnWidth, c.rowHeight, HAlignLeft, VAlignCenter, cellObj.text, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+					cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, cellObj.text, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
 				}
 			}
 		}
@@ -267,10 +315,43 @@ func (c *Table) draw(cnv *Canvas) {
 		if exists {
 			x := c.columnOffset(colIndex)
 			cnv.FillRect(x, c.widget.scrollY, colObj.width, c.rowHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
-			cnv.DrawTextMultiline(x, c.widget.scrollY, colObj.width, c.rowHeight, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+			cnv.DrawTextMultiline(x+c.cellPadding, c.widget.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
 		}
 	}
 
+	// Draw cell borders
+	cnv.Save()
+	cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.widget.scrollX, cnv.state.translateY+c.widget.scrollY+c.headerHeight(), c.widget.Width(), c.widget.Height()-c.headerHeight())
+	for rowIndex := visibleRow1; rowIndex < visibleRow2+2; rowIndex++ {
+		x1 := 0
+		y1 := rowIndex*c.rowHeight - c.widget.scrollY
+		x2 := c.widget.innerWidth
+		y2 := y1
+		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+	}
+	cnv.Restore()
+
+	for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
+		x1 := c.columnOffset(colIndex)
+		y1 := visibleRow1*c.rowHeight - c.headerHeight()
+		x2 := x1
+		y2 := (visibleRow2 + 2) * c.rowHeight
+		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+	}
+}
+
+func (c *Table) visibleRows() (min int, max int) {
+	min = c.widget.scrollY / c.rowHeight
+	max = min + (c.widget.Height()-c.headerHeight())/c.rowHeight
+	min = min - 1
+	max = max + 1
+	if min < 0 {
+		min = 0
+	}
+	if max > c.rowCount {
+		max = c.rowCount
+	}
+	return
 }
 
 func (c *Table) columnWidth(col int) int {
@@ -350,9 +431,9 @@ func (c *Table) headerColumnByPosition(x int, y int) int {
 }
 
 func (c *Table) cellByPosition(x, y int) (int, int) {
-	if y < c.widget.scrollY || y >= c.widget.scrollY+c.rowCount*c.rowHeight {
+	/*if y < c.widget.scrollY || y >= c.widget.scrollY+c.rowCount*c.rowHeight {
 		return -1, -1
-	}
+	}*/
 	col := 0
 	for col < c.columnCount {
 		colOffset := c.columnOffset(col)
