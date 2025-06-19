@@ -43,7 +43,8 @@ func Run() {
 
 	panel3 := ui.NewPanel()
 	panel.AddWidgetOnGrid(panel3, 0, 2)
-	panel3.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
+	//panel3.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
+	panel3.AddWidgetOnGrid(ui.NewTextBox(), 0, 0)
 	btnOK := ui.NewButton()
 	btnOK.SetText("OK")
 	panel3.AddWidgetOnGrid(btnOK, 1, 0)
