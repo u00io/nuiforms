@@ -11,18 +11,19 @@ import (
 type Table struct {
 	widget Widget
 
+	// Content of the table
 	cols map[int]*tableColumn
 	rows map[int]*tableRow
 
-	rowHeight int
+	rowHeight          int // Can be changed
+	defaultColumnWidth int // Default width for columns if not set
 
 	rowCount    int
 	columnCount int
 
+	// Selection
 	currentCellX int
 	currentCellY int
-
-	defaultColumnWidth int
 }
 
 type tableRow struct {
@@ -47,6 +48,9 @@ func NewTable() *Table {
 	c.widget.SetAllowScroll(true, true)
 	c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 60, B: 70, A: 255})
 	c.widget.SetOnMouseDown(c.onMouseDown)
+	c.widget.SetOnMouseUp(c.onMouseUp)
+	c.widget.SetOnKeyDown(c.onKeyDown)
+	c.widget.SetOnKeyUp(c.onKeyUp)
 
 	c.rows = make(map[int]*tableRow)
 	c.rowHeight = 30
@@ -58,94 +62,6 @@ func NewTable() *Table {
 
 func (c *Table) Widgeter() any {
 	return &c.widget
-}
-
-func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
-	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
-	if headerColumnBorder >= 0 {
-		fmt.Println("Header column border clicked:", headerColumnBorder)
-		return
-	}
-
-	headerColumn := c.headerColumnByPosition(x, y)
-	if headerColumn >= 0 {
-		fmt.Println("Header column clicked:", headerColumn)
-		return
-	}
-
-	row, col := c.cellByPosition(x, y)
-	if row >= 0 && col >= 0 {
-		c.currentCellX = col
-		c.currentCellY = row
-	}
-}
-
-func (c *Table) headerColumnBorderByPosition(x int, y int) int {
-	if y < c.widget.scrollY || y >= c.widget.scrollY+c.headerHeight() {
-		return -1
-	}
-	if x < 0 {
-		return -1
-	}
-	if x >= c.widget.innerWidth {
-		return -1
-	}
-	for col := 0; col < c.columnCount; col++ {
-		colOffset := c.columnOffset(col)
-		colWidth := c.columnWidth(col)
-		rigthBorder := colOffset + colWidth
-		if x >= rigthBorder-5 && x < rigthBorder+5 {
-			return col
-		}
-	}
-	return -1
-}
-
-func (c *Table) headerColumnByPosition(x int, y int) int {
-	if y < c.widget.scrollY || y >= c.widget.scrollY+c.headerHeight() {
-		return -1
-	}
-	if x < 0 {
-		return -1
-	}
-	if x >= c.widget.innerWidth {
-		return -1
-	}
-	for col := 0; col < c.columnCount; col++ {
-		colOffset := c.columnOffset(col)
-		colWidth := c.columnWidth(col)
-		if x >= colOffset && x < colOffset+colWidth {
-			return col
-		}
-	}
-	return -1
-}
-
-func (c *Table) cellByPosition(x, y int) (int, int) {
-	if y < c.widget.scrollY || y >= c.widget.scrollY+c.rowCount*c.rowHeight {
-		return -1, -1
-	}
-	col := 0
-	for col < c.columnCount {
-		colOffset := c.columnOffset(col)
-		colWidth := c.columnWidth(col)
-		if x >= colOffset && x < colOffset+colWidth {
-			break
-		}
-		col++
-	}
-	if col >= c.columnCount {
-		return -1, -1
-	}
-	row := (y - c.headerHeight()) / c.rowHeight
-	if row < 0 || row >= c.rowCount {
-		return -1, -1
-	}
-	return row, col
-}
-
-func (c *Table) headerHeight() int {
-	return c.rowHeight
 }
 
 func (c *Table) SetRowCount(count int) {
@@ -197,6 +113,124 @@ func (c *Table) SetCellText(row, col int, text string) {
 	}
 	cellObj.text = text
 	UpdateMainForm()
+}
+
+func (c *Table) SetCurrentCell(row, col int) {
+	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
+		return
+	}
+	c.currentCellX = col
+	c.currentCellY = row
+	c.ScrollToCell(row, col)
+	UpdateMainForm()
+}
+
+func (c *Table) ScrollToCell(row, col int) {
+	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
+		return
+	}
+
+	leftTopX := c.columnOffset(col)
+	leftTopY := c.headerHeight() + row*c.rowHeight
+	c.widget.ScrollEnsureVisible(leftTopX, leftTopY-c.rowHeight)
+
+	rightBottomX := leftTopX + c.columnWidth(col)
+	rightBottomY := leftTopY + c.rowHeight
+	c.widget.ScrollEnsureVisible(rightBottomX, rightBottomY)
+	UpdateMainForm()
+}
+
+func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
+	if headerColumnBorder >= 0 {
+		fmt.Println("Header column border clicked:", headerColumnBorder)
+		return
+	}
+
+	headerColumn := c.headerColumnByPosition(x, y)
+	if headerColumn >= 0 {
+		fmt.Println("Header column clicked:", headerColumn)
+		return
+	}
+
+	row, col := c.cellByPosition(x, y)
+	if row >= 0 && col >= 0 {
+		c.SetCurrentCell(row, col)
+	}
+}
+
+func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+}
+
+func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
+	if key == nuikey.KeyArrowLeft {
+		if c.currentCellX > 0 {
+			c.SetCurrentCell(c.currentCellY, c.currentCellX-1)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyArrowRight {
+		if c.currentCellX < c.columnCount-1 {
+			c.SetCurrentCell(c.currentCellY, c.currentCellX+1)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyArrowUp {
+		if c.currentCellY > 0 {
+			c.SetCurrentCell(c.currentCellY-1, c.currentCellX)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyArrowDown {
+		if c.currentCellY < c.rowCount-1 {
+			c.SetCurrentCell(c.currentCellY+1, c.currentCellX)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyHome {
+		if c.currentCellX != 0 {
+			c.SetCurrentCell(0, 0)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyEnd {
+		if c.currentCellY != c.rowCount-1 {
+			c.SetCurrentCell(c.currentCellX, c.columnCount-1)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyPageUp {
+		pageSizeInRows := c.widget.Height() / c.rowHeight
+		targetRow := c.currentCellY - pageSizeInRows
+		if targetRow < 0 {
+			targetRow = 0
+		}
+		if targetRow != c.currentCellY {
+			c.SetCurrentCell(targetRow, c.currentCellX)
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyPageDown {
+		pageSizeInRows := c.widget.Height() / c.rowHeight
+		targetRow := c.currentCellY + pageSizeInRows
+		if targetRow >= c.rowCount {
+			targetRow = c.rowCount - 1
+		}
+		if targetRow != c.currentCellY {
+			c.SetCurrentCell(targetRow, c.currentCellX)
+			UpdateMainForm()
+		}
+	}
+}
+
+func (c *Table) onKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) {
 }
 
 func (c *Table) draw(cnv *Canvas) {
@@ -271,5 +305,73 @@ func (c *Table) updateInnerSize() {
 		}
 		width += colWidth
 	}
-	c.widget.SetInnerSize(width, c.rowCount*c.rowHeight)
+	c.widget.SetInnerSize(width, c.headerHeight()+c.rowCount*c.rowHeight)
+}
+
+func (c *Table) headerColumnBorderByPosition(x int, y int) int {
+	if y < c.widget.scrollY || y >= c.widget.scrollY+c.headerHeight() {
+		return -1
+	}
+	if x < 0 {
+		return -1
+	}
+	if x >= c.widget.innerWidth {
+		return -1
+	}
+	for col := 0; col < c.columnCount; col++ {
+		colOffset := c.columnOffset(col)
+		colWidth := c.columnWidth(col)
+		rigthBorder := colOffset + colWidth
+		if x >= rigthBorder-5 && x < rigthBorder+5 {
+			return col
+		}
+	}
+	return -1
+}
+
+func (c *Table) headerColumnByPosition(x int, y int) int {
+	if y < c.widget.scrollY || y >= c.widget.scrollY+c.headerHeight() {
+		return -1
+	}
+	if x < 0 {
+		return -1
+	}
+	if x >= c.widget.innerWidth {
+		return -1
+	}
+	for col := 0; col < c.columnCount; col++ {
+		colOffset := c.columnOffset(col)
+		colWidth := c.columnWidth(col)
+		if x >= colOffset && x < colOffset+colWidth {
+			return col
+		}
+	}
+	return -1
+}
+
+func (c *Table) cellByPosition(x, y int) (int, int) {
+	if y < c.widget.scrollY || y >= c.widget.scrollY+c.rowCount*c.rowHeight {
+		return -1, -1
+	}
+	col := 0
+	for col < c.columnCount {
+		colOffset := c.columnOffset(col)
+		colWidth := c.columnWidth(col)
+		if x >= colOffset && x < colOffset+colWidth {
+			break
+		}
+		col++
+	}
+	if col >= c.columnCount {
+		return -1, -1
+	}
+	row := (y - c.headerHeight()) / c.rowHeight
+	if row < 0 || row >= c.rowCount {
+		return -1, -1
+	}
+	return row, col
+}
+
+func (c *Table) headerHeight() int {
+	return c.rowHeight
 }

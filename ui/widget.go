@@ -459,6 +459,23 @@ func (c *Widget) SetOnMouseWheel(f func(deltaX, deltaY int)) {
 	c.onMouseWheel = f
 }
 
+func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
+
+	if y1 < c.scrollY {
+		c.scrollY = y1
+	}
+	if y1 > c.scrollY+c.Height() {
+		c.scrollY = y1 - c.Height()
+	}
+
+	if x1 < c.scrollX {
+		c.scrollX = x1
+	}
+	if x1 > c.scrollX+c.Width() {
+		c.scrollX = x1 - c.Width()
+	}
+}
+
 func (c *Widget) getWidgetAt(x, y int) Widgeter {
 	x += c.scrollX
 	y += c.scrollY
