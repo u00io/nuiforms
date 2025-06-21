@@ -2,4 +2,4 @@
 
 # Base Widgets
 
-[TextBox](textbox.md)
+[TextBox](content/textbox.md)
