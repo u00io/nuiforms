@@ -1,4 +1,4 @@
-package ex02widget
+package ex02layouts
 
 import (
 	"image/color"
