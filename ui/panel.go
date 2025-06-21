@@ -20,6 +20,10 @@ func (c *Panel) SetName(name string) {
 	c.widget.SetName(name)
 }
 
+func (c *Panel) Name() string {
+	return c.widget.Name()
+}
+
 func (c *Panel) AddWidgetOnGrid(w any, x int, y int) {
 	c.widget.AddWidgetOnGrid(w, x, y)
 }
@@ -30,6 +34,10 @@ func (c *Panel) AddWidget(w any) {
 
 func (c *Panel) RemoveWidget(w any) {
 	c.widget.RemoveWidget(w)
+}
+
+func (c *Panel) RemoveAllWidgets() {
+	c.widget.RemoveAllWidgets()
 }
 
 func (c *Panel) SetPosition(x, y int) {
@@ -52,8 +60,20 @@ func (c *Panel) SetAbsolutePositioning(absolute bool) {
 	c.widget.SetAbsolutePositioning(absolute)
 }
 
+func (c *Panel) SetVisible(visible bool) {
+	c.widget.SetVisible(visible)
+}
+
 func (c *Panel) IsVisible() bool {
 	return c.widget.IsVisible()
+}
+
+func (c *Panel) X() int {
+	return c.widget.X()
+}
+
+func (c *Panel) Y() int {
+	return c.widget.Y()
 }
 
 func (c *Panel) Width() int {
@@ -70,4 +90,20 @@ func (c *Panel) SetXExpandable(expandable bool) {
 
 func (c *Panel) SetYExpandable(expandable bool) {
 	c.widget.SetYExpandable(expandable)
+}
+
+func (c *Panel) SetMinWidth(minWidth int) {
+	c.widget.SetMinWidth(minWidth)
+}
+
+func (c *Panel) SetMinHeight(minHeight int) {
+	c.widget.SetMinHeight(minHeight)
+}
+
+func (c *Panel) SetMaxWidth(maxWidth int) {
+	c.widget.SetMaxWidth(maxWidth)
+}
+
+func (c *Panel) SetMaxHeight(maxHeight int) {
+	c.widget.SetMaxHeight(maxHeight)
 }

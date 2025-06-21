@@ -1,7 +1,7 @@
 package main
 
-import "github.com/u00io/nuiforms/examples/ex08dialog"
+import "github.com/u00io/nuiforms/examples"
 
 func main() {
-	ex08dialog.Run()
+	examples.Run()
 }

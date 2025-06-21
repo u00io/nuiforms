@@ -10,14 +10,13 @@ type MyWidget struct {
 	widget ui.Widget
 }
 
-func NewMyWidget(col color.RGBA) *MyWidget {
+func NewMyWidget(name string) *MyWidget {
 	var c MyWidget
 	c.widget.InitWidget()
+	c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 50, B: 50, A: 255})
 
 	c.widget.SetOnPaint(func(cnv *ui.Canvas) {
-		cnv.SetColor(col)
-		cnv.FillRect(0, 0, c.widget.Width()+50, c.widget.Height()+50, col)
-		cnv.DrawTextMultiline(0, 0, 100, 100, ui.HAlignLeft, ui.VAlignTop, "1234567890", color.White, "robotomono", 18, false)
+		cnv.DrawTextMultiline(0, 0, c.widget.Width(), c.widget.Height(), ui.HAlignCenter, ui.VAlignCenter, name, color.White, "robotomono", 18, false)
 	})
 
 	return &c

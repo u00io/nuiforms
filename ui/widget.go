@@ -145,8 +145,8 @@ func (c *Widget) InitWidget() {
 	c.maxWidth = MAX_WIDTH
 	c.maxHeight = MAX_HEIGHT
 	c.visible = true
-	c.panelPadding = 3
-	c.cellPadding = 3
+	c.panelPadding = 2
+	c.cellPadding = 2
 	c.scrollBarXSize = 10
 	c.scrollBarYSize = 10
 	c.scrollBarXColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
@@ -163,6 +163,14 @@ func (c *Widget) InitWidget() {
 
 func (c *Widget) SetName(name string) {
 	c.name = name
+}
+
+func (c *Widget) SetVisible(visible bool) {
+	if c.visible != visible {
+		c.visible = visible
+		c.updateLayout(c.w, c.h, c.w, c.h)
+		UpdateMainForm()
+	}
 }
 
 func (c *Widget) IsVisible() bool {
@@ -234,6 +242,7 @@ func (c *Widget) AddTimer(intervalMs int, callback func()) {
 
 func (c *Widget) AddWidget(w any) {
 	c.widgets = append(c.widgets, w)
+	c.updateLayout(0, 0, 0, 0)
 }
 
 func GetWidgeter(w any) Widgeter {
@@ -279,6 +288,7 @@ func (c *Widget) AddWidgetOnGrid(w any, gridX int, gridY int) {
 
 	GetWidgeter(w).SetGridPosition(gridX, gridY)
 	c.widgets = append(c.widgets, w)
+	c.updateLayout(0, 0, 0, 0)
 }
 
 func (c *Widget) RemoveWidget(wObj any) {
@@ -289,6 +299,13 @@ func (c *Widget) RemoveWidget(wObj any) {
 			return
 		}
 	}
+	c.updateLayout(0, 0, 0, 0)
+}
+
+func (c *Widget) RemoveAllWidgets() {
+	c.widgets = make([]any, 0)
+	c.updateLayout(0, 0, 0, 0)
+	UpdateMainForm()
 }
 
 func (c *Widget) SetBackgroundColor(col color.RGBA) {
