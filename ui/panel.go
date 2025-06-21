@@ -40,6 +40,14 @@ func (c *Panel) RemoveAllWidgets() {
 	c.widget.RemoveAllWidgets()
 }
 
+func (c *Panel) NextGridX() int {
+	return c.widget.NextGridX()
+}
+
+func (c *Panel) NextGridY() int {
+	return c.widget.NextGridY()
+}
+
 func (c *Panel) SetPosition(x, y int) {
 	c.widget.SetPosition(x, y)
 }

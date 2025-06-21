@@ -37,6 +37,7 @@ type Form struct {
 }
 
 var MainForm *Form
+var mainFormExecuted bool
 
 type Widgeter interface {
 	X() int
@@ -146,6 +147,11 @@ func (c *Form) Panel() *Panel {
 }
 
 func (c *Form) Exec() {
+	if mainFormExecuted {
+		panic("MainForm already executed, cannot execute again")
+	}
+	mainFormExecuted = true
+
 	c.wnd = nui.CreateWindow(c.title, c.width, c.height, true)
 
 	c.wnd.OnPaint(c.processPaint)

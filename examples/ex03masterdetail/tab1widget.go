@@ -6,15 +6,17 @@ import (
 	"github.com/u00io/nuiforms/ui"
 )
 
-func NewTab1Widget() *ui.Widget {
-	col := color.RGBA{R: 0xFF, G: 0xCC, B: 0x00, A: 0xFF} // Yellow color
-	c := ui.NewWidget()
-	c.SetSize(100, 100)
-	c.SetBackgroundColor(col)
+type Tab1Widget struct {
+	widget ui.Widget
+}
 
-	btn1 := ui.NewButton()
-	btn1.SetPosition(8, 8)
-	c.AddWidget(btn1)
+func (c *Tab1Widget) Widgeter() any {
+	return &c.widget
+}
 
-	return c
+func NewTab1Widget() *Tab1Widget {
+	var c Tab1Widget
+	c.widget.InitWidget()
+	c.widget.SetBackgroundColor(color.RGBA{R: 150, G: 50, B: 50, A: 255})
+	return &c
 }

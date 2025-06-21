@@ -246,13 +246,17 @@ func (c *Widget) AddWidget(w any) {
 }
 
 func GetWidgeter(w any) Widgeter {
+	valueOfW := reflect.ValueOf(w)
+	if valueOfW.Kind() != reflect.Interface && valueOfW.Kind() != reflect.Pointer {
+		panic("GetWidgeter called with non-pointer or non-interface type: " + valueOfW.Type().Name())
+	}
+
 	v := reflect.ValueOf(w).Elem()
 	if v.Kind() == reflect.Struct {
 		{
 			field := v.FieldByName("Widget")
 			if field.IsValid() && field.CanAddr() {
 				ptr := field.Addr().Interface()
-				//fmt.Println("GetWidgeter found field Widget in", v.Type().Name())
 				return ptr.(Widgeter)
 			}
 		}
@@ -268,15 +272,9 @@ func GetWidgeter(w any) Widgeter {
 					}
 				}
 			}
-			/*field := v.FieldByName("widget")
-			if field.IsValid() && field.CanAddr() {
-				ptr := field.Addr().Interface()
-				//fmt.Println("GetWidgeter found field Widget in", v.Type().Name())
-				return ptr.(Widgeter)
-			}*/
 		}
 	}
-	return nil
+	panic("No Widget field found in " + v.Type().Name() + " or Widgeter interface not implemented")
 }
 
 func (c *Widget) SetPanelPadding(padding int) {
@@ -294,7 +292,8 @@ func (c *Widget) AddWidgetOnGrid(w any, gridX int, gridY int) {
 func (c *Widget) RemoveWidget(wObj any) {
 	w := GetWidgeter(wObj)
 	for i, widget := range c.widgets {
-		if widget == w {
+		widgeter := GetWidgeter(widget)
+		if widgeter == w {
 			c.widgets = append(c.widgets[:i], c.widgets[i+1:]...)
 			return
 		}
@@ -306,6 +305,36 @@ func (c *Widget) RemoveAllWidgets() {
 	c.widgets = make([]any, 0)
 	c.updateLayout(0, 0, 0, 0)
 	UpdateMainForm()
+}
+
+func (c *Widget) NextGridX() int {
+	if len(c.widgets) == 0 {
+		return 0
+	}
+
+	maxX := 0
+	for _, wObj := range c.widgets {
+		w := GetWidgeter(wObj)
+		if w.GridX() >= maxX {
+			maxX = w.GridX() + 1
+		}
+	}
+	return maxX
+}
+
+func (c *Widget) NextGridY() int {
+	if len(c.widgets) == 0 {
+		return 0
+	}
+
+	maxY := 0
+	for _, wObj := range c.widgets {
+		w := GetWidgeter(wObj)
+		if w.GridY() >= maxY {
+			maxY = w.GridY() + 1
+		}
+	}
+	return maxY
 }
 
 func (c *Widget) SetBackgroundColor(col color.RGBA) {

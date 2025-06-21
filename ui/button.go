@@ -40,12 +40,20 @@ func (c *Button) SetPosition(x, y int) {
 	c.widget.SetPosition(x, y)
 }
 
+func (c *Button) SetMinSize(width, height int) {
+	c.widget.SetMinSize(width, height)
+}
+
 func (c *Button) SetMaxSize(width, height int) {
 	c.widget.SetMaxSize(width, height)
 }
 
 func (c *Button) SetAnchors(left, right, top, bottom bool) {
 	c.widget.SetAnchors(left, right, top, bottom)
+}
+
+func (c *Button) Text() string {
+	return c.text
 }
 
 func (c *Button) SetText(text string) {

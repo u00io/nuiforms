@@ -6,15 +6,19 @@ import (
 	"github.com/u00io/nuiforms/ui"
 )
 
-func NewTab2Widget() *ui.Widget {
-	col := color.RGBA{R: 0x00, G: 0xCC, B: 0xFF, A: 0xFF} // Blue color
-	c := ui.NewWidget()
-	c.SetSize(100, 100)
-	c.SetBackgroundColor(col)
+type Tab2Widget struct {
+	widget ui.Widget
+}
 
-	btn1 := ui.NewButton()
-	btn1.SetPosition(8, 8)
-	c.AddWidget(btn1)
+func (c *Tab2Widget) Widgeter() any {
+	return &c.widget
+}
 
-	return c
+func NewTab2Widget(name string) *Tab2Widget {
+	var c Tab2Widget
+	c.widget.InitWidget()
+	c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 150, B: 50, A: 255})
+	lbl := ui.NewLabel(name)
+	c.widget.AddWidgetOnGrid(lbl, 0, 0)
+	return &c
 }

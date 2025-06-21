@@ -8,18 +8,23 @@ import (
 )
 
 type Label struct {
-	Widget
-	text string
+	widget Widget
+	text   string
+}
+
+func (c *Label) Widgeter() any {
+	return &c.widget
 }
 
 func NewLabel(text string) *Label {
 	var c Label
+	c.widget.InitWidget()
 	c.text = text
-	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+	c.widget.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
 		fmt.Println("Label clicked:", c.text)
 	})
-	c.SetOnPaint(func(cnv *Canvas) {
-		cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	c.widget.SetOnPaint(func(cnv *Canvas) {
+		cnv.DrawTextMultiline(0, 0, c.widget.Width(), c.widget.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 	})
 	return &c
 }
