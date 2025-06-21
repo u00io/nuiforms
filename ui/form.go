@@ -112,6 +112,10 @@ func NewForm() *Form {
 	topWidget.SetSize(c.width, c.height)
 	topWidget.SetAnchors(true, true, true, true)
 	c.topWidget = topWidget
+	if MainForm != nil {
+		panic("MainForm already exists, cannot create a new one")
+	}
+	MainForm = &c
 	return &c
 }
 
@@ -143,8 +147,6 @@ func (c *Form) Panel() *Panel {
 
 func (c *Form) Exec() {
 	c.wnd = nui.CreateWindow(c.title, c.width, c.height, true)
-
-	MainForm = c
 
 	c.wnd.OnPaint(c.processPaint)
 	c.wnd.OnResize(c.processResize)
