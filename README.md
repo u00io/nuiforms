@@ -1,5 +1,7 @@
 # NUIFORMS - UI library based on NUI
 
+Doc: [NUIForms Documentation](doc)
+
 # Example
     package ex01base
 
@@ -18,6 +20,7 @@
 - Linux
 
 # Base Widgets
+- Panel
 - TextBox
 - Label
 - Button
