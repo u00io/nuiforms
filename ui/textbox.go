@@ -33,9 +33,6 @@ type TextBox struct {
 
 	padding int
 
-	//selectionBackground *uiproperties.Property
-
-	//timerBlink    *FormTimer
 	cursorVisible         bool
 	skipOneCursorBlinking bool
 
@@ -102,8 +99,6 @@ func NewTextBox() *TextBox {
 	c.leftAndRightPadding = 0
 	c.multiline = false
 	c.cursorVisible = true
-	c.SetText("HELLO111")
-	c.SetText("asdasdasdasd")
 	c.ScrollToBegin()
 	c.updateInnerSize(&c.widget)
 	c.emptyText = "Type here..."
@@ -115,33 +110,6 @@ func NewTextBox() *TextBox {
 
 func (c *TextBox) Widgeter() any {
 	return &c.widget
-}
-
-func newTextBox(w *Widget) *TextBox {
-	var b TextBox
-	//b.verticalScrollVisible.SetOwnValue(true)
-
-	/*menu := NewPopupMenu(&b)
-	menu.AddItem("Cut", func(event *Event) {
-		b.cutSelected()
-	}, nil, "")
-	menu.AddItem("Copy", func(event *Event) {
-		b.copySelected()
-	}, nil, "")
-	menu.AddItem("Paste", func(event *Event) {
-		b.paste()
-	}, nil, "")
-	menu.AddItem("Delete", func(event *Event) {
-		if !b.readonly {
-			b.modifyText(textboxModifyCommandDelete, nuikey.KeyModifiers{}, nil)
-		}
-	}, nil, "")
-	menu.AddItem("Select All", func(event *Event) {
-		b.SelectAllText()
-	}, nil, "")
-	b.SetContextMenu(menu)*/
-
-	return &b
 }
 
 func (c *TextBox) SetReadOnly(readonly bool) {
