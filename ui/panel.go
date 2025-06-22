@@ -8,8 +8,8 @@ func NewPanel() *Panel {
 	var c Panel
 	c.widget.InitWidget()
 	c.widget.SetName(c.widget.Name() + "-Panel")
-	c.widget.SetXExpandable(false)
-	c.widget.SetYExpandable(false)
+	c.widget.SetXExpandable(true)
+	c.widget.SetYExpandable(true)
 	c.widget.SetAllowScroll(true, true)
 	return &c
 }

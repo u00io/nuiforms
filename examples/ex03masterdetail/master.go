@@ -29,10 +29,13 @@ func NewMasterWidget() *MasterWidget {
 	c.widget.AddWidgetOnGrid(c.panelLeft, 0, 0)
 	c.panelLeft.SetMinWidth(300)
 	c.panelLeft.SetMaxWidth(300)
-	c.panelLeft.SetMaxHeight(300)
+	c.panelLeft.SetMinHeight(400)
+	//c.panelLeft.SetMaxHeight(500)
 
 	c.panelRight = ui.NewPanel()
 	c.panelRight.SetName("panelRight")
+	c.panelRight.SetMinWidth(200)
+	c.panelRight.SetMaxWidth(250)
 	c.widget.AddWidgetOnGrid(c.panelRight, 1, 0)
 
 	{

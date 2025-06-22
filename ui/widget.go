@@ -192,14 +192,15 @@ func (c *Widget) SetGridPosition(x, y int) {
 
 func (c *Widget) MinWidth() int {
 	result := 0
-	_, _, _, allCellPadding := c.makeColumnsInfo(c.Width())
-	columnsInfo, _, _, _ := c.makeColumnsInfo(c.Width() - (c.panelPadding + allCellPadding + c.panelPadding))
 
-	for _, columnInfo := range columnsInfo {
-		result += columnInfo.minWidth
+	if !c.allowScrollX {
+		_, _, _, allCellPadding := c.makeColumnsInfo(c.Width())
+		columnsInfo, _, _, _ := c.makeColumnsInfo(c.Width() - (c.panelPadding + allCellPadding + c.panelPadding))
+		for _, columnInfo := range columnsInfo {
+			result += columnInfo.minWidth
+		}
+		result = result + c.panelPadding + allCellPadding + c.panelPadding
 	}
-
-	result = result + c.panelPadding + allCellPadding + c.panelPadding
 
 	if c.minWidth > result {
 		return c.minWidth
@@ -210,13 +211,14 @@ func (c *Widget) MinWidth() int {
 func (c *Widget) MinHeight() int {
 	result := 0
 
-	_, _, _, allCellPadding := c.makeRowsInfo(c.Height())
-	rowsInfo, _, _, _ := c.makeRowsInfo(c.Height() - (c.panelPadding + allCellPadding + c.panelPadding))
-	for _, rowInfo := range rowsInfo {
-		result += rowInfo.minHeight
+	if !c.allowScrollY {
+		_, _, _, allCellPadding := c.makeRowsInfo(c.Height())
+		rowsInfo, _, _, _ := c.makeRowsInfo(c.Height() - (c.panelPadding + allCellPadding + c.panelPadding))
+		for _, rowInfo := range rowsInfo {
+			result += rowInfo.minHeight
+		}
+		result += c.panelPadding + allCellPadding + c.panelPadding
 	}
-
-	result += c.panelPadding + allCellPadding + c.panelPadding
 
 	if c.minHeight > result {
 		return c.minHeight
@@ -544,7 +546,7 @@ func (c *Widget) getWidgetAt(x, y int) Widgeter {
 		innerWidth := w.InnerWidth()
 		innerHeight := w.InnerHeight()
 		if x >= w.X() && x < w.X()+innerWidth && y >= w.Y() && y < w.Y()+innerHeight {
-			fmt.Println("Widget found at", w.Name(), "at position", w.X(), w.Y(), "with size", innerWidth, innerHeight)
+			//fmt.Println("Widget found at", w.Name(), "at position", w.X(), w.Y(), "with size", innerWidth, innerHeight)
 			return w
 		}
 	}
@@ -871,16 +873,29 @@ func (c *Widget) processMouseWheel(deltaX, deltaY int) bool {
 		return true
 	}
 
-	if c.allowScrollX || c.allowScrollY {
+	if c.allowScrollY && c.innerHeight > c.h {
+		c.scrollY -= deltaY * 30 // Adjust the scroll speed as needed
+		c.checkScrolls()
+		return true
+	}
+
+	if c.allowScrollX && c.innerWidth > c.w {
+		c.scrollX -= deltaX * 30 // Adjust the scroll speed as needed
+		c.checkScrolls()
+		return true
+	}
+
+	/*if (c.allowScrollX || c.allowScrollY) && (c.innerWidth > c.w || c.innerHeight > c.h) {
 		if c.allowScrollX {
 			c.scrollX -= deltaX * 30
 		}
 		if c.allowScrollY {
 			c.scrollY -= deltaY * 30
+			fmt.Println("WidgetName:", c.name, "ScrollY:", c.scrollY)
 		}
 		c.checkScrolls()
 		return true
-	}
+	}*/
 
 	return false
 }
@@ -995,6 +1010,16 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 		_, minY, maxY, allCellPaddingY := c.makeRowsInfo(fullHeight)
 		rowsInfo, _, _, _ := c.makeRowsInfo(fullHeight - (c.panelPadding + allCellPaddingY + c.panelPadding))
+
+		if strings.Contains(c.name, "Top") {
+			fmt.Println("RowsInfo:")
+			for yy := minY; yy <= maxY; yy++ {
+				if rowInfo, ok := rowsInfo[yy]; ok {
+					fmt.Printf("Row %d: minHeight=%d, maxHeight=%d, expandable=%t, height=%d, collapsed=%t\n",
+						yy, rowInfo.minHeight, rowInfo.maxHeight, rowInfo.expandable, rowInfo.height, rowInfo.collapsed)
+				}
+			}
+		}
 
 		xOffset := c.panelPadding //+ c.LeftBorderWidth()
 		for x := minX; x <= maxX; x++ {
@@ -1295,6 +1320,7 @@ func (c *Widget) makeRowsInfo(fullHeight int) (map[int]*ContainerGridRowInfo, in
 		rowInfo.expandable = false // Пока думаем, что строка не мажорная
 		found := false             // Признак того, что вообще есть в строке контролы
 
+		// If any widget in the row is expandable, set the expandable flag for the row
 		for x := minX; x <= maxX; x++ {
 			w := c.getWidgetInGridCell(x, y)
 			if w != nil {
