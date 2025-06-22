@@ -873,13 +873,13 @@ func (c *Widget) processMouseWheel(deltaX, deltaY int) bool {
 		return true
 	}
 
-	if c.allowScrollY && c.innerHeight > c.h {
+	if deltaY != 0 && c.allowScrollY && c.InnerHeight() > c.h {
 		c.scrollY -= deltaY * 30 // Adjust the scroll speed as needed
 		c.checkScrolls()
 		return true
 	}
 
-	if c.allowScrollX && c.innerWidth > c.w {
+	if deltaX != 0 && c.allowScrollX && c.InnerWidth() > c.w {
 		c.scrollX -= deltaX * 30 // Adjust the scroll speed as needed
 		c.checkScrolls()
 		return true
