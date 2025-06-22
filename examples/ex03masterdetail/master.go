@@ -46,6 +46,7 @@ func NewMasterWidget() *MasterWidget {
 
 	for i := 0; i < 20; i++ {
 		btnOpenTab2 := ui.NewButton()
+		btnOpenTab2.SetName("btnOpenTab2_" + fmt.Sprint(i))
 		btnOpenTab2.SetText("Tab " + fmt.Sprint(i))
 		btnOpenTab2.SetOnButtonClick(func(btn *ui.Button) {
 			c.closeCurrentTab()

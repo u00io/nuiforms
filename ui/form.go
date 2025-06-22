@@ -40,10 +40,13 @@ var MainForm *Form
 var mainFormExecuted bool
 
 type Widgeter interface {
+	Name() string
 	X() int
 	Y() int
 	Width() int
 	Height() int
+	InnerWidth() int
+	InnerHeight() int
 
 	SetName(name string)
 	SetPosition(x, y int)

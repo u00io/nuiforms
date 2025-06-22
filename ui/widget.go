@@ -370,6 +370,20 @@ func (c *Widget) Height() int {
 	return c.h
 }
 
+func (c *Widget) InnerWidth() int {
+	if c.innerWidth == 0 {
+		return c.w
+	}
+	return c.innerWidth
+}
+
+func (c *Widget) InnerHeight() int {
+	if c.innerHeight == 0 {
+		return c.h
+	}
+	return c.innerHeight
+}
+
 func (c *Widget) SetInnerSize(width, height int) {
 	c.innerWidth = width
 	c.innerHeight = height
@@ -525,12 +539,12 @@ func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
 }
 
 func (c *Widget) getWidgetAt(x, y int) Widgeter {
-	x += c.scrollX
-	y += c.scrollY
-
 	for _, wObj := range c.widgets {
 		w := GetWidgeter(wObj)
-		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
+		innerWidth := w.InnerWidth()
+		innerHeight := w.InnerHeight()
+		if x >= w.X() && x < w.X()+innerWidth && y >= w.Y() && y < w.Y()+innerHeight {
+			fmt.Println("Widget found at", w.Name(), "at position", w.X(), w.Y(), "with size", innerWidth, innerHeight)
 			return w
 		}
 	}
@@ -538,6 +552,7 @@ func (c *Widget) getWidgetAt(x, y int) Widgeter {
 }
 
 func (c *Widget) findWidgetAt(x, y int) Widgeter {
+
 	// if it is the bar area, return self
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
 		return c
@@ -545,6 +560,9 @@ func (c *Widget) findWidgetAt(x, y int) Widgeter {
 	if c.allowScrollY && c.innerHeight > c.h && x >= c.w-c.scrollBarYSize {
 		return c
 	}
+
+	x += c.scrollX
+	y += c.scrollY
 
 	innerWidget := c.getWidgetAt(x, y)
 	if innerWidget != nil {
@@ -1063,7 +1081,7 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 	}
 
-	fmt.Println("Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
+	// fmt.Println("Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
 }
 
 func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInfo, int, int, int) {

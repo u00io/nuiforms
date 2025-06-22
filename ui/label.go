@@ -20,6 +20,7 @@ func (c *Label) Widgeter() any {
 func NewLabel(text string) *Label {
 	var c Label
 	c.widget.InitWidget()
+	c.widget.SetName(c.widget.Name() + "-Label")
 	c.widget.SetBackgroundColor(color.RGBA{0, 150, 200, 255})
 	c.text = text
 	c.widget.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {

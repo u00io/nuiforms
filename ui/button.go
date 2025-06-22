@@ -61,6 +61,14 @@ func (c *Button) SetText(text string) {
 	UpdateMainForm()
 }
 
+func (c *Button) SetName(name string) {
+	c.widget.SetName(name)
+}
+
+func (c *Button) Name() string {
+	return c.widget.Name()
+}
+
 func (c *Button) SetOnButtonClick(fn func(btn *Button)) {
 	c.onButtonClick = fn
 }
