@@ -1,8 +1,6 @@
 package ex03masterdetail
 
 import (
-	"image/color"
-
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -17,8 +15,12 @@ func (c *Tab2Widget) Widgeter() any {
 func NewTab2Widget(name string) *Tab2Widget {
 	var c Tab2Widget
 	c.widget.InitWidget()
-	c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 150, B: 50, A: 255})
-	lbl := ui.NewLabel(name)
-	c.widget.AddWidgetOnGrid(lbl, 0, 0)
+	//c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 150, B: 50, A: 255})
+	table := ui.NewTable()
+	table.SetColumnCount(3)
+	table.SetRowCount(10)
+	c.widget.AddWidgetOnGrid(table, 0, 0)
+
+	table.SetCellText(1, 1, "Column 1")
 	return &c
 }

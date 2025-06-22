@@ -297,11 +297,17 @@ func (c *Table) draw(cnv *Canvas) {
 	yOffset += visibleRow1 * c.rowHeight
 
 	for rowIndex := visibleRow1; rowIndex < visibleRow2; rowIndex++ {
-		rowObj, exists := c.rows[rowIndex]
-		if exists {
+		rowObj1, rowExists := c.rows[rowIndex]
+		{
+			_ = rowExists
 			for colIndex := 0; colIndex < c.columnCount; colIndex++ {
-				cellObj, exists := rowObj.cells[colIndex]
-				if exists {
+				var cellObj *tableCell
+				var cellExists bool
+				if rowObj1 != nil {
+					cellObj, cellExists = rowObj1.cells[colIndex]
+				}
+				{
+					_ = cellExists
 					x := c.columnOffset(colIndex)
 					y := yOffset
 
@@ -330,7 +336,13 @@ func (c *Table) draw(cnv *Canvas) {
 						backColor = color.RGBA{R: 100, G: 110, B: 120, A: 255}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight, backColor)
-					cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, cellObj.text, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+
+					cellText := ""
+					if cellObj != nil {
+						cellText = cellObj.text
+					}
+
+					cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, cellText, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
 				}
 			}
 		}
