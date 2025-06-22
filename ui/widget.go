@@ -777,7 +777,6 @@ func (c *Widget) processMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 }
 
 func (c *Widget) processMouseLeave() {
-	fmt.Println("Widget", c.name, "mouse leave")
 	if c.onMouseLeave != nil {
 		c.onMouseLeave()
 	}
@@ -785,7 +784,6 @@ func (c *Widget) processMouseLeave() {
 }
 
 func (c *Widget) processMouseEnter() {
-	fmt.Println("Widget", c.name, "mouse enter")
 	if c.onMouseEnter != nil {
 		c.onMouseEnter()
 	}
@@ -987,7 +985,6 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 				for y := minY; y <= maxY; y++ {
 					if rowInfo, ok := rowsInfo[y]; ok {
 						w := c.getWidgetInGridCell(x, y)
-
 						if w != nil {
 
 							cX := xOffset
@@ -1002,20 +999,15 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 								wHeight = w.MaxHeight()
 							}
 
-							cX += (colInfo.width - wWidth) / 2
-							cY += (rowInfo.height - wHeight) / 2
+							// Place widget in the center of the cell
+							//cX += (colInfo.width - wWidth) / 2
+							//cY += (rowInfo.height - wHeight) / 2
 
-							//w.SetX(cX)
-							//w.SetY(cY)
 							w.SetPosition(cX, cY)
 
 							if w.IsVisible() {
-								//w.SetWidth(wWidth)
-								//w.SetHeight(wHeight)
 								w.SetSize(wWidth, wHeight)
 							} else {
-								//w.SetWidth(0)
-								//w.SetHeight(0)
 								w.SetSize(0, 0)
 							}
 						}
@@ -1041,7 +1033,37 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 			}
 		}
 
+		if len(c.widgets) > 0 {
+			// Set InnerSize
+			innerWidth := 0
+			innerHeight := 0
+
+			for _, wObj := range c.widgets {
+				w := GetWidgeter(wObj)
+				if w.IsVisible() {
+					if w.X()+w.Width() > innerWidth {
+						innerWidth = w.X() + w.Width()
+					}
+					if w.Y()+w.Height() > innerHeight {
+						innerHeight = w.Y() + w.Height()
+					}
+				}
+			}
+
+			if innerWidth < c.w {
+				innerWidth = c.w
+			}
+			if innerHeight < c.h {
+				innerHeight = c.h
+			}
+			c.innerWidth = innerWidth
+			c.innerHeight = innerHeight
+			c.checkScrolls()
+		}
+
 	}
+
+	fmt.Println("Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
 }
 
 func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInfo, int, int, int) {

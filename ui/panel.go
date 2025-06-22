@@ -9,6 +9,7 @@ func NewPanel() *Panel {
 	c.widget.InitWidget()
 	c.widget.SetXExpandable(false)
 	c.widget.SetYExpandable(false)
+	c.widget.SetAllowScroll(true, true)
 	return &c
 }
 
@@ -26,6 +27,11 @@ func (c *Panel) Name() string {
 
 func (c *Panel) AddWidgetOnGrid(w any, x int, y int) {
 	c.widget.AddWidgetOnGrid(w, x, y)
+	MainForm.Panel().UpdateGridLayout() // Global Update Layout
+}
+
+func (c *Panel) UpdateGridLayout() {
+	c.widget.updateLayout(0, 0, 0, 0)
 }
 
 func (c *Panel) AddWidget(w any) {

@@ -45,12 +45,10 @@ func Run(form *ui.Form) {
 
 	{
 		panelBottom := ui.NewPanel()
-		panelBottom.SetPanelPadding(0)
 		panel.AddWidgetOnGrid(panelBottom, 0, 2)
+		panelBottom.SetPanelPadding(0)
 		panelBottom.SetMaxHeight(50)
-
 		myWidget := NewMyWidget("BOTTOM")
 		panelBottom.AddWidgetOnGrid(myWidget, 0, 0)
-
 	}
 }
