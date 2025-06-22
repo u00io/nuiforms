@@ -29,6 +29,7 @@ func NewMasterWidget() *MasterWidget {
 	c.widget.AddWidgetOnGrid(c.panelLeft, 0, 0)
 	c.panelLeft.SetMinWidth(300)
 	c.panelLeft.SetMaxWidth(300)
+	c.panelLeft.SetMaxHeight(300)
 
 	c.panelRight = ui.NewPanel()
 	c.panelRight.SetName("panelRight")
@@ -43,7 +44,7 @@ func NewMasterWidget() *MasterWidget {
 		c.panelLeft.AddWidgetOnGrid(btnOpenTab1, 0, 0)
 	}
 
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 20; i++ {
 		btnOpenTab2 := ui.NewButton()
 		btnOpenTab2.SetText("Tab " + fmt.Sprint(i))
 		btnOpenTab2.SetOnButtonClick(func(btn *ui.Button) {
