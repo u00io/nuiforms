@@ -7,28 +7,24 @@ import (
 )
 
 type ExpandableFull struct {
-	widget ui.Widget
-	col    color.RGBA
-}
-
-func (c *ExpandableFull) Widgeter() any {
-	return &c.widget
+	ui.Widget
+	col color.RGBA
 }
 
 func NewExpandableFull(col color.RGBA) *ExpandableFull {
 	var c ExpandableFull
-	c.widget.InitWidget()
+	c.InitWidget()
 	c.col = col
-	c.widget.SetXExpandable(true)
-	c.widget.SetYExpandable(true)
-	c.widget.SetOnPaint(c.draw)
+	c.SetXExpandable(true)
+	c.SetYExpandable(true)
+	c.SetOnPaint(c.draw)
 	return &c
 }
 
 func (c *ExpandableFull) draw(cnv *ui.Canvas) {
-	cnv.FillRect(0, 0, c.widget.Width(), c.widget.Height(), c.col)
+	cnv.FillRect(0, 0, c.Width(), c.Height(), c.col)
 }
 
-func (c *ExpandableFull) AddWidgetOnGrid(w any, row, col int) {
-	c.widget.AddWidgetOnGrid(w, row, col)
+func (c *ExpandableFull) AddWidgetOnGrid(w ui.Widgeter, row, col int) {
+	c.AddWidgetOnGrid(w, row, col)
 }

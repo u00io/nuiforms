@@ -1,14 +1,11 @@
 package ex04scrolling
 
 import (
-	"fmt"
-	"image/color"
-
 	"github.com/u00io/nuiforms/ui"
 )
 
 func NewBigWidget() *ui.Widget {
-	widget := ui.NewWidget()
+	/*widget := ui.NewWidget()
 	widget.SetInnerSize(1000, 1000)
 	widget.SetOnPaint(func(cnv *ui.Canvas) {
 		// draw a grid
@@ -30,5 +27,6 @@ func NewBigWidget() *ui.Widget {
 		}
 	})
 	widget.SetAllowScroll(true, true)
-	return widget
+	return widget*/
+	return nil
 }

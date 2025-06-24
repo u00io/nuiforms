@@ -5,21 +5,17 @@ import (
 )
 
 type Tab2Widget struct {
-	widget ui.Widget
-}
-
-func (c *Tab2Widget) Widgeter() any {
-	return &c.widget
+	ui.Widget
 }
 
 func NewTab2Widget(name string) *Tab2Widget {
 	var c Tab2Widget
-	c.widget.InitWidget()
+	c.InitWidget()
 	//c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 150, B: 50, A: 255})
 	table := ui.NewTable()
 	table.SetColumnCount(3)
 	table.SetRowCount(10)
-	c.widget.AddWidgetOnGrid(table, 0, 0)
+	c.AddWidgetOnGrid(table, 0, 0)
 
 	table.SetCellText(1, 1, "Column 1")
 	return &c

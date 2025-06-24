@@ -40,6 +40,7 @@ var MainForm *Form
 var mainFormExecuted bool
 
 type Widgeter interface {
+	Id() string
 	Name() string
 	X() int
 	Y() int
@@ -75,9 +76,9 @@ type Widgeter interface {
 
 	Anchors() (left, top, right, bottom bool)
 
-	AddWidget(widget any)
-	AddWidgetOnGrid(widget any, gridX, gridY int)
-	RemoveWidget(widget any)
+	AddWidget(widget Widgeter)
+	AddWidgetOnGrid(widget Widgeter, gridX, gridY int)
+	RemoveWidget(widget Widgeter)
 
 	IsVisible() bool
 
@@ -199,11 +200,11 @@ func (c *Form) forceUpdate() {
 func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
-	GetWidgeter(c.topWidget).processPaint(cnv)
+	c.topWidget.processPaint(cnv)
 }
 
 func (c *Form) processResize(width, height int) {
-	GetWidgeter(c.topWidget).SetSize(width, height)
+	c.topWidget.SetSize(width, height)
 	c.width = width
 	c.height = height
 	c.forceUpdate()
@@ -213,14 +214,14 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = true
 	}
-	widgetAtCoords := GetWidgeter(c.topWidget).findWidgetAt(x, y)
+	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
 	if c.mouseLeftButtonPressed {
 		c.mouseLeftButtonPressedWidget = widgetAtCoords
 	}
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
-	GetWidgeter(c.topWidget).processMouseDown(button, x, y, c.lastKeyboardModifiers)
+	c.topWidget.processMouseDown(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -229,7 +230,7 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressed = false
 		c.mouseLeftButtonPressedWidget = nil
 	}
-	GetWidgeter(c.topWidget).processMouseUp(button, x, y, c.lastKeyboardModifiers)
+	c.topWidget.processMouseUp(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -243,10 +244,11 @@ func (c *Form) processMouseMove(x int, y int) {
 		return
 	}*/
 
-	GetWidgeter(c.topWidget).processMouseMove(x, y, c.lastKeyboardModifiers)
+	c.topWidget.processMouseMove(x, y, c.lastKeyboardModifiers)
 	c.lastMouseX = x
 	c.lastMouseY = y
-	hoverWidget := GetWidgeter(c.topWidget).findWidgetAt(x, y)
+	hoverWidget := c.topWidget.findWidgetAt(x, y)
+
 	if hoverWidget != c.hoverWidget {
 		if c.hoverWidget != nil {
 			c.hoverWidget.processMouseLeave()
@@ -273,7 +275,7 @@ func (c *Form) processMouseMove(x int, y int) {
 }
 
 func (c *Form) processMouseLeave() {
-	GetWidgeter(c.topWidget).processMouseLeave()
+	c.topWidget.processMouseLeave()
 
 	if c.hoverWidget != nil {
 		c.hoverWidget.processMouseLeave()
@@ -284,7 +286,7 @@ func (c *Form) processMouseLeave() {
 }
 
 func (c *Form) processMouseEnter() {
-	GetWidgeter(c.topWidget).processMouseEnter()
+	c.topWidget.processMouseEnter()
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
@@ -297,7 +299,7 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.Update()
 		return
 	}
-	GetWidgeter(c.topWidget).processKeyDown(keyCode, mods)
+	c.topWidget.processKeyDown(keyCode, mods)
 	c.Update()
 }
 
@@ -310,7 +312,7 @@ func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.Update()
 		return
 	}
-	GetWidgeter(c.topWidget).processKeyUp(keyCode, mods)
+	c.topWidget.processKeyUp(keyCode, mods)
 	c.Update()
 }
 
@@ -320,7 +322,7 @@ func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
 		c.Update()
 		return
 	}
-	GetWidgeter(c.topWidget).processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+	c.topWidget.processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -330,14 +332,14 @@ func (c *Form) processChar(char rune) {
 		c.Update()
 		return
 	}
-	GetWidgeter(c.topWidget).processChar(char, c.lastKeyboardModifiers)
+	c.topWidget.processChar(char, c.lastKeyboardModifiers)
 }
 
 func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 	if c.lastKeyboardModifiers.Shift {
 		deltaX, deltaY = deltaY, deltaX // Swap for horizontal scrolling
 	}
-	GetWidgeter(c.topWidget).processMouseWheel(deltaX, deltaY)
+	c.topWidget.processMouseWheel(deltaX, deltaY)
 	c.Update()
 }
 
@@ -348,7 +350,7 @@ func (c *Form) processTimer() {
 		c.lastFreeMemoryTime = time.Now()
 	}
 
-	GetWidgeter(c.topWidget).processTimer()
+	c.topWidget.processTimer()
 
 	if c.needUpdate {
 		c.realUpdate()

@@ -10,8 +10,8 @@ import (
 )
 
 type TextBox struct {
-	widget Widget
-	lines  []string
+	Widget
+	lines []string
 
 	cursorPosX          int
 	cursorPosY          int
@@ -56,43 +56,43 @@ type TextBoxSelection struct {
 
 func NewTextBox() *TextBox {
 	var c TextBox
-	c.widget.InitWidget()
+	c.InitWidget()
 
-	c.widget.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
+	c.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
 	//txtBox := newTextBox(&c.widget)
 
-	c.widget.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) {
-		c.KeyDown(&c.widget, key, mods)
+	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) {
+		c.KeyDown(key, mods)
 	})
 
-	c.widget.SetOnChar(func(char rune, mods nuikey.KeyModifiers) {
-		c.KeyChar(&c.widget, char, mods)
+	c.SetOnChar(func(char rune, mods nuikey.KeyModifiers) {
+		c.KeyChar(char, mods)
 	})
 
-	c.widget.SetOnPaint(func(cnv *Canvas) {
-		c.Draw(&c.widget, cnv, c.widget.innerWidth, c.widget.innerHeight)
+	c.SetOnPaint(func(cnv *Canvas) {
+		c.Draw(cnv, c.innerWidth, c.innerHeight)
 	})
 
-	c.widget.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
-		c.MouseDown(&c.widget, button, x, y, mods)
+	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+		c.MouseDown(button, x, y, mods)
 	})
 
-	c.widget.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) {
-		c.MouseMove(&c.widget, x, y, mods)
+	c.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) {
+		c.MouseMove(x, y, mods)
 	})
 
-	c.widget.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
-		c.MouseUp(&c.widget, button, x, y, mods)
+	c.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+		c.MouseUp(button, x, y, mods)
 	})
 
-	c.widget.AddTimer(250, func() {
-		c.timerCursorBlinking(&c.widget)
+	c.AddTimer(250, func() {
+		c.timerCursorBlinking()
 	})
 
 	c.multiline = false
-	c.widget.SetXExpandable(true)
-	c.widget.SetYExpandable(false)
-	c.widget.SetMinSize(100, 30)
+	c.SetXExpandable(true)
+	c.SetYExpandable(false)
+	c.SetMinSize(100, 30)
 
 	c.lines = make([]string, 1)
 	c.cursorWidth = 1
@@ -100,16 +100,12 @@ func NewTextBox() *TextBox {
 	c.multiline = false
 	c.cursorVisible = true
 	c.ScrollToBegin()
-	c.updateInnerSize(&c.widget)
+	c.updateInnerSize()
 	c.emptyText = "Type here..."
 
 	c.padding = 4
 
 	return &c
-}
-
-func (c *TextBox) Widgeter() any {
-	return &c.widget
 }
 
 func (c *TextBox) SetReadOnly(readonly bool) {
@@ -120,8 +116,8 @@ func (c *TextBox) SetIsPassword(isPassword bool) {
 	c.isPassword = isPassword
 }
 
-func (c *TextBox) timerCursorBlinking(w *Widget) {
-	if MainForm.focusedWidget == w {
+func (c *TextBox) timerCursorBlinking() {
+	if MainForm.focusedWidget == c {
 		if !c.skipOneCursorBlinking {
 			c.cursorVisible = !c.cursorVisible
 			UpdateMainForm()
@@ -136,8 +132,8 @@ func (c *TextBox) redraw() {
 func (c *TextBox) SetText(text string) {
 	c.redraw()
 	var modifiers nuikey.KeyModifiers
-	c.modifyText(&c.widget, textboxModifyCommandSetText, modifiers, text)
-	c.updateInnerSize(&c.widget)
+	c.modifyText(textboxModifyCommandSetText, modifiers, text)
+	c.updateInnerSize()
 	c.ScrollToBegin()
 	UpdateMainForm()
 }
@@ -145,7 +141,7 @@ func (c *TextBox) SetText(text string) {
 func (c *TextBox) SetEmptyText(w *Widget, text string) {
 	c.redraw()
 	c.emptyText = text
-	c.updateInnerSize(w)
+	c.updateInnerSize()
 	c.ScrollToBegin()
 	UpdateMainForm()
 }
@@ -167,7 +163,7 @@ func (c *TextBox) SetMultiline(multiline bool, w *Widget) {
 		w.SetXExpandable(true)
 		w.SetYExpandable(false)
 	}
-	c.updateInnerSize(w)
+	c.updateInnerSize()
 	UpdateMainForm()
 }
 
@@ -182,12 +178,12 @@ func (c *TextBox) AssemblyText(lines []string) string {
 	return result
 }
 
-func (c *TextBox) updateInnerSize(w *Widget) {
+func (c *TextBox) updateInnerSize() {
 	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, "0", false)
 	if err != nil {
 		return
 	}
-	w.innerHeight = textHeight * len(c.lines)
+	c.innerHeight = textHeight * len(c.lines)
 	var maxTextWidth int
 	for _, line := range c.lines {
 		textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, line, false)
@@ -198,13 +194,13 @@ func (c *TextBox) updateInnerSize(w *Widget) {
 			maxTextWidth = textWidth
 		}
 	}
-	w.innerWidth = maxTextWidth + c.leftAndRightPadding*3
+	c.innerWidth = maxTextWidth + c.leftAndRightPadding*3
 	if c.multiline {
-		w.allowScrollY = true
+		c.allowScrollY = true
 	}
 
 	if !c.multiline {
-		w.innerHeight = textHeight
+		c.innerHeight = textHeight
 	}
 }
 
@@ -219,7 +215,7 @@ func (c *TextBox) lineToPasswordChars(line string) string {
 	return line
 }
 
-func (c *TextBox) Draw(w *Widget, ctx *Canvas, width, height int) {
+func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 
 	oneLineHeight := c.OneLineHeight()
 
@@ -227,7 +223,7 @@ func (c *TextBox) Draw(w *Widget, ctx *Canvas, width, height int) {
 	if c.multiline {
 		yStaticOffset = 1
 	} else {
-		yStaticOffset = w.h/2 - oneLineHeight/2
+		yStaticOffset = c.h/2 - oneLineHeight/2
 	}
 
 	_ = yStaticOffset
@@ -281,7 +277,7 @@ func (c *TextBox) Draw(w *Widget, ctx *Canvas, width, height int) {
 		yOffset += oneLineHeight
 	}
 
-	focus := MainForm.focusedWidget == w
+	focus := MainForm.focusedWidget == c
 
 	// Cursor
 	if focus && c.cursorVisible {
@@ -299,11 +295,11 @@ func (c *TextBox) Draw(w *Widget, ctx *Canvas, width, height int) {
 	}
 
 	if c.Text() == "" && c.emptyText != "" && !focus {
-		ctx.DrawTextMultiline(c.leftAndRightPadding, 0, w.w, w.h, HAlignLeft, VAlignCenter, c.emptyText, color.RGBA{0x88, 0x88, 0x88, 0xff}, c.FontFamily(), c.FontSize(), false)
+		ctx.DrawTextMultiline(c.leftAndRightPadding, 0, c.w, c.h, HAlignLeft, VAlignCenter, c.emptyText, color.RGBA{0x88, 0x88, 0x88, 0xff}, c.FontFamily(), c.FontSize(), false)
 	}
 }
 
-func (c *TextBox) KeyChar(w *Widget, ch rune, mods nuikey.KeyModifiers) {
+func (c *TextBox) KeyChar(ch rune, mods nuikey.KeyModifiers) {
 	if c.readonly {
 		return
 	}
@@ -313,7 +309,7 @@ func (c *TextBox) KeyChar(w *Widget, ch rune, mods nuikey.KeyModifiers) {
 		return
 	}
 
-	c.modifyText(w, textboxModifyCommandInsertChar, mods, ch)
+	c.modifyText(textboxModifyCommandInsertChar, mods, ch)
 }
 
 func (c *TextBox) cutSelected() {
@@ -325,7 +321,7 @@ func (c *TextBox) copySelected() {
 func (c *TextBox) paste() {
 }
 
-func (c *TextBox) KeyDown(w *Widget, key nuikey.Key, mods nuikey.KeyModifiers) bool {
+func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	c.redraw()
 
 	if mods.Ctrl && key == nuikey.KeyA {
@@ -376,7 +372,7 @@ func (c *TextBox) KeyDown(w *Widget, key nuikey.Key, mods nuikey.KeyModifiers) b
 		if c.readonly {
 			return false
 		}
-		return c.insertReturn(w, mods)
+		return c.insertReturn(mods)
 	}
 
 	if key == nuikey.KeyEnd {
@@ -387,14 +383,14 @@ func (c *TextBox) KeyDown(w *Widget, key nuikey.Key, mods nuikey.KeyModifiers) b
 
 	if key == nuikey.KeyBackspace {
 		if !c.readonly {
-			c.modifyText(w, textboxModifyCommandBackspace, mods, nil)
+			c.modifyText(textboxModifyCommandBackspace, mods, nil)
 		}
 		return true
 	}
 
 	if key == nuikey.KeyDelete {
 		if !c.readonly {
-			c.modifyText(w, textboxModifyCommandDelete, mods, nil)
+			c.modifyText(textboxModifyCommandDelete, mods, nil)
 		}
 		return true
 	}
@@ -402,10 +398,10 @@ func (c *TextBox) KeyDown(w *Widget, key nuikey.Key, mods nuikey.KeyModifiers) b
 	return false
 }
 
-func (c *TextBox) KeyUp(w *Widget, key nuikey.Key, mods nuikey.KeyModifiers) {
+func (c *TextBox) KeyUp(key nuikey.Key, mods nuikey.KeyModifiers) {
 }
 
-func (c *TextBox) MouseDown(w *Widget, button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *TextBox) MouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
 	if button == nuimouse.MouseButtonLeft {
 		c.redraw()
 		c.mouseButtonPressed = true
@@ -421,7 +417,7 @@ func (c *TextBox) MouseDown(w *Widget, button nuimouse.MouseButton, x int, y int
 	}
 }
 
-func (c *TextBox) MouseMove(w *Widget, x int, y int, mods nuikey.KeyModifiers) {
+func (c *TextBox) MouseMove(x int, y int, mods nuikey.KeyModifiers) {
 	c.redraw()
 	if c.mouseButtonPressed {
 		c.moveCursorNearPoint(x, y, mods)
@@ -473,19 +469,19 @@ func (c *TextBox) moveCursorNearPoint(x, y int, modifiers nuikey.KeyModifiers) {
 	}
 }
 
-func (c *TextBox) MouseUp(w *Widget, button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *TextBox) MouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
 	c.dragingCursor = false
 	c.redraw()
 	c.mouseButtonPressed = false
 	UpdateMainForm()
 }
 
-func (c *TextBox) insertReturn(w *Widget, modifiers nuikey.KeyModifiers) bool {
+func (c *TextBox) insertReturn(modifiers nuikey.KeyModifiers) bool {
 	if !c.multiline {
 		return false
 	}
 
-	c.modifyText(w, textboxModifyCommandInsertReturn, modifiers, nil)
+	c.modifyText(textboxModifyCommandInsertReturn, modifiers, nil)
 	return true
 }
 
@@ -641,8 +637,8 @@ func (c *TextBox) ensureVisibleCursor() {
 	// ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight)
 	//c.ScrollEnsureVisible(curX, curY)
 	//c.ScrollEnsureVisible(curX+c.cursorWidth, curY+oneLineHeight)
-	c.widget.ScrollEnsureVisible(curX, curY)
-	c.widget.ScrollEnsureVisible(curX+c.cursorWidth, curY+oneLineHeight)
+	c.ScrollEnsureVisible(curX, curY)
+	c.ScrollEnsureVisible(curX+c.cursorWidth, curY+oneLineHeight)
 }
 
 func (c *TextBox) clearSelection() {
@@ -652,7 +648,7 @@ func (c *TextBox) clearSelection() {
 	c.selectionRightY = c.cursorPosY
 }
 
-func (c *TextBox) modifyText(w *Widget, cmd textboxModifyCommand, modifiers nuikey.KeyModifiers, data interface{}) {
+func (c *TextBox) modifyText(cmd textboxModifyCommand, modifiers nuikey.KeyModifiers, data interface{}) {
 	c.redraw()
 
 	valid := true
@@ -736,11 +732,11 @@ func (c *TextBox) modifyText(w *Widget, cmd textboxModifyCommand, modifiers nuik
 			for _, ch := range runes {
 				if ch < 32 {
 					if ch == 10 {
-						c.insertReturn(w, modifiers)
+						c.insertReturn(modifiers)
 					}
 				}
 
-				c.KeyChar(w, ch, modifiers)
+				c.KeyChar(ch, modifiers)
 			}
 			lines = c.lines
 			curPosX = c.cursorPosX
@@ -761,7 +757,7 @@ func (c *TextBox) modifyText(w *Widget, cmd textboxModifyCommand, modifiers nuik
 
 		if !c.blockUpdate {
 			c.clearSelection()
-			c.updateInnerSize(w)
+			c.updateInnerSize()
 
 			if c.OnTextChanged != nil {
 				oldValue := c.Text()
@@ -784,8 +780,8 @@ func (c *TextBox) SelectAllText() {
 }
 
 func (c *TextBox) ScrollToBegin() {
-	c.widget.ScrollEnsureVisible(0, 0)
-	c.widget.ScrollEnsureVisible(0, 1)
+	c.ScrollEnsureVisible(0, 0)
+	c.ScrollEnsureVisible(0, 1)
 	//c.ScrollEnsureVisible(0, 0)
 	//c.ScrollEnsureVisible(0, 1)
 }

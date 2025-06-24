@@ -1,16 +1,12 @@
 package ui
 
 type HSpacer struct {
-	widget Widget
+	Widget
 }
 
 func NewHSpacer() *HSpacer {
 	var c HSpacer
-	c.widget.InitWidget()
-	c.widget.SetXExpandable(true)
+	c.InitWidget()
+	c.SetXExpandable(true)
 	return &c
-}
-
-func (c *HSpacer) Widgeter() any {
-	return &c.widget
 }

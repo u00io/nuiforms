@@ -1,6 +1,6 @@
 package ui
 
-func NewTextBlock() *Widget {
+/*func NewTextBlock() *Widget {
 	c := NewWidget()
 	c.SetSize(100, 20)
 	c.SetOnPaint(func(cnv *Canvas) {
@@ -10,3 +10,4 @@ func NewTextBlock() *Widget {
 	})
 	return c
 }
+*/

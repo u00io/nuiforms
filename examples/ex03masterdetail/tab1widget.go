@@ -7,16 +7,12 @@ import (
 )
 
 type Tab1Widget struct {
-	widget ui.Widget
-}
-
-func (c *Tab1Widget) Widgeter() any {
-	return &c.widget
+	ui.Widget
 }
 
 func NewTab1Widget() *Tab1Widget {
 	var c Tab1Widget
-	c.widget.InitWidget()
-	c.widget.SetBackgroundColor(color.RGBA{R: 150, G: 50, B: 50, A: 255})
+	c.InitWidget()
+	c.SetBackgroundColor(color.RGBA{R: 150, G: 50, B: 50, A: 255})
 	return &c
 }

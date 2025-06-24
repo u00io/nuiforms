@@ -8,7 +8,7 @@ import (
 )
 
 type Button struct {
-	widget Widget
+	Widget
 
 	pressed       bool
 	text          string
@@ -17,39 +17,19 @@ type Button struct {
 
 func NewButton() *Button {
 	var c Button
-	c.widget.InitWidget()
+	c.InitWidget()
 
-	c.widget.SetName("Button-" + time.Now().Format("20060102150405"))
-	c.widget.SetMinSize(100, 30)
-	c.widget.SetMaxSize(100, 30)
-	c.widget.SetMouseCursor(nuimouse.MouseCursorPointer)
+	c.SetName("Button-" + time.Now().Format("20060102150405"))
+	c.SetMinSize(100, 30)
+	c.SetMaxSize(100, 30)
+	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 
-	c.widget.SetOnPaint(c.draw)
-	c.widget.SetOnMouseDown(c.buttonProcessMouseDown)
-	c.widget.SetOnMouseUp(c.buttonProcessMouseUp)
+	c.SetOnPaint(c.draw)
+	c.SetOnMouseDown(c.buttonProcessMouseDown)
+	c.SetOnMouseUp(c.buttonProcessMouseUp)
 
 	return &c
-}
-
-func (c *Button) Widgeter() any {
-	return &c.widget
-}
-
-func (c *Button) SetPosition(x, y int) {
-	c.widget.SetPosition(x, y)
-}
-
-func (c *Button) SetMinSize(width, height int) {
-	c.widget.SetMinSize(width, height)
-}
-
-func (c *Button) SetMaxSize(width, height int) {
-	c.widget.SetMaxSize(width, height)
-}
-
-func (c *Button) SetAnchors(left, right, top, bottom bool) {
-	c.widget.SetAnchors(left, right, top, bottom)
 }
 
 func (c *Button) Text() string {
@@ -61,28 +41,20 @@ func (c *Button) SetText(text string) {
 	UpdateMainForm()
 }
 
-func (c *Button) SetName(name string) {
-	c.widget.SetName(name)
-}
-
-func (c *Button) Name() string {
-	return c.widget.Name()
-}
-
 func (c *Button) SetOnButtonClick(fn func(btn *Button)) {
 	c.onButtonClick = fn
 }
 
 func (c *Button) draw(cnv *Canvas) {
 	backColor := GetThemeColor("background", DefaultBackground)
-	if c.widget.IsHovered() {
+	if c.IsHovered() {
 		backColor = GetThemeColor("button.background.hover", DefaultBackground)
 		if c.pressed {
 			backColor = GetThemeColor("button.background.pressed", DefaultBackground)
 		}
 	}
-	cnv.FillRect(0, 0, c.widget.Width(), c.widget.Height(), backColor)
-	cnv.DrawTextMultiline(0, 0, c.widget.Width(), c.widget.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
+	cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
@@ -91,7 +63,9 @@ func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y in
 
 func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
 	c.pressed = false
-	if MainForm.hoverWidget == &c.widget {
+	hoverWidgeter := MainForm.hoverWidget
+	var localWidgeter Widgeter = c
+	if hoverWidgeter.Id() == localWidgeter.Id() {
 		if c.onButtonClick != nil {
 			c.onButtonClick(c)
 		}

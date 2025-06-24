@@ -8,31 +8,27 @@ import (
 )
 
 type MasterWidget struct {
-	widget ui.Widget
+	ui.Widget
 
-	currentTabWidget any
+	currentTabWidget ui.Widgeter
 
 	panelLeft  *ui.Panel
 	panelRight *ui.Panel
 }
 
-func (c *MasterWidget) Widgeter() any {
-	return &c.widget
-}
-
 func NewMasterWidget() *MasterWidget {
 	var c MasterWidget
-	c.widget.SetBackgroundColor(color.RGBA{R: 40, G: 40, B: 60, A: 255})
-	c.widget.InitWidget()
+	c.SetBackgroundColor(color.RGBA{R: 40, G: 40, B: 60, A: 255})
+	c.InitWidget()
 
 	c.panelLeft = ui.NewPanel()
-	c.widget.AddWidgetOnGrid(c.panelLeft, 0, 0)
+	c.AddWidgetOnGrid(c.panelLeft, 0, 0)
 	c.panelLeft.SetMinWidth(310)
 	//c.panelLeft.SetMaxWidth(310)
 
 	c.panelRight = ui.NewPanel()
 	c.panelRight.SetName("panelRight")
-	c.widget.AddWidgetOnGrid(c.panelRight, 1, 0)
+	c.AddWidgetOnGrid(c.panelRight, 1, 0)
 
 	{
 		btnOpenTab1 := ui.NewButton()

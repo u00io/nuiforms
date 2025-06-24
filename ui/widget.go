@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image/color"
 	"math"
-	"reflect"
 	"strings"
 
 	"github.com/u00io/nui/nuikey"
@@ -14,6 +13,7 @@ import (
 )
 
 type Widget struct {
+	id       string
 	name     string
 	userData interface{}
 
@@ -33,7 +33,7 @@ type Widget struct {
 
 	// inner widgets
 	absolutePositioning bool
-	widgets             []any
+	widgets             []Widgeter
 	cellPadding         int // Padding between cells in the grid
 	panelPadding        int // Padding around the panel
 
@@ -99,11 +99,11 @@ type Widget struct {
 	onClick       func(button nuimouse.MouseButton, x int, y int)
 }
 
-func NewWidget() *Widget {
+/*func NewWidget() *Widget {
 	var c Widget
 	c.InitWidget()
 	return &c
-}
+}*/
 
 type ContainerGridColumnInfo struct {
 	minWidth   int
@@ -131,8 +131,9 @@ const MAX_WIDTH = 100000
 const MAX_HEIGHT = 100000
 
 func (c *Widget) InitWidget() {
-	randomBytes := make([]byte, 8)
+	randomBytes := make([]byte, 32)
 	rand.Read(randomBytes)
+	c.id = hex.EncodeToString(randomBytes)
 	c.name = "Widget-" + strings.ToUpper(hex.EncodeToString(randomBytes))
 	c.props = make(map[string]any)
 	c.timers = make([]*timer, 0)
@@ -156,9 +157,13 @@ func (c *Widget) InitWidget() {
 	c.anchorTop = true
 	c.anchorRight = false
 	c.anchorBottom = false
-	c.widgets = make([]any, 0)
+	c.widgets = make([]Widgeter, 0)
 	c.mouseCursor = nuimouse.MouseCursorArrow
 	c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0} // transparent by default
+}
+
+func (c *Widget) Id() string {
+	return c.id
 }
 
 func (c *Widget) SetName(name string) {
@@ -242,59 +247,27 @@ func (c *Widget) AddTimer(intervalMs int, callback func()) {
 	c.timers = append(c.timers, t)
 }
 
-func (c *Widget) AddWidget(w any) {
+func (c *Widget) AddWidget(w Widgeter) {
 	c.widgets = append(c.widgets, w)
 	c.updateLayout(0, 0, 0, 0)
-}
-
-func GetWidgeter(w any) Widgeter {
-	valueOfW := reflect.ValueOf(w)
-	if valueOfW.Kind() != reflect.Interface && valueOfW.Kind() != reflect.Pointer {
-		panic("GetWidgeter called with non-pointer or non-interface type: " + valueOfW.Type().Name())
-	}
-
-	v := reflect.ValueOf(w).Elem()
-	if v.Kind() == reflect.Struct {
-		{
-			field := v.FieldByName("Widget")
-			if field.IsValid() && field.CanAddr() {
-				ptr := field.Addr().Interface()
-				return ptr.(Widgeter)
-			}
-		}
-		{
-			type WidgeterInterface interface {
-				Widgeter() any
-			}
-			if widgeter, ok := w.(WidgeterInterface); ok {
-				ptr := widgeter.Widgeter()
-				if ptr != nil {
-					if widget, ok := ptr.(Widgeter); ok {
-						return widget
-					}
-				}
-			}
-		}
-	}
-	panic("No Widget field found in " + v.Type().Name() + " or Widgeter interface not implemented")
 }
 
 func (c *Widget) SetPanelPadding(padding int) {
 	c.panelPadding = padding
 }
 
-func (c *Widget) AddWidgetOnGrid(w any, gridX int, gridY int) {
+func (c *Widget) AddWidgetOnGrid(w Widgeter, gridX int, gridY int) {
 	// Get field Widget (w.Widget) as Widgeter
 
-	GetWidgeter(w).SetGridPosition(gridX, gridY)
+	w.SetGridPosition(gridX, gridY)
 	c.widgets = append(c.widgets, w)
 	c.updateLayout(0, 0, 0, 0)
+	MainForm.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
 }
 
-func (c *Widget) RemoveWidget(wObj any) {
-	w := GetWidgeter(wObj)
+func (c *Widget) RemoveWidget(w Widgeter) {
 	for i, widget := range c.widgets {
-		widgeter := GetWidgeter(widget)
+		widgeter := widget
 		if widgeter == w {
 			c.widgets = append(c.widgets[:i], c.widgets[i+1:]...)
 			return
@@ -304,7 +277,7 @@ func (c *Widget) RemoveWidget(wObj any) {
 }
 
 func (c *Widget) RemoveAllWidgets() {
-	c.widgets = make([]any, 0)
+	c.widgets = make([]Widgeter, 0)
 	c.updateLayout(0, 0, 0, 0)
 	UpdateMainForm()
 }
@@ -315,8 +288,7 @@ func (c *Widget) NextGridX() int {
 	}
 
 	maxX := 0
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if w.GridX() >= maxX {
 			maxX = w.GridX() + 1
 		}
@@ -330,8 +302,7 @@ func (c *Widget) NextGridY() int {
 	}
 
 	maxY := 0
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if w.GridY() >= maxY {
 			maxY = w.GridY() + 1
 		}
@@ -541,8 +512,7 @@ func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
 }
 
 func (c *Widget) getWidgetAt(x, y int) Widgeter {
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		innerWidth := w.InnerWidth()
 		innerHeight := w.InnerHeight()
 		if x >= w.X() && x < w.X()+innerWidth && y >= w.Y() && y < w.Y()+innerHeight {
@@ -591,8 +561,7 @@ func (c *Widget) processPaint(cnv *Canvas) {
 	}
 
 	// Draw all child widgets
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 
 		cnv.Save()
 		cnv.TranslateAndClip(w.X(), w.Y(), w.Width(), w.Height())
@@ -713,8 +682,7 @@ func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		c.onMouseDown(button, x, y, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
 			w.processMouseDown(button, x-w.X(), y-w.Y(), mods)
 		}
@@ -743,8 +711,7 @@ func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 		c.onMouseUp(button, x, y, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		w.processMouseUp(button, x-w.X(), y-w.Y(), mods)
 	}
 }
@@ -785,8 +752,7 @@ func (c *Widget) processMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 		c.onMouseMove(x, y, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		// Temporary process in the all widgets - perrormance issue
 		inWidget := true
 		//inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
@@ -815,8 +781,7 @@ func (c *Widget) processKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 		c.onKeyDown(key, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		w.processKeyDown(key, mods)
 	}
 }
@@ -826,8 +791,7 @@ func (c *Widget) processKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) {
 		c.onKeyUp(key, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		w.processKeyUp(key, mods)
 	}
 }
@@ -840,8 +804,7 @@ func (c *Widget) processMouseDblClick(button nuimouse.MouseButton, x int, y int,
 		c.onMouseUp(button, x, y, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
 			w.processMouseDblClick(button, x-w.X(), y-w.Y(), mods)
 		}
@@ -853,8 +816,7 @@ func (c *Widget) processChar(char rune, mods nuikey.KeyModifiers) {
 		c.onChar(char, mods)
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		w.processChar(char, mods)
 	}
 }
@@ -905,8 +867,7 @@ func (c *Widget) processTimer() {
 		t.tick()
 	}
 
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		w.processTimer()
 	}
 }
@@ -971,8 +932,7 @@ func (c *Widget) SetMaxHeight(maxHeight int) {
 
 func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 	if c.absolutePositioning {
-		for _, wObj := range c.widgets {
-			w := GetWidgeter(wObj)
+		for _, w := range c.widgets {
 			deltaWidth := newWidth - oldWidth
 			deltaHeight := newHeight - oldHeight
 
@@ -1069,8 +1029,7 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 			}
 		}
 
-		for _, wObj := range c.widgets {
-			w := GetWidgeter(wObj)
+		for _, w := range c.widgets {
 			if !w.IsVisible() {
 				w.SetSize(0, 0)
 			}
@@ -1081,8 +1040,7 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 			innerWidth := 0
 			innerHeight := 0
 
-			for _, wObj := range c.widgets {
-				w := GetWidgeter(wObj)
+			for _, w := range c.widgets {
 				if w.IsVisible() {
 					if w.X()+w.Width() > innerWidth {
 						innerWidth = w.X() + w.Width()
@@ -1118,8 +1076,7 @@ func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInf
 	maxY := MinInt
 
 	// Detect range of grid coordinates
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if w.GridX() < minX {
 			minX = w.GridX()
 		}
@@ -1292,8 +1249,7 @@ func (c *Widget) makeRowsInfo(fullHeight int) (map[int]*ContainerGridRowInfo, in
 	minY := MaxInt
 	maxX := MinInt
 	maxY := MinInt
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if w.GridX() < minX {
 			minX = w.GridX()
 		}
@@ -1461,8 +1417,7 @@ func (c *Widget) makeRowsInfo(fullHeight int) (map[int]*ContainerGridRowInfo, in
 }
 
 func (c *Widget) getWidgetInGridCell(x, y int) Widgeter {
-	for _, wObj := range c.widgets {
-		w := GetWidgeter(wObj)
+	for _, w := range c.widgets {
 		if w.GridX() == x && w.GridY() == y {
 			if w.IsVisible() {
 				return w

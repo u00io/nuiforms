@@ -9,20 +9,20 @@ import (
 // Example: Button
 
 type ExpandableNo struct {
-	Widget ui.Widget
+	ui.Widget
 }
 
 func NewExpandableNo() *ExpandableNo {
 	var c ExpandableNo
-	c.Widget.InitWidget()
-	c.Widget.SetXExpandable(false)
-	c.Widget.SetYExpandable(false)
-	c.Widget.SetMaxWidth(100)
-	c.Widget.SetMaxHeight(30)
-	c.Widget.SetOnPaint(c.draw)
+	c.InitWidget()
+	c.SetXExpandable(false)
+	c.SetYExpandable(false)
+	c.SetMaxWidth(100)
+	c.SetMaxHeight(30)
+	c.SetOnPaint(c.draw)
 	return &c
 }
 
 func (c *ExpandableNo) draw(cnv *ui.Canvas) {
-	cnv.FillRect(0, 0, c.Widget.Width(), c.Widget.Height(), color.RGBA{R: 255, G: 255, B: 0, A: 255})
+	cnv.FillRect(0, 0, c.Width(), c.Height(), color.RGBA{R: 255, G: 255, B: 0, A: 255})
 }

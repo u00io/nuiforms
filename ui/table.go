@@ -9,7 +9,7 @@ import (
 )
 
 type Table struct {
-	widget Widget
+	Widget
 
 	// Content of the table
 	cols map[int]*tableColumn
@@ -51,17 +51,17 @@ type tableCell struct {
 
 func NewTable() *Table {
 	var c Table
-	c.widget.InitWidget()
-	c.widget.SetXExpandable(true)
-	c.widget.SetYExpandable(true)
-	c.widget.SetOnPaint(c.draw)
-	c.widget.SetAllowScroll(true, true)
-	c.widget.SetBackgroundColor(color.RGBA{R: 50, G: 60, B: 70, A: 255})
-	c.widget.SetOnMouseDown(c.onMouseDown)
-	c.widget.SetOnMouseUp(c.onMouseUp)
-	c.widget.SetOnKeyDown(c.onKeyDown)
-	c.widget.SetOnKeyUp(c.onKeyUp)
-	c.widget.SetOnMouseMove(c.onMouseMove)
+	c.InitWidget()
+	c.SetXExpandable(true)
+	c.SetYExpandable(true)
+	c.SetOnPaint(c.draw)
+	c.SetAllowScroll(true, true)
+	c.SetBackgroundColor(color.RGBA{R: 50, G: 60, B: 70, A: 255})
+	c.SetOnMouseDown(c.onMouseDown)
+	c.SetOnMouseUp(c.onMouseUp)
+	c.SetOnKeyDown(c.onKeyDown)
+	c.SetOnKeyUp(c.onKeyUp)
+	c.SetOnMouseMove(c.onMouseMove)
 
 	c.rows = make(map[int]*tableRow)
 	c.rowHeight = 30
@@ -78,10 +78,6 @@ func NewTable() *Table {
 	c.selectingCell = true
 
 	return &c
-}
-
-func (c *Table) Widgeter() any {
-	return &c.widget
 }
 
 func (c *Table) SetRowCount(count int) {
@@ -156,11 +152,11 @@ func (c *Table) ScrollToCell(row, col int) {
 
 	leftTopX := c.columnOffset(col)
 	leftTopY := c.headerHeight() + row*c.rowHeight
-	c.widget.ScrollEnsureVisible(leftTopX, leftTopY-c.rowHeight)
+	c.ScrollEnsureVisible(leftTopX, leftTopY-c.rowHeight)
 
 	rightBottomX := leftTopX + c.columnWidth(col)
 	rightBottomY := leftTopY + c.rowHeight
-	c.widget.ScrollEnsureVisible(rightBottomX, rightBottomY)
+	c.ScrollEnsureVisible(rightBottomX, rightBottomY)
 	UpdateMainForm()
 }
 
@@ -228,7 +224,7 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 	}
 
 	if key == nuikey.KeyPageUp {
-		pageSizeInRows := c.widget.Height() / c.rowHeight
+		pageSizeInRows := c.Height() / c.rowHeight
 		targetRow := c.currentCellY - pageSizeInRows
 		if targetRow < 0 {
 			targetRow = 0
@@ -240,7 +236,7 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 	}
 
 	if key == nuikey.KeyPageDown {
-		pageSizeInRows := c.widget.Height() / c.rowHeight
+		pageSizeInRows := c.Height() / c.rowHeight
 		targetRow := c.currentCellY + pageSizeInRows
 		if targetRow >= c.rowCount {
 			targetRow = c.rowCount - 1
@@ -272,7 +268,7 @@ func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 		if newWidth != colInfo.width {
 			colInfo.width = newWidth
 			c.updateInnerSize()
-			c.widget.SetMouseCursor(nuimouse.MouseCursorResizeHor)
+			c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
 			UpdateMainForm()
 		}
 		return
@@ -280,10 +276,10 @@ func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
-		c.widget.SetMouseCursor(nuimouse.MouseCursorResizeHor)
+		c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
 		return
 	}
-	c.widget.SetMouseCursor(nuimouse.MouseCursorArrow)
+	c.SetMouseCursor(nuimouse.MouseCursorArrow)
 }
 
 func (c *Table) draw(cnv *Canvas) {
@@ -354,18 +350,18 @@ func (c *Table) draw(cnv *Canvas) {
 		colObj, exists := c.cols[colIndex]
 		if exists {
 			x := c.columnOffset(colIndex)
-			cnv.FillRect(x, c.widget.scrollY, colObj.width, c.rowHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
-			cnv.DrawTextMultiline(x+c.cellPadding, c.widget.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+			cnv.FillRect(x, c.scrollY, colObj.width, c.rowHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
+			cnv.DrawTextMultiline(x+c.cellPadding, c.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
 		}
 	}
 
 	// Draw cell borders
 	cnv.Save()
-	cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.widget.scrollX, cnv.state.translateY+c.widget.scrollY+c.headerHeight(), c.widget.Width(), c.widget.Height()-c.headerHeight())
+	cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.scrollX, cnv.state.translateY+c.scrollY+c.headerHeight(), c.Width(), c.Height()-c.headerHeight())
 	for rowIndex := visibleRow1; rowIndex < visibleRow2+2; rowIndex++ {
 		x1 := 0
-		y1 := rowIndex*c.rowHeight - c.widget.scrollY
-		x2 := c.widget.innerWidth
+		y1 := rowIndex*c.rowHeight - c.scrollY
+		x2 := c.innerWidth
 		y2 := y1
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
 	}
@@ -381,8 +377,8 @@ func (c *Table) draw(cnv *Canvas) {
 }
 
 func (c *Table) visibleRows() (min int, max int) {
-	min = c.widget.scrollY / c.rowHeight
-	max = min + (c.widget.Height()-c.headerHeight())/c.rowHeight
+	min = c.scrollY / c.rowHeight
+	max = min + (c.Height()-c.headerHeight())/c.rowHeight
 	min = min - 1
 	max = max + 1
 	if min < 0 {
@@ -426,18 +422,18 @@ func (c *Table) updateInnerSize() {
 		}
 		width += colWidth
 	}
-	c.widget.SetInnerSize(width, c.headerHeight()+c.rowCount*c.rowHeight)
-	c.widget.checkScrolls()
+	c.SetInnerSize(width, c.headerHeight()+c.rowCount*c.rowHeight)
+	c.checkScrolls()
 }
 
 func (c *Table) headerColumnBorderByPosition(x int, y int) int {
-	if y < c.widget.scrollY || y >= c.widget.scrollY+c.headerHeight() {
+	if y < c.scrollY || y >= c.scrollY+c.headerHeight() {
 		return -1
 	}
 	if x < 0 {
 		return -1
 	}
-	if x >= c.widget.innerWidth {
+	if x >= c.innerWidth {
 		return -1
 	}
 	for col := 0; col < c.columnCount; col++ {
@@ -452,13 +448,13 @@ func (c *Table) headerColumnBorderByPosition(x int, y int) int {
 }
 
 func (c *Table) headerColumnByPosition(x int, y int) int {
-	if y < c.widget.scrollY || y >= c.widget.scrollY+c.headerHeight() {
+	if y < c.scrollY || y >= c.scrollY+c.headerHeight() {
 		return -1
 	}
 	if x < 0 {
 		return -1
 	}
-	if x >= c.widget.innerWidth {
+	if x >= c.innerWidth {
 		return -1
 	}
 	for col := 0; col < c.columnCount; col++ {
