@@ -65,7 +65,7 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 	c.pressed = false
 	hoverWidgeter := MainForm.hoverWidget
 	var localWidgeter Widgeter = c
-	if hoverWidgeter.Id() == localWidgeter.Id() {
+	if hoverWidgeter == localWidgeter {
 		if c.onButtonClick != nil {
 			c.onButtonClick(c)
 		}

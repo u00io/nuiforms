@@ -39,6 +39,12 @@ type Form struct {
 var MainForm *Form
 var mainFormExecuted bool
 
+var allwidgets map[string]Widgeter
+
+func init() {
+	allwidgets = make(map[string]Widgeter)
+}
+
 type Widgeter interface {
 	Id() string
 	Name() string
@@ -106,6 +112,13 @@ func UpdateMainForm() {
 	}
 }
 
+func WidgetById(id string) Widgeter {
+	if widget, exists := allwidgets[id]; exists {
+		return widget
+	}
+	return nil
+}
+
 func NewForm() *Form {
 	var c Form
 	c.title = "Form"
@@ -117,6 +130,7 @@ func NewForm() *Form {
 	topWidget.SetSize(c.width, c.height)
 	topWidget.SetAnchors(true, true, true, true)
 	c.topWidget = topWidget
+	allwidgets[topWidget.Id()] = topWidget
 	if MainForm != nil {
 		panic("MainForm already exists, cannot create a new one")
 	}
@@ -248,6 +262,9 @@ func (c *Form) processMouseMove(x int, y int) {
 	c.lastMouseX = x
 	c.lastMouseY = y
 	hoverWidget := c.topWidget.findWidgetAt(x, y)
+	if hoverWidget == nil {
+		hoverWidget = c.topWidget
+	}
 
 	if hoverWidget != c.hoverWidget {
 		if c.hoverWidget != nil {

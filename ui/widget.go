@@ -248,7 +248,11 @@ func (c *Widget) AddTimer(intervalMs int, callback func()) {
 }
 
 func (c *Widget) AddWidget(w Widgeter) {
+	if _, exists := allwidgets[w.Id()]; exists {
+		return
+	}
 	c.widgets = append(c.widgets, w)
+	allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
 }
 
@@ -257,18 +261,21 @@ func (c *Widget) SetPanelPadding(padding int) {
 }
 
 func (c *Widget) AddWidgetOnGrid(w Widgeter, gridX int, gridY int) {
-	// Get field Widget (w.Widget) as Widgeter
-
+	if _, exists := allwidgets[w.Id()]; exists {
+		return
+	}
 	w.SetGridPosition(gridX, gridY)
 	c.widgets = append(c.widgets, w)
+	allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
 	MainForm.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
 }
 
 func (c *Widget) RemoveWidget(w Widgeter) {
+	delete(allwidgets, w.Id())
 	for i, widget := range c.widgets {
 		widgeter := widget
-		if widgeter == w {
+		if widgeter.Id() == w.Id() {
 			c.widgets = append(c.widgets[:i], c.widgets[i+1:]...)
 			return
 		}
@@ -277,6 +284,9 @@ func (c *Widget) RemoveWidget(w Widgeter) {
 }
 
 func (c *Widget) RemoveAllWidgets() {
+	for _, w := range c.widgets {
+		delete(allwidgets, w.Id())
+	}
 	c.widgets = make([]Widgeter, 0)
 	c.updateLayout(0, 0, 0, 0)
 	UpdateMainForm()
@@ -406,11 +416,11 @@ func (c *Widget) Focus() {
 }
 
 func (c *Widget) IsFocused() bool {
-	return MainForm.focusedWidget == c
+	return MainForm.focusedWidget == WidgetById(c.Id())
 }
 
 func (c *Widget) IsHovered() bool {
-	return MainForm.hoverWidget == c
+	return MainForm.hoverWidget == WidgetById(c.Id())
 }
 
 func (c *Widget) Name() string {
@@ -540,7 +550,8 @@ func (c *Widget) findWidgetAt(x, y int) Widgeter {
 	if innerWidget != nil {
 		return innerWidget.findWidgetAt(x-innerWidget.X(), y-innerWidget.Y())
 	}
-	return c
+	return WidgetById(c.Id())
+	//return c
 }
 
 func (c *Widget) processPaint(cnv *Canvas) {
