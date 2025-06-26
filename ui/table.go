@@ -87,6 +87,10 @@ func (c *Table) SetOnSelectionChanged(callback func(x int, y int)) {
 	c.onSelectionChanged = callback
 }
 
+func (c *Table) RowCount() int {
+	return c.rowCount
+}
+
 func (c *Table) SetRowCount(count int) {
 	c.rowCount = count
 	c.updateInnerSize()

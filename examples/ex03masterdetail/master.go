@@ -1,6 +1,7 @@
 package ex03masterdetail
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/u00io/nuiforms/ui"
@@ -29,6 +30,33 @@ func NewMasterWidget() *MasterWidget {
 	c.AddWidgetOnGrid(c.panelLeft, 0, 0)
 	c.panelLeft.SetMinWidth(310)
 
+	panelTableButtons := ui.NewPanel()
+	panelTableButtons.SetName("panelTableButtons")
+	panelTableButtons.SetBackgroundColor(color.RGBA{R: 50, G: 50, B: 70, A: 255})
+
+	btnAdd := ui.NewButton()
+	btnAdd.SetText("Add")
+	btnAdd.SetOnButtonClick(func(btn *ui.Button) {
+		row := c.table.RowCount()
+		c.table.SetRowCount(row + 1)
+		c.table.SetCellText(0, row, "ID"+fmt.Sprint(row))
+		c.table.SetCellText(1, row, "Name"+fmt.Sprint(row))
+		c.table.SetCellText(2, row, "Description"+fmt.Sprint(row))
+		c.table.SetCurrentCell(0, row)
+	})
+	panelTableButtons.AddWidgetOnGrid(btnAdd, 0, 0)
+
+	btnDelete := ui.NewButton()
+	btnDelete.SetText("Delete")
+	btnDelete.SetOnButtonClick(func(btn *ui.Button) {
+	})
+	panelTableButtons.AddWidgetOnGrid(btnDelete, 1, 0)
+
+	//panelTableButtons.SetMinSize(100, 50)
+	panelTableButtons.SetAllowScroll(false, false)
+
+	c.panelLeft.AddWidgetOnGrid(panelTableButtons, 0, 0)
+
 	c.table = ui.NewTable()
 	c.table.SetColumnCount(3)
 	c.table.SetColumnName(0, "ID")
@@ -39,7 +67,7 @@ func NewMasterWidget() *MasterWidget {
 	c.table.SetColumnWidth(2, 100)
 	c.table.SetRowCount(10)
 	c.table.SetOnSelectionChanged(c.onTableSelectionChanged)
-	c.panelLeft.AddWidgetOnGrid(c.table, 0, 0)
+	c.panelLeft.AddWidgetOnGrid(c.table, 0, 1)
 
 	c.panelRight = ui.NewPanel()
 	c.panelRight.SetName("panelRight")
