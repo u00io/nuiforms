@@ -70,7 +70,7 @@ type Widgeter interface {
 
 	processPaint(cnv *Canvas)
 	processMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	processMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
+	processMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string)
 	processMouseMove(x int, y int, mods nuikey.KeyModifiers)
 	processMouseLeave()
 	processMouseEnter()
@@ -286,15 +286,23 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 		widgetAtCoords.Focus()
 	}
 	c.topWidget.processMouseDown(button, x, y, c.lastKeyboardModifiers)
+	fmt.Println("Mouse down at", x, y, "on widget", widgetAtCoords.Id(), "button:", button)
 	c.Update()
 }
 
 func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
+	mouseLeftButtonPressedWidgetId := ""
+	if c.mouseLeftButtonPressedWidget != nil {
+		mouseLeftButtonPressedWidgetId = c.mouseLeftButtonPressedWidget.Id()
+	}
+
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = false
 		c.mouseLeftButtonPressedWidget = nil
 	}
-	c.topWidget.processMouseUp(button, x, y, c.lastKeyboardModifiers)
+
+	c.topWidget.processMouseUp(button, x, y, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId)
+
 	c.Update()
 }
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image/color"
 	"math"
-	"strings"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -712,7 +711,7 @@ func (c *Widget) processMouseDown(button nuimouse.MouseButton, x int, y int, mod
 	//c.focused = true
 }
 
-func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string) {
 	// If scrolling is active, stop it
 	if c.scrollingX {
 		c.scrollingX = false
@@ -728,12 +727,12 @@ func (c *Widget) processMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 	x += c.scrollX
 	y += c.scrollY
 
-	if c.onMouseUp != nil {
+	if c.onMouseUp != nil && onlyForWidgetId == c.Id() {
 		c.onMouseUp(button, x, y, mods)
 	}
 
 	for _, w := range c.widgets {
-		w.processMouseUp(button, x-w.X(), y-w.Y(), mods)
+		w.processMouseUp(button, x-w.X(), y-w.Y(), mods, onlyForWidgetId)
 	}
 }
 
@@ -821,9 +820,9 @@ func (c *Widget) processMouseDblClick(button nuimouse.MouseButton, x int, y int,
 	x += c.scrollX
 	y += c.scrollY
 
-	if c.onMouseUp != nil {
+	/*if c.onMouseUp != nil {
 		c.onMouseUp(button, x, y, mods)
-	}
+	}*/
 
 	for _, w := range c.widgets {
 		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
@@ -992,7 +991,7 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 		_, minY, maxY, allCellPaddingY := c.makeRowsInfo(fullHeight)
 		rowsInfo, _, _, _ := c.makeRowsInfo(fullHeight - (c.panelPadding + allCellPaddingY + c.panelPadding))
 
-		if strings.Contains(c.name, "Top") {
+		/*if strings.Contains(c.name, "Top") {
 			fmt.Println("RowsInfo:")
 			for yy := minY; yy <= maxY; yy++ {
 				if rowInfo, ok := rowsInfo[yy]; ok {
@@ -1000,7 +999,7 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 						yy, rowInfo.minHeight, rowInfo.maxHeight, rowInfo.expandable, rowInfo.height, rowInfo.collapsed)
 				}
 			}
-		}
+		}*/
 
 		xOffset := c.panelPadding //+ c.LeftBorderWidth()
 		for x := minX; x <= maxX; x++ {

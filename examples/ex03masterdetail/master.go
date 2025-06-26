@@ -49,6 +49,25 @@ func NewMasterWidget() *MasterWidget {
 	btnDelete := ui.NewButton()
 	btnDelete.SetText("Delete")
 	btnDelete.SetOnButtonClick(func(btn *ui.Button) {
+		selectedRow := c.table.CurrentRow()
+		if selectedRow < 0 || selectedRow >= c.table.RowCount() {
+			return
+		}
+		// copy the next rows up
+		for i := selectedRow; i < c.table.RowCount()-1; i++ {
+			c.table.SetCellText(0, i, c.table.GetCellText(0, i+1))
+			c.table.SetCellText(1, i, c.table.GetCellText(1, i+1))
+			c.table.SetCellText(2, i, c.table.GetCellText(2, i+1))
+		}
+		// remove the last row
+		c.table.SetRowCount(c.table.RowCount() - 1)
+		if c.table.RowCount() > 0 {
+			if selectedRow >= c.table.RowCount() {
+				c.table.SetCurrentCell(0, c.table.RowCount()-1)
+			} else {
+				c.table.SetCurrentCell(0, selectedRow)
+			}
+		}
 	})
 	panelTableButtons.AddWidgetOnGrid(btnDelete, 1, 0)
 

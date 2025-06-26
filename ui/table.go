@@ -331,7 +331,7 @@ func (c *Table) draw(cnv *Canvas) {
 	yOffset += c.rowHeight
 
 	visibleRow1, visibleRow2 := c.visibleRows()
-	fmt.Println("Visible rows:", visibleRow1, visibleRow2)
+	//fmt.Println("Visible rows:", visibleRow1, visibleRow2)
 
 	yOffset += visibleRow1 * c.rowHeight
 

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"image/color"
 	"strings"
 	"unicode/utf8"
@@ -124,7 +123,6 @@ func (c *TextBox) SetOnTextChanged(onTextChanged func(txtBox *TextBox)) {
 }
 
 func (c *TextBox) timerCursorBlinking() {
-	fmt.Println("TextBox timerCursorBlinking", c.id, MainForm.focusedWidget.Id(), MainForm.focusedWidget.Name())
 	if MainForm.focusedWidget.Id() == c.id {
 		if !c.skipOneCursorBlinking {
 			c.cursorVisible = !c.cursorVisible
