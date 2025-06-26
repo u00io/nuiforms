@@ -204,7 +204,8 @@ func (c *Widget) SetGridPosition(x, y int) {
 func (c *Widget) MinWidth() int {
 	result := 0
 
-	if !c.allowScrollX {
+	//if !c.allowScrollX {
+	{
 		_, _, _, allCellPadding := c.makeColumnsInfo(c.Width())
 		columnsInfo, _, _, _ := c.makeColumnsInfo(c.Width() - (c.panelPadding + allCellPadding + c.panelPadding))
 		for _, columnInfo := range columnsInfo {
@@ -222,7 +223,8 @@ func (c *Widget) MinWidth() int {
 func (c *Widget) MinHeight() int {
 	result := 0
 
-	if !c.allowScrollY {
+	//if !c.allowScrollY {
+	{
 		_, _, _, allCellPadding := c.makeRowsInfo(c.Height())
 		rowsInfo, _, _, _ := c.makeRowsInfo(c.Height() - (c.panelPadding + allCellPadding + c.panelPadding))
 		for _, rowInfo := range rowsInfo {

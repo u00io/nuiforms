@@ -53,7 +53,7 @@ func NewMasterWidget() *MasterWidget {
 	panelTableButtons.AddWidgetOnGrid(btnDelete, 1, 0)
 
 	//panelTableButtons.SetMinSize(100, 50)
-	panelTableButtons.SetAllowScroll(false, false)
+	//panelTableButtons.SetAllowScroll(false, false)
 
 	c.panelLeft.AddWidgetOnGrid(panelTableButtons, 0, 0)
 
@@ -104,7 +104,6 @@ func NewMasterWidget() *MasterWidget {
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Main Field:"), 0, 3)
-
 	c.panelRight.AddWidgetOnGrid(ui.NewVSpacer(), 0, 4)
 
 	return &c
