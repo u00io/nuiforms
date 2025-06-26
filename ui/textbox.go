@@ -210,7 +210,7 @@ func (c *TextBox) updateInnerSize() {
 	}
 
 	if !c.multiline {
-		c.innerHeight = c.Width()
+		c.innerHeight = c.Height()
 	}
 }
 

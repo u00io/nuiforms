@@ -45,8 +45,9 @@ func NewMasterWidget() *MasterWidget {
 	c.panelRight.SetName("panelRight")
 	c.AddWidgetOnGrid(c.panelRight, 1, 0)
 
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("ID:"), 0, 0)
 	c.txtCol1 = ui.NewTextBox()
-	c.panelRight.AddWidgetOnGrid(c.txtCol1, 0, 0)
+	c.panelRight.AddWidgetOnGrid(c.txtCol1, 1, 0)
 	c.txtCol1.SetOnTextChanged(func(txt *ui.TextBox) {
 		if c.loadingDetails {
 			return
@@ -54,8 +55,9 @@ func NewMasterWidget() *MasterWidget {
 		c.table.SetCellText(0, c.table.CurrentRow(), txt.Text())
 	})
 
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Name:"), 0, 1)
 	c.txtCol2 = ui.NewTextBox()
-	c.panelRight.AddWidgetOnGrid(c.txtCol2, 0, 1)
+	c.panelRight.AddWidgetOnGrid(c.txtCol2, 1, 1)
 	c.txtCol2.SetOnTextChanged(func(txt *ui.TextBox) {
 		if c.loadingDetails {
 			return
@@ -63,8 +65,9 @@ func NewMasterWidget() *MasterWidget {
 		c.table.SetCellText(1, c.table.CurrentRow(), txt.Text())
 	})
 
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Description:"), 0, 2)
 	c.txtCol3 = ui.NewTextBox()
-	c.panelRight.AddWidgetOnGrid(c.txtCol3, 0, 2)
+	c.panelRight.AddWidgetOnGrid(c.txtCol3, 1, 2)
 	c.txtCol3.SetOnTextChanged(func(txt *ui.TextBox) {
 		if c.loadingDetails {
 			return
@@ -72,7 +75,9 @@ func NewMasterWidget() *MasterWidget {
 		c.table.SetCellText(2, c.table.CurrentRow(), txt.Text())
 	})
 
-	c.panelRight.AddWidgetOnGrid(ui.NewVSpacer(), 0, 3)
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Main Field:"), 0, 3)
+
+	c.panelRight.AddWidgetOnGrid(ui.NewVSpacer(), 0, 4)
 
 	return &c
 }

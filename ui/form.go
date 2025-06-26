@@ -247,6 +247,10 @@ func (c *Form) DrawWidgetDebugInfo(w Widgeter, cnv *Canvas) {
 	lines = append(lines, fmt.Sprintf("Position: (%d, %d)", w.X(), w.Y()))
 	lines = append(lines, fmt.Sprintf("Size: %dx%d", w.Width(), w.Height()))
 	lines = append(lines, fmt.Sprintf("Inner Size: %dx%d", w.InnerWidth(), w.InnerHeight()))
+	lines = append(lines, fmt.Sprintf("Grid Position: (%d, %d)", w.GridX(), w.GridY()))
+	lines = append(lines, fmt.Sprintf("Expandable: %t %t", w.XExpandable(), w.YExpandable()))
+	lines = append(lines, fmt.Sprintf("Min Size: %dx%d", w.MinWidth(), w.MinHeight()))
+	lines = append(lines, fmt.Sprintf("Max Size: %dx%d", w.MaxWidth(), w.MaxHeight()))
 
 	for _, line := range lines {
 		cnv.FillRect(posX, posY, 200, 20, color.RGBA{R: 0, G: 0, B: 0, A: 150})

@@ -138,7 +138,7 @@ func (c *Widget) InitWidget() {
 	c.x = 0
 	c.y = 0
 	c.w = 300
-	c.h = 200
+	c.h = 180
 	c.minWidth = 0
 	c.minHeight = 0
 	c.maxWidth = MAX_WIDTH
