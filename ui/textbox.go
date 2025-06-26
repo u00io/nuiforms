@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"image/color"
 	"strings"
 	"unicode/utf8"
@@ -36,7 +37,7 @@ type TextBox struct {
 	cursorVisible         bool
 	skipOneCursorBlinking bool
 
-	OnTextChanged    func(txtBox *TextBox, oldValue string, newValue string)
+	onTextChanged    func(txtBox *TextBox)
 	onValidateNeeded func(oldValue string, newValue string) bool
 }
 
@@ -57,6 +58,7 @@ type TextBoxSelection struct {
 func NewTextBox() *TextBox {
 	var c TextBox
 	c.InitWidget()
+	c.SetTypeName("TextBox")
 
 	c.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
 	//txtBox := newTextBox(&c.widget)
@@ -93,6 +95,7 @@ func NewTextBox() *TextBox {
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)
 	c.SetMinSize(100, 30)
+	c.SetMaxSize(10000, 30)
 
 	c.lines = make([]string, 1)
 	c.cursorWidth = 1
@@ -116,8 +119,13 @@ func (c *TextBox) SetIsPassword(isPassword bool) {
 	c.isPassword = isPassword
 }
 
+func (c *TextBox) SetOnTextChanged(onTextChanged func(txtBox *TextBox)) {
+	c.onTextChanged = onTextChanged
+}
+
 func (c *TextBox) timerCursorBlinking() {
-	if MainForm.focusedWidget == c {
+	fmt.Println("TextBox timerCursorBlinking", c.id, MainForm.focusedWidget.Id(), MainForm.focusedWidget.Name())
+	if MainForm.focusedWidget.Id() == c.id {
 		if !c.skipOneCursorBlinking {
 			c.cursorVisible = !c.cursorVisible
 			UpdateMainForm()
@@ -179,11 +187,13 @@ func (c *TextBox) AssemblyText(lines []string) string {
 }
 
 func (c *TextBox) updateInnerSize() {
+
 	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, "0", false)
 	if err != nil {
 		return
 	}
 	c.innerHeight = textHeight * len(c.lines)
+
 	var maxTextWidth int
 	for _, line := range c.lines {
 		textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, line, false)
@@ -200,7 +210,7 @@ func (c *TextBox) updateInnerSize() {
 	}
 
 	if !c.multiline {
-		c.innerHeight = textHeight
+		c.innerHeight = c.Width()
 	}
 }
 
@@ -759,10 +769,8 @@ func (c *TextBox) modifyText(cmd textboxModifyCommand, modifiers nuikey.KeyModif
 			c.clearSelection()
 			c.updateInnerSize()
 
-			if c.OnTextChanged != nil {
-				oldValue := c.Text()
-				newValue := c.AssemblyText(lines)
-				c.OnTextChanged(c, oldValue, newValue)
+			if c.onTextChanged != nil {
+				c.onTextChanged(c)
 			}
 		}
 

@@ -7,6 +7,7 @@ type VSpacer struct {
 func NewVSpacer() *VSpacer {
 	var c VSpacer
 	c.InitWidget()
+	c.SetTypeName("VSpacer")
 	c.SetYExpandable(true)
 	return &c
 }

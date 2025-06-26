@@ -1,7 +1,9 @@
 package ui
 
 import (
+	"fmt"
 	"image"
+	"image/color"
 	"runtime"
 	"runtime/debug"
 	"time"
@@ -40,6 +42,7 @@ var MainForm *Form
 var mainFormExecuted bool
 
 var allwidgets map[string]Widgeter
+var nextId int64
 
 func init() {
 	allwidgets = make(map[string]Widgeter)
@@ -47,6 +50,7 @@ func init() {
 
 type Widgeter interface {
 	Id() string
+	TypeName() string
 	Name() string
 	X() int
 	Y() int
@@ -117,6 +121,15 @@ func WidgetById(id string) Widgeter {
 		return widget
 	}
 	return nil
+}
+
+func NewId() string {
+	id := fmt.Sprint(nextId)
+	for len(id) < 3 {
+		id = "0" + id
+	}
+	nextId++
+	return id
 }
 
 func NewForm() *Form {
@@ -215,6 +228,39 @@ func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	c.topWidget.processPaint(cnv)
+	if c.hoverWidget != nil {
+		c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
+	}
+}
+
+func (c *Form) DrawWidgetDebugInfo(w Widgeter, cnv *Canvas) {
+	if w == nil {
+		return
+	}
+	lines := make([]string, 0)
+	posX := c.lastMouseX + 16
+	posY := c.lastMouseY + 16
+	col := color.RGBA{R: 0, G: 200, B: 200, A: 255}
+	lines = append(lines, fmt.Sprintf("ID: %s", w.Id()))
+	lines = append(lines, fmt.Sprintf("Name: %s", w.Name()))
+	lines = append(lines, fmt.Sprintf("Type: %s", w.TypeName()))
+	lines = append(lines, fmt.Sprintf("Position: (%d, %d)", w.X(), w.Y()))
+	lines = append(lines, fmt.Sprintf("Size: %dx%d", w.Width(), w.Height()))
+	lines = append(lines, fmt.Sprintf("Inner Size: %dx%d", w.InnerWidth(), w.InnerHeight()))
+
+	for _, line := range lines {
+		cnv.FillRect(posX, posY, 200, 20, color.RGBA{R: 0, G: 0, B: 0, A: 150})
+		cnv.DrawText(posX, posY, line, "roboto", 16, col, false)
+		posY += 20
+	}
+
+	/*for y := 0; y < c.height; y += 10 {
+		cnv.DrawLine(0, y, c.width, y, 1, color.RGBA{R: 0, G: 100, B: 0, A: 150})
+		if y%50 == 0 {
+			cnv.DrawText(0, y, fmt.Sprintf("%d", y), "roboto", 12, color.RGBA{R: 0, G: 200, B: 0, A: 255}, false)
+		}
+	}*/
+
 }
 
 func (c *Form) processResize(width, height int) {

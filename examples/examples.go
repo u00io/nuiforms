@@ -4,6 +4,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02layouts"
 	"github.com/u00io/nuiforms/examples/ex03masterdetail"
+	"github.com/u00io/nuiforms/examples/ex09textbox"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -12,35 +13,35 @@ func Run() {
 		form := ui.NewForm()
 		form.SetTitle("Examples")
 		form.SetSize(800, 600)
-		{
-			btnEx01 := ui.NewButton()
-			btnEx01.SetText("Example 01")
-			btnEx01.SetOnButtonClick(func(btn *ui.Button) {
-				form.Panel().RemoveAllWidgets()
-				ex01base.Run(form)
-			})
-			form.Panel().AddWidgetOnGrid(btnEx01, 0, 0)
-		}
-		{
-			btnEx02 := ui.NewButton()
-			btnEx02.SetText("Example 02")
-			btnEx02.SetOnButtonClick(func(btn *ui.Button) {
-				form.Panel().RemoveAllWidgets()
-				ex02layouts.Run(form)
-			})
-			form.Panel().AddWidgetOnGrid(btnEx02, 0, 1)
-		}
-		{
-			btnEx03 := ui.NewButton()
-			btnEx03.SetText("Example 03")
-			btnEx03.SetOnButtonClick(func(btn *ui.Button) {
-				form.Panel().RemoveAllWidgets()
-				ex03masterdetail.Run(form)
-			})
-			form.Panel().AddWidgetOnGrid(btnEx03, 0, 2)
+
+		addButton := func(text string, onClick func(btn *ui.Button)) {
+			btn := ui.NewButton()
+			btn.SetText(text)
+			btn.SetOnButtonClick(onClick)
+			form.Panel().AddWidgetOnGrid(btn, 0, form.Panel().NextGridY())
 		}
 
-		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, 10)
+		addButton("Example 01 - Base Form", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex01base.Run(form)
+		})
+
+		addButton("Example 02 - Layouts", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex02layouts.Run(form)
+		})
+
+		addButton("Example 03 - Master Detail", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex03masterdetail.Run(form)
+		})
+
+		addButton("Example 09 - TextBox", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex09textbox.Run(form)
+		})
+
+		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, form.Panel().NextGridY())
 		form.Exec()
 	}
 }

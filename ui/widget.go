@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"image/color"
 	"math"
@@ -15,6 +13,7 @@ import (
 type Widget struct {
 	id       string
 	name     string
+	typeName string
 	userData interface{}
 
 	// position
@@ -131,10 +130,9 @@ const MAX_WIDTH = 100000
 const MAX_HEIGHT = 100000
 
 func (c *Widget) InitWidget() {
-	randomBytes := make([]byte, 32)
-	rand.Read(randomBytes)
-	c.id = hex.EncodeToString(randomBytes)
-	c.name = "Widget-" + strings.ToUpper(hex.EncodeToString(randomBytes))
+	c.id = NewId()
+	c.typeName = "Widget"
+	c.name = "Widget-" + c.id
 	c.props = make(map[string]any)
 	c.timers = make([]*timer, 0)
 	c.x = 0
@@ -176,6 +174,14 @@ func (c *Widget) SetVisible(visible bool) {
 		c.updateLayout(c.w, c.h, c.w, c.h)
 		UpdateMainForm()
 	}
+}
+
+func (c *Widget) SetTypeName(typeName string) {
+	c.typeName = typeName
+}
+
+func (c *Widget) TypeName() string {
+	return c.typeName
 }
 
 func (c *Widget) IsVisible() bool {
@@ -411,7 +417,7 @@ func (c *Widget) GetPropBool(key string, defaultValue bool) bool {
 }
 
 func (c *Widget) Focus() {
-	MainForm.focusedWidget = c
+	MainForm.focusedWidget = WidgetById(c.Id())
 	MainForm.Update()
 }
 
@@ -523,8 +529,10 @@ func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
 
 func (c *Widget) getWidgetAt(x, y int) Widgeter {
 	for _, w := range c.widgets {
-		innerWidth := w.InnerWidth()
-		innerHeight := w.InnerHeight()
+		innerWidth := w.Width()
+		innerHeight := w.Height()
+		//innerWidth := w.InnerWidth()
+		//innerHeight := w.InnerHeight()
 		if x >= w.X() && x < w.X()+innerWidth && y >= w.Y() && y < w.Y()+innerHeight {
 			//fmt.Println("Widget found at", w.Name(), "at position", w.X(), w.Y(), "with size", innerWidth, innerHeight)
 			return w

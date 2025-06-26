@@ -34,6 +34,8 @@ type Table struct {
 	// Selection
 	currentCellX int
 	currentCellY int
+
+	onSelectionChanged func(x int, y int)
 }
 
 type tableRow struct {
@@ -52,6 +54,7 @@ type tableCell struct {
 func NewTable() *Table {
 	var c Table
 	c.InitWidget()
+	c.SetTypeName("Table")
 	c.SetXExpandable(true)
 	c.SetYExpandable(true)
 	c.SetOnPaint(c.draw)
@@ -78,6 +81,10 @@ func NewTable() *Table {
 	c.selectingCell = true
 
 	return &c
+}
+
+func (c *Table) SetOnSelectionChanged(callback func(x int, y int)) {
+	c.onSelectionChanged = callback
 }
 
 func (c *Table) SetRowCount(count int) {
@@ -143,6 +150,38 @@ func (c *Table) SetCurrentCell(col int, row int) {
 	c.currentCellY = row
 	c.ScrollToCell(row, col)
 	UpdateMainForm()
+	if c.onSelectionChanged != nil {
+		c.onSelectionChanged(c.currentCellX, c.currentCellY)
+	}
+}
+
+func (c *Table) CurrentRow() int {
+	if c.currentCellY < 0 || c.currentCellY >= c.rowCount {
+		return -1
+	}
+	return c.currentCellY
+}
+
+func (c *Table) CurrentColumn() int {
+	if c.currentCellX < 0 || c.currentCellX >= c.columnCount {
+		return -1
+	}
+	return c.currentCellX
+}
+
+func (c *Table) GetCellText(col int, row int) string {
+	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
+		return ""
+	}
+	rowObj, exists := c.rows[row]
+	if !exists {
+		return ""
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		return ""
+	}
+	return cellObj.text
 }
 
 func (c *Table) ScrollToCell(row, col int) {
@@ -358,7 +397,7 @@ func (c *Table) draw(cnv *Canvas) {
 	// Draw cell borders
 	cnv.Save()
 	cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.scrollX, cnv.state.translateY+c.scrollY+c.headerHeight(), c.Width(), c.Height()-c.headerHeight())
-	for rowIndex := visibleRow1; rowIndex < visibleRow2+2; rowIndex++ {
+	for rowIndex := visibleRow1; rowIndex < visibleRow2+1; rowIndex++ {
 		x1 := 0
 		y1 := rowIndex*c.rowHeight - c.scrollY
 		x2 := c.innerWidth
@@ -371,7 +410,7 @@ func (c *Table) draw(cnv *Canvas) {
 		x1 := c.columnOffset(colIndex)
 		y1 := visibleRow1*c.rowHeight - c.headerHeight()
 		x2 := x1
-		y2 := (visibleRow2 + 2) * c.rowHeight
+		y2 := (visibleRow2 + 1) * c.rowHeight
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
 	}
 }

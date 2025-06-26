@@ -7,7 +7,7 @@ type Panel struct {
 func NewPanel() *Panel {
 	var c Panel
 	c.InitWidget()
-	c.SetName(c.Name() + "-Panel")
+	c.SetTypeName("Panel")
 	c.SetXExpandable(true)
 	c.SetYExpandable(true)
 	c.SetAllowScroll(true, true)

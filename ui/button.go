@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"time"
-
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -18,8 +16,7 @@ type Button struct {
 func NewButton() *Button {
 	var c Button
 	c.InitWidget()
-
-	c.SetName("Button-" + time.Now().Format("20060102150405"))
+	c.SetTypeName("Button")
 	c.SetMinSize(100, 30)
 	c.SetMaxSize(100, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)

@@ -1,7 +1,6 @@
 package ex03masterdetail
 
 import (
-	"fmt"
 	"image/color"
 
 	"github.com/u00io/nuiforms/ui"
@@ -10,10 +9,15 @@ import (
 type MasterWidget struct {
 	ui.Widget
 
-	currentTabWidget ui.Widgeter
+	panelLeft *ui.Panel
+	table     *ui.Table
 
-	panelLeft  *ui.Panel
 	panelRight *ui.Panel
+	txtCol1    *ui.TextBox
+	txtCol2    *ui.TextBox
+	txtCol3    *ui.TextBox
+
+	loadingDetails bool
 }
 
 func NewMasterWidget() *MasterWidget {
@@ -24,51 +28,59 @@ func NewMasterWidget() *MasterWidget {
 	c.panelLeft = ui.NewPanel()
 	c.AddWidgetOnGrid(c.panelLeft, 0, 0)
 	c.panelLeft.SetMinWidth(310)
-	//c.panelLeft.SetMaxWidth(310)
+
+	c.table = ui.NewTable()
+	c.table.SetColumnCount(3)
+	c.table.SetColumnName(0, "ID")
+	c.table.SetColumnName(1, "Name")
+	c.table.SetColumnName(2, "Description")
+	c.table.SetColumnWidth(0, 50)
+	c.table.SetColumnWidth(1, 100)
+	c.table.SetColumnWidth(2, 100)
+	c.table.SetRowCount(10)
+	c.table.SetOnSelectionChanged(c.onTableSelectionChanged)
+	c.panelLeft.AddWidgetOnGrid(c.table, 0, 0)
 
 	c.panelRight = ui.NewPanel()
 	c.panelRight.SetName("panelRight")
 	c.AddWidgetOnGrid(c.panelRight, 1, 0)
 
-	{
-		btnOpenTab1 := ui.NewButton()
-		btnOpenTab1.SetText("Tab 1")
-		btnOpenTab1.SetOnButtonClick(c.onBtn1Click)
-		btnOpenTab1.SetMinSize(300, 50)
-		btnOpenTab1.SetMaxSize(ui.MaxInt, 50)
-		c.panelLeft.AddWidgetOnGrid(btnOpenTab1, 0, 0)
-	}
+	c.txtCol1 = ui.NewTextBox()
+	c.panelRight.AddWidgetOnGrid(c.txtCol1, 0, 0)
+	c.txtCol1.SetOnTextChanged(func(txt *ui.TextBox) {
+		if c.loadingDetails {
+			return
+		}
+		c.table.SetCellText(0, c.table.CurrentRow(), txt.Text())
+	})
 
-	for i := 0; i < 20; i++ {
-		btnOpenTab2 := ui.NewButton()
-		btnOpenTab2.SetName("btnOpenTab2_" + fmt.Sprint(i))
-		btnOpenTab2.SetText("Tab " + fmt.Sprint(i))
-		btnOpenTab2.SetOnButtonClick(func(btn *ui.Button) {
-			c.closeCurrentTab()
-			w := NewTab2Widget("PAGE " + btn.Text())
-			c.currentTabWidget = w
-			c.panelRight.AddWidgetOnGrid(w, 0, 0)
-		})
-		btnOpenTab2.SetMinSize(300, 50)
-		btnOpenTab2.SetMaxSize(ui.MaxInt, 50)
-		c.panelLeft.AddWidgetOnGrid(btnOpenTab2, 0, c.panelLeft.NextGridY())
-	}
+	c.txtCol2 = ui.NewTextBox()
+	c.panelRight.AddWidgetOnGrid(c.txtCol2, 0, 1)
+	c.txtCol2.SetOnTextChanged(func(txt *ui.TextBox) {
+		if c.loadingDetails {
+			return
+		}
+		c.table.SetCellText(1, c.table.CurrentRow(), txt.Text())
+	})
 
-	c.onBtn1Click(nil)
+	c.txtCol3 = ui.NewTextBox()
+	c.panelRight.AddWidgetOnGrid(c.txtCol3, 0, 2)
+	c.txtCol3.SetOnTextChanged(func(txt *ui.TextBox) {
+		if c.loadingDetails {
+			return
+		}
+		c.table.SetCellText(2, c.table.CurrentRow(), txt.Text())
+	})
+
+	c.panelRight.AddWidgetOnGrid(ui.NewVSpacer(), 0, 3)
 
 	return &c
 }
 
-func (c *MasterWidget) closeCurrentTab() {
-	if c.currentTabWidget != nil {
-		c.panelRight.RemoveWidget(c.currentTabWidget)
-		c.currentTabWidget = nil
-	}
-}
-
-func (c *MasterWidget) onBtn1Click(btn *ui.Button) {
-	c.closeCurrentTab()
-	w := NewTab1Widget()
-	c.currentTabWidget = w
-	c.panelRight.AddWidgetOnGrid(w, 0, 0)
+func (c *MasterWidget) onTableSelectionChanged(x, y int) {
+	c.loadingDetails = true
+	c.txtCol1.SetText(c.table.GetCellText(0, y))
+	c.txtCol2.SetText(c.table.GetCellText(1, y))
+	c.txtCol3.SetText(c.table.GetCellText(2, y))
+	c.loadingDetails = false
 }
