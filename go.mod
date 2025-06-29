@@ -7,3 +7,4 @@ require (
 	github.com/u00io/nui v0.0.2
 	golang.org/x/image v0.27.0
 )
+

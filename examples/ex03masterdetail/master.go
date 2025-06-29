@@ -28,7 +28,7 @@ func NewMasterWidget() *MasterWidget {
 
 	c.panelLeft = ui.NewPanel()
 	c.AddWidgetOnGrid(c.panelLeft, 0, 0)
-	c.panelLeft.SetMinWidth(310)
+	//c.panelLeft.SetMinWidth(310)
 
 	panelTableButtons := ui.NewPanel()
 	panelTableButtons.SetName("panelTableButtons")

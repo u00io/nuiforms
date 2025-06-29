@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"image/color"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -16,7 +17,7 @@ func NewLabel(text string) *Label {
 	var c Label
 	c.InitWidget()
 	c.SetTypeName("Label")
-	//c.SetBackgroundColor(color.RGBA{0, 150, 200, 255})
+	c.SetBackgroundColor(color.RGBA{0, 150, 200, 255})
 	c.text = text
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
 		fmt.Println("Label clicked:", c.text)
