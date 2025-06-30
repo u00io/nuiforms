@@ -53,6 +53,10 @@ func NewCanvas(rgba *image.RGBA) *Canvas {
 	return &c
 }
 
+func (c *Canvas) RGBA() *image.RGBA {
+	return c.rgba
+}
+
 func (c *Canvas) Save() {
 	oldState := *c.state
 	c.stack = append(c.stack, c.state)

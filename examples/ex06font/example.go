@@ -21,6 +21,8 @@ func NewFontExampleWidget() *FontExampleWidget {
 func (c *FontExampleWidget) draw(cnv *ui.Canvas) {
 	cnv.DrawLine(100, 100, 100, 150, 1, color.RGBA{R: 0, G: 200, B: 0, A: 255})
 	cnv.DrawLine(100, 100, 200, 100, 1, color.RGBA{R: 0, G: 200, B: 0, A: 255})
+
+	ui.DrawText(cnv.RGBA(), "Hello, Go!", color.RGBA{R: 0, G: 200, B: 200, A: 255}, "roboto", 16, 100, 100, 100, 50)
 }
 
 func Run(form *ui.Form) {

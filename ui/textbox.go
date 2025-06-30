@@ -241,6 +241,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		selection := c.selectionRange()
 		for selY := selection.Y1; selY <= selection.Y2; selY++ {
 			lineCharPos, err := CharPositions(c.FontFamily(), c.FontSize(), false, false, c.lines[selY])
+
 			if err != nil {
 				return
 			}
