@@ -20,7 +20,7 @@ func NewButton() *Button {
 	c.InitWidget()
 	c.SetTypeName("Button")
 	c.SetMinSize(100, 30)
-	c.SetMaxSize(100, 30)
+	c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 

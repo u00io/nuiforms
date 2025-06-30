@@ -1,6 +1,7 @@
 package ui
 
 import (
+	_ "embed"
 	"fmt"
 	"image"
 	"image/color"
@@ -14,6 +15,12 @@ import (
 )
 
 var loadedFonts = make(map[string][]byte)
+
+//go:embed "fonts/Roboto_Regular.ttf"
+var fontRoboto []byte
+
+//go:embed "fonts/RobotoMono_Regular.ttf"
+var fontRobotoMono []byte
 
 type renderedText struct {
 	key          string
