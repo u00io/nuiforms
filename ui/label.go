@@ -36,14 +36,14 @@ func (c *Label) SetText(text string) {
 }
 
 func (c *Label) updateInnerSize() {
-	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, "0", false)
+	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), "0")
 	if err != nil {
 		return
 	}
 	c.innerHeight = textHeight * 1
 
 	var maxTextWidth int
-	textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, c.text, false)
+	textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), c.text)
 	if err != nil {
 		return
 	}

@@ -772,7 +772,7 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 
 	yOffset := 0
 
-	_, textHeight, err := MeasureText(fontFamily, fontSize, false, false, "Йg", true)
+	_, textHeight, err := MeasureText(fontFamily, fontSize, "Йg")
 	if err != nil {
 		return
 	}
@@ -792,12 +792,12 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 
 	c.Save()
 	c.TranslateAndClip(x, y, width, height)
-	x = 0
-	y = 0
+	//x = 0
+	//y = 0
 
 	for _, str := range lines {
 		xx := x
-		textWidth, _, err := MeasureText(fontFamily, fontSize, false, false, str, false)
+		textWidth, _, err := MeasureText(fontFamily, fontSize, str)
 		if err != nil {
 			return
 		}
@@ -815,14 +815,19 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 		}
 
 		//c.DrawText(xx, yOffset+y, str, fontFamily, fontSize, colr, underline)
-		c.DrawText(xx, yOffset+y, str, fontFamily, fontSize, colr, underline)
+		//c.DrawText(xx, yOffset+y, str, fontFamily, fontSize, colr, underline)
+
+		textX := c.TranslatedX() + xx
+		textY := c.TranslatedY() + yOffset
+
+		DrawText(c.rgba, str, colr, fontFamily, fontSize, textX, textY, c.state.clipW, c.state.clipH)
 
 		if underline {
 			underLineWidth := fontSize / 20
 			if underLineWidth < 1 {
 				underLineWidth = 1
 			}
-			c.DrawLine(xx, yOffset+y+textHeight-1, xx+textWidth, yOffset+y+textHeight-1, int(underLineWidth), colr)
+			//c.DrawLine(xx, yOffset+y+textHeight-1, xx+textWidth, yOffset+y+textHeight-1, int(underLineWidth), colr)
 		}
 
 		yOffset += textHeight
@@ -831,10 +836,10 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 	c.Restore()
 }
 
-func MeasureText(family string, size float64, bold bool, italic bool, text string, multiline bool) (int, int, error) {
+/*func MeasureText(family string, size float64, bold bool, italic bool, text string, multiline bool) (int, int, error) {
 	measureData := GetFontMeasureData(family, size, bold, italic, text, multiline)
 	return measureData.Width, measureData.Height, nil
-}
+}*/
 
 type FontMeasureData struct {
 	Width  int
@@ -1019,7 +1024,7 @@ func FontContext(family string, size float64, bold bool, italic bool, color colo
 	return c, nil
 }
 
-func CharPositions(family string, size float64, bold bool, italic bool, text string) ([]int, error) {
+/*func CharPositions(family string, size float64, bold bool, italic bool, text string) ([]int, error) {
 	runes := []rune(text)
 	result := make([]int, len(runes)+1)
 	for pos := range runes {
@@ -1038,3 +1043,4 @@ func CharPositions(family string, size float64, bold bool, italic bool, text str
 
 	return result, err
 }
+*/

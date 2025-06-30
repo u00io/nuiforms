@@ -186,7 +186,7 @@ func (c *TextBox) AssemblyText(lines []string) string {
 
 func (c *TextBox) updateInnerSize() {
 
-	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, "0", false)
+	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), "0")
 	if err != nil {
 		return
 	}
@@ -194,7 +194,7 @@ func (c *TextBox) updateInnerSize() {
 
 	var maxTextWidth int
 	for _, line := range c.lines {
-		textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, line, false)
+		textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), line)
 		if err != nil {
 			return
 		}
@@ -231,7 +231,8 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 	if c.multiline {
 		yStaticOffset = 1
 	} else {
-		yStaticOffset = c.h/2 - oneLineHeight/2
+		yStaticOffset = (c.Height() - oneLineHeight) / 2
+		//yStaticOffset = 0
 	}
 
 	_ = yStaticOffset
@@ -240,7 +241,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 	if len(c.selectedLines()) > 0 {
 		selection := c.selectionRange()
 		for selY := selection.Y1; selY <= selection.Y2; selY++ {
-			lineCharPos, err := CharPositions(c.FontFamily(), c.FontSize(), false, false, c.lines[selY])
+			lineCharPos, err := GetCharPositions(c.FontFamily(), c.FontSize(), c.lines[selY])
 
 			if err != nil {
 				return
@@ -277,7 +278,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 	for _, line := range c.lines {
 		line = c.lineToPasswordChars(line)
 		ctx.SetColor(color.RGBA{0x88, 0x88, 0x88, 0xff}) // c.foregroundColor.Color()
-		_, textHeightInLine, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, line, false)
+		_, textHeightInLine, err := MeasureText(c.FontFamily(), c.FontSize(), line)
 		ctx.DrawTextMultiline(c.leftAndRightPadding, yStaticOffset+yOffset, width-c.leftAndRightPadding*2, textHeightInLine, HAlignLeft, VAlignCenter, line, color.RGBA{150, 150, 150, 255}, c.FontFamily(), c.FontSize(), false)
 
 		if err != nil {
@@ -290,7 +291,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 
 	// Cursor
 	if focus && c.cursorVisible {
-		charPos, err := CharPositions(c.FontFamily(), c.FontSize(), false, false, c.lineToPasswordChars(c.lines[c.cursorPosY]))
+		charPos, err := GetCharPositions(c.FontFamily(), c.FontSize(), c.lineToPasswordChars(c.lines[c.cursorPosY]))
 		for i := 0; i < len(charPos); i++ {
 			charPos[i] = charPos[i] + c.leftAndRightPadding
 		}
@@ -436,7 +437,7 @@ func (c *TextBox) MouseMove(x int, y int, mods nuikey.KeyModifiers) {
 
 func (c *TextBox) moveCursorNearPoint(x, y int, modifiers nuikey.KeyModifiers) {
 
-	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), false, false, "0", false)
+	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), "0")
 	if err != nil {
 		return
 	}
@@ -450,7 +451,7 @@ func (c *TextBox) moveCursorNearPoint(x, y int, modifiers nuikey.KeyModifiers) {
 		lineNumber = 0
 	}
 
-	charPos, _ := CharPositions(c.FontFamily(), c.FontSize(), false, false, c.lines[lineNumber])
+	charPos, _ := GetCharPositions(c.FontFamily(), c.FontSize(), c.lines[lineNumber])
 	for i := 0; i < len(charPos); i++ {
 		charPos[i] = charPos[i] + c.leftAndRightPadding
 	}
@@ -632,8 +633,8 @@ func (c *TextBox) removeSelectedText(modifiers nuikey.KeyModifiers) (bool, []str
 }
 
 func (c *TextBox) ensureVisibleCursor() {
-	_, oneLineHeight, _ := MeasureText(c.FontFamily(), c.FontSize(), false, false, "Q", false)
-	charPos, err := CharPositions(c.FontFamily(), c.FontSize(), false, false, c.lines[c.cursorPosY])
+	_, oneLineHeight, _ := MeasureText(c.FontFamily(), c.FontSize(), "Q")
+	charPos, err := GetCharPositions(c.FontFamily(), c.FontSize(), c.lines[c.cursorPosY])
 	for i := 0; i < len(charPos); i++ {
 		charPos[i] = charPos[i] + c.leftAndRightPadding
 	}
@@ -794,7 +795,7 @@ func (c *TextBox) ScrollToBegin() {
 }
 
 func (c *TextBox) OneLineHeight() int {
-	_, fontHeight, _ := MeasureText(c.FontFamily(), c.FontSize(), false, false, "1Qg", false)
+	_, fontHeight, _ := MeasureText(c.FontFamily(), c.FontSize(), "1Qg")
 	return fontHeight
 }
 
@@ -813,5 +814,5 @@ func (c *TextBox) FontFamily() string {
 }
 
 func (c *TextBox) FontSize() float64 {
-	return 14
+	return 16
 }

@@ -26,7 +26,7 @@ var renderedTextLastClearDT time.Time
 
 func init() {
 	loadedFonts["roboto"] = fontRoboto
-	loadedFonts["roboto_mono"] = fontRobotoMono
+	loadedFonts["robotomono"] = fontRobotoMono
 }
 
 func clearRenderedTexts() {
@@ -103,6 +103,18 @@ func GetCharPositions(fontFamily string, fontSize float64, text string) ([]int, 
 	}
 	positions[len(text)] = advance.Round()
 	return positions, nil
+}
+
+func MeasureText(fontFamily string, fontSize float64, text string) (int, int, error) {
+	face, err := getFace(fontFamily, fontSize)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer face.Close()
+	metrics := face.Metrics()
+	textWidth := font.MeasureString(face, text).Ceil()
+	textHeight := (metrics.Ascent + metrics.Descent).Ceil()
+	return textWidth, textHeight, nil
 }
 
 func getFace(fontFamily string, fontSize float64) (font.Face, error) {
