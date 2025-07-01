@@ -144,7 +144,7 @@ func (c *TextBox) SetText(text string) {
 	UpdateMainForm()
 }
 
-func (c *TextBox) SetEmptyText(w *Widget, text string) {
+func (c *TextBox) SetEmptyText(text string) {
 	c.redraw()
 	c.emptyText = text
 	c.updateInnerSize()

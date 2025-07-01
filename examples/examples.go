@@ -7,6 +7,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex06font"
 	"github.com/u00io/nuiforms/examples/ex09textbox"
 	"github.com/u00io/nuiforms/examples/ex10tabwidget"
+	"github.com/u00io/nuiforms/examples/ex11filemanager"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -50,6 +51,11 @@ func Run() {
 		addButton("Example 10 - Tab Widget", func(btn *ui.Button) {
 			form.Panel().RemoveAllWidgets()
 			ex10tabwidget.Run(form)
+		})
+
+		addButton("File Manager Example", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex11filemanager.Run(form)
 		})
 
 		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, form.Panel().NextGridY())
