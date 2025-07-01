@@ -13,7 +13,6 @@ type Widget struct {
 	id       string
 	name     string
 	typeName string
-	userData interface{}
 
 	// position
 	x int
@@ -379,11 +378,11 @@ func (c *Widget) SetInnerSize(width, height int) {
 	c.innerHeight = height
 }
 
-func (c *Widget) SetProp(key string, value interface{}) {
+func (c *Widget) SetProp(key string, value any) {
 	c.props[key] = value
 }
 
-func (c *Widget) GetProp(key string) interface{} {
+func (c *Widget) GetProp(key string) any {
 	if value, ok := c.props[key]; ok {
 		return value
 	}
