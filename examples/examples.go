@@ -6,6 +6,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex03masterdetail"
 	"github.com/u00io/nuiforms/examples/ex06font"
 	"github.com/u00io/nuiforms/examples/ex09textbox"
+	"github.com/u00io/nuiforms/examples/ex10tabwidget"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -44,6 +45,11 @@ func Run() {
 		addButton("Example 09 - TextBox", func(btn *ui.Button) {
 			form.Panel().RemoveAllWidgets()
 			ex09textbox.Run(form)
+		})
+
+		addButton("Example 10 - Tab Widget", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex10tabwidget.Run(form)
 		})
 
 		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, form.Panel().NextGridY())
