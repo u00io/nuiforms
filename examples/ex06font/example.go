@@ -1,31 +1,13 @@
 package ex06font
 
 import (
-	"image/color"
-
 	"github.com/u00io/nuiforms/ui"
 )
 
-type FontExampleWidget struct {
-	ui.Widget
-}
-
-func NewFontExampleWidget() *FontExampleWidget {
-	var widget FontExampleWidget
-	widget.InitWidget()
-	widget.SetTypeName("FontExampleWidget")
-	widget.SetOnPaint(widget.draw)
-	return &widget
-}
-
-func (c *FontExampleWidget) draw(cnv *ui.Canvas) {
-	cnv.DrawLine(100, 100, 100, 150, 1, color.RGBA{R: 0, G: 200, B: 0, A: 255})
-	cnv.DrawLine(100, 100, 200, 100, 1, color.RGBA{R: 0, G: 200, B: 0, A: 255})
-
-	ui.DrawText(cnv.RGBA(), "Hello, Go!", color.RGBA{R: 0, G: 200, B: 200, A: 255}, "roboto", 16, 100, 100, 100, 50)
-}
-
 func Run(form *ui.Form) {
-	widget := NewFontExampleWidget()
-	form.Panel().AddWidgetOnGrid(widget, 0, 0)
+	lbl := ui.NewLabel("Hello, World!---------------")
+	panel := form.Panel()
+	panel.AddWidgetOnGrid(lbl, 0, 0)
+	panel.AddWidgetOnGrid(ui.NewHSpacer(), 1, 0)
+	panel.AddWidgetOnGrid(ui.NewVSpacer(), 0, 1)
 }

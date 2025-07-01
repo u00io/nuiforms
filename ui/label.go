@@ -18,6 +18,7 @@ func NewLabel(text string) *Label {
 	c.InitWidget()
 	c.SetTypeName("Label")
 	c.SetBackgroundColor(color.RGBA{0, 150, 200, 255})
+	c.SetMaxWidth(500)
 	c.text = text
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
 		fmt.Println("Label clicked:", c.text)
@@ -53,12 +54,4 @@ func (c *Label) updateInnerSize() {
 	c.innerWidth = maxTextWidth
 	//c.innerHeight = 0
 	c.SetMinSize(c.innerWidth, c.innerHeight)
-}
-
-func (c *Label) FontFamily() string {
-	return "robotomono"
-}
-
-func (c *Label) FontSize() float64 {
-	return 16
 }

@@ -1476,3 +1476,11 @@ func (c *Widget) YExpandable() bool {
 
 	return false
 }
+
+func (c *Widget) FontFamily() string {
+	return "robotomono"
+}
+
+func (c *Widget) FontSize() float64 {
+	return 16
+}
