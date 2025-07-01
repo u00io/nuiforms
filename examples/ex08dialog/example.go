@@ -46,11 +46,9 @@ func Run() {
 	panel.AddWidgetOnGrid(panel3, 0, 2)
 	panel3.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
 	//panel3.AddWidgetOnGrid(ui.NewTextBox(), 0, 0)
-	btnOK := ui.NewButton()
-	btnOK.SetText("OK")
+	btnOK := ui.NewButton("OK")
 	panel3.AddWidgetOnGrid(btnOK, 1, 0)
-	btnCancel := ui.NewButton()
-	btnCancel.SetText("Cancel")
+	btnCancel := ui.NewButton("Cancel")
 	btnCancel.SetOnButtonClick(func(btn *ui.Button) {
 		ui.MainForm.Close()
 	})

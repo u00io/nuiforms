@@ -52,7 +52,7 @@ func clearRenderedTexts() {
 	}
 }
 
-func DrawText(rgba *image.RGBA, text string, textColor color.Color, fontFamily string, fontSize float64, x int, y int, clipWidth int, clipHeight int) {
+func DrawText(rgba *image.RGBA, text string, textColor color.Color, fontFamily string, fontSize float64, x int, y int, clipX int, clipY int, clipWidth int, clipHeight int) {
 	var textImage *image.RGBA
 	key := fontFamily + "_" + fmt.Sprint(fontSize) + "_" + fmt.Sprintf("%v", textColor) + "_" + text
 
@@ -78,7 +78,7 @@ func DrawText(rgba *image.RGBA, text string, textColor color.Color, fontFamily s
 	}
 
 	dstRect := image.Rect(x, y, x+textBounds.Dx(), y+textBounds.Dy())
-	clipRect := image.Rect(x, y, x+clipWidth, y+clipHeight)
+	clipRect := image.Rect(clipX, clipY, clipX+clipWidth, clipY+clipHeight)
 	dstRect = dstRect.Intersect(clipRect)
 
 	if dstRect.Empty() {

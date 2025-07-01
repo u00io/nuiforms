@@ -15,7 +15,7 @@ type Button struct {
 	onButtonClick func(btn *Button)
 }
 
-func NewButton() *Button {
+func NewButton(text string) *Button {
 	var c Button
 	c.InitWidget()
 	c.SetTypeName("Button")
@@ -27,6 +27,8 @@ func NewButton() *Button {
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
 	c.SetOnMouseUp(c.buttonProcessMouseUp)
+
+	c.SetText(text)
 
 	return &c
 }

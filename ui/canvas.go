@@ -779,7 +779,7 @@ func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign H
 		textX := c.TranslatedX() + xx
 		textY := c.TranslatedY() + yOffset
 
-		DrawText(c.rgba, str, colr, fontFamily, fontSize, textX, textY, c.state.clipW, c.state.clipH)
+		DrawText(c.rgba, str, colr, fontFamily, fontSize, textX, textY, c.state.clipX, c.state.clipY, c.state.clipW, c.state.clipH)
 
 		if underline {
 			underLineWidth := fontSize / 20

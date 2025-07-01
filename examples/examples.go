@@ -16,8 +16,7 @@ func Run() {
 		form.SetSize(800, 600)
 
 		addButton := func(text string, onClick func(btn *ui.Button)) {
-			btn := ui.NewButton()
-			btn.SetText(text)
+			btn := ui.NewButton(text)
 			btn.SetOnButtonClick(onClick)
 			form.Panel().AddWidgetOnGrid(btn, 0, form.Panel().NextGridY())
 		}
