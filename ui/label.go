@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"image/color"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -13,21 +12,29 @@ type Label struct {
 	text string
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+// NewLabel creates a new Label widget with the specified text.
+
 func NewLabel(text string) *Label {
 	var c Label
 	c.InitWidget()
 	c.SetTypeName("Label")
-	c.SetBackgroundColor(color.RGBA{0, 150, 200, 255})
 	c.SetMaxWidth(500)
-	c.text = text
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
 		fmt.Println("Label clicked:", c.text)
 	})
 	c.SetOnPaint(func(cnv *Canvas) {
 		cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 	})
-	c.updateInnerSize()
+	c.SetText(text)
 	return &c
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+// Label methods
+
+func (c *Label) Text() string {
+	return c.text
 }
 
 func (c *Label) SetText(text string) {
@@ -35,6 +42,9 @@ func (c *Label) SetText(text string) {
 	c.updateInnerSize()
 	UpdateMainForm()
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+// Label private methods
 
 func (c *Label) updateInnerSize() {
 	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), "0")
