@@ -50,68 +50,6 @@ func init() {
 	allwidgets = make(map[string]Widgeter)
 }
 
-type Widgeter interface {
-	Id() string
-	TypeName() string
-	Name() string
-	X() int
-	Y() int
-	Width() int
-	Height() int
-	InnerWidth() int
-	InnerHeight() int
-
-	SetName(name string)
-	SetPosition(x, y int)
-	SetSize(width, height int)
-	SetAnchors(left, top, right, bottom bool)
-
-	getWidgetAt(x, y int) Widgeter
-	findWidgetAt(x, y int) Widgeter
-	Focus()
-
-	processPaint(cnv *Canvas)
-	processMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	processMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string)
-	processMouseMove(x int, y int, mods nuikey.KeyModifiers)
-	processMouseLeave()
-	processMouseEnter()
-	ProcessKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers)
-	processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers)
-	processMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	processChar(char rune, mods nuikey.KeyModifiers)
-	processMouseWheel(deltaX int, deltaY int) bool
-	processTimer()
-
-	SetMouseCursor(cursor nuimouse.MouseCursor)
-	MouseCursor() nuimouse.MouseCursor
-
-	Anchors() (left, top, right, bottom bool)
-
-	AddWidget(widget Widgeter)
-	AddWidgetOnGrid(widget Widgeter, gridX, gridY int)
-	RemoveWidget(widget Widgeter)
-
-	IsVisible() bool
-
-	GridX() int
-	GridY() int
-	SetGridPosition(x, y int)
-
-	XExpandable() bool
-	YExpandable() bool
-
-	MinWidth() int
-	MinHeight() int
-
-	MaxWidth() int
-	MaxHeight() int
-
-	SetAbsolutePositioning(absolute bool)
-	SetXExpandable(expandable bool)
-	SetYExpandable(expandable bool)
-}
-
 func UpdateMainForm() {
 	if MainForm != nil {
 		MainForm.Update()
@@ -233,7 +171,7 @@ func (c *Form) forceUpdate() {
 func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
-	c.topWidget.processPaint(cnv)
+	c.topWidget.ProcessPaint(cnv)
 	if c.hoverWidget != nil {
 		// c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
 	}
@@ -293,7 +231,7 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
-	c.topWidget.processMouseDown(button, x, y, c.lastKeyboardModifiers)
+	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers)
 	fmt.Println("Mouse down at", x, y, "on widget", widgetAtCoords.Id(), "button:", button)
 	c.Update()
 }
@@ -309,7 +247,7 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressedWidget = nil
 	}
 
-	c.topWidget.processMouseUp(button, x, y, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId)
+	c.topWidget.ProcessMouseUp(button, x, y, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId)
 
 	c.Update()
 }
@@ -324,7 +262,7 @@ func (c *Form) processMouseMove(x int, y int) {
 		return
 	}*/
 
-	c.topWidget.processMouseMove(x, y, c.lastKeyboardModifiers)
+	c.topWidget.ProcessMouseMove(x, y, c.lastKeyboardModifiers)
 	c.lastMouseX = x
 	c.lastMouseY = y
 	hoverWidget := c.topWidget.findWidgetAt(x, y)
@@ -334,11 +272,11 @@ func (c *Form) processMouseMove(x int, y int) {
 
 	if hoverWidget != c.hoverWidget {
 		if c.hoverWidget != nil {
-			c.hoverWidget.processMouseLeave()
+			c.hoverWidget.ProcessMouseLeave()
 		}
 		c.hoverWidget = hoverWidget
 		if c.hoverWidget != nil {
-			c.hoverWidget.processMouseEnter()
+			c.hoverWidget.ProcessMouseEnter()
 		}
 	}
 
@@ -358,10 +296,10 @@ func (c *Form) processMouseMove(x int, y int) {
 }
 
 func (c *Form) processMouseLeave() {
-	c.topWidget.processMouseLeave()
+	c.topWidget.ProcessMouseLeave()
 
 	if c.hoverWidget != nil {
-		c.hoverWidget.processMouseLeave()
+		c.hoverWidget.ProcessMouseLeave()
 		c.hoverWidget = nil
 	}
 
@@ -369,7 +307,7 @@ func (c *Form) processMouseLeave() {
 }
 
 func (c *Form) processMouseEnter() {
-	c.topWidget.processMouseEnter()
+	c.topWidget.ProcessMouseEnter()
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
@@ -398,38 +336,38 @@ func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.lastKeyboardModifiers = mods
 	}
 	if c.focusedWidget != nil {
-		c.focusedWidget.processKeyUp(keyCode, mods)
+		c.focusedWidget.ProcessKeyUp(keyCode, mods)
 		c.Update()
 		return
 	}
-	c.topWidget.processKeyUp(keyCode, mods)
+	c.topWidget.ProcessKeyUp(keyCode, mods)
 	c.Update()
 }
 
 func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
 	if c.focusedWidget != nil {
-		c.focusedWidget.processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+		c.focusedWidget.ProcessMouseDblClick(button, x, y, c.lastKeyboardModifiers)
 		c.Update()
 		return
 	}
-	c.topWidget.processMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+	c.topWidget.ProcessMouseDblClick(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
 func (c *Form) processChar(char rune) {
 	if c.focusedWidget != nil {
-		c.focusedWidget.processChar(char, c.lastKeyboardModifiers)
+		c.focusedWidget.ProcessChar(char, c.lastKeyboardModifiers)
 		c.Update()
 		return
 	}
-	c.topWidget.processChar(char, c.lastKeyboardModifiers)
+	c.topWidget.ProcessChar(char, c.lastKeyboardModifiers)
 }
 
 func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 	if c.lastKeyboardModifiers.Shift {
 		deltaX, deltaY = deltaY, deltaX // Swap for horizontal scrolling
 	}
-	c.topWidget.processMouseWheel(deltaX, deltaY)
+	c.topWidget.ProcessMouseWheel(deltaX, deltaY)
 	c.Update()
 }
 
@@ -440,7 +378,7 @@ func (c *Form) processTimer() {
 		c.lastFreeMemoryTime = time.Now()
 	}
 
-	c.topWidget.processTimer()
+	c.topWidget.ProcessTimer()
 
 	if c.needUpdate {
 		c.realUpdate()
