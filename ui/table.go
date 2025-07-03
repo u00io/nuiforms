@@ -28,6 +28,7 @@ type Table struct {
 
 	cellPadding int
 
+	showSelection bool
 	selectingRow  bool
 	selectingCell bool
 
@@ -77,6 +78,7 @@ func NewTable() *Table {
 	c.cellBorderColor = color.RGBA{R: 100, G: 100, B: 100, A: 255}
 	c.cellPadding = 3
 
+	c.showSelection = true
 	c.selectingRow = true
 	c.selectingCell = true
 
@@ -152,7 +154,9 @@ func (c *Table) SetCurrentCell(col int, row int) {
 		c.currentCellX = 0
 	}
 	c.currentCellY = row
-	c.ScrollToCell(row, col)
+
+	c.ScrollToCell(c.currentCellY, c.currentCellX)
+
 	UpdateMainForm()
 	if c.onSelectionChanged != nil {
 		c.onSelectionChanged(c.currentCellX, c.currentCellY)
@@ -325,6 +329,18 @@ func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 	c.SetMouseCursor(nuimouse.MouseCursorArrow)
 }
 
+func (c *Table) SetShowSelection(show bool) {
+	c.showSelection = show
+}
+
+func (c *Table) SetSelectingRow(selecting bool) {
+	c.selectingRow = selecting
+}
+
+func (c *Table) SetSelectingCell(selecting bool) {
+	c.selectingCell = selecting
+}
+
 func (c *Table) draw(cnv *Canvas) {
 	yOffset := 0
 
@@ -368,11 +384,13 @@ func (c *Table) draw(cnv *Canvas) {
 					}
 
 					backColor := color.RGBA{R: 50, G: 60, B: 70, A: 255}
-					if rowIsSelected {
-						backColor = color.RGBA{R: 80, G: 90, B: 100, A: 255}
-					}
-					if cellIsSelected {
-						backColor = color.RGBA{R: 100, G: 110, B: 120, A: 255}
+					if c.showSelection {
+						if rowIsSelected {
+							backColor = color.RGBA{R: 80, G: 90, B: 100, A: 255}
+						}
+						if cellIsSelected {
+							backColor = color.RGBA{R: 100, G: 110, B: 120, A: 255}
+						}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight, backColor)
 

@@ -94,6 +94,8 @@ type Widget struct {
 	onChar        func(char rune, mods nuikey.KeyModifiers)
 	onMouseWheel  func(deltaX, deltaY int)
 	onClick       func(button nuimouse.MouseButton, x int, y int)
+
+	onFocused func()
 }
 
 /*func NewWidget() *Widget {
@@ -416,9 +418,17 @@ func (c *Widget) GetPropBool(key string, defaultValue bool) bool {
 	return defaultValue
 }
 
+func (c *Widget) SetOnFocused(onFocused func()) {
+	c.onFocused = onFocused
+}
+
 func (c *Widget) Focus() {
 	MainForm.focusedWidget = WidgetById(c.Id())
 	MainForm.Update()
+
+	if c.onFocused != nil {
+		c.onFocused()
+	}
 }
 
 func (c *Widget) IsFocused() bool {
@@ -795,13 +805,13 @@ func (c *Widget) processMouseEnter() {
 	MainForm.Update()
 }
 
-func (c *Widget) processKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
+func (c *Widget) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 	if c.onKeyDown != nil {
 		c.onKeyDown(key, mods)
 	}
 
 	for _, w := range c.widgets {
-		w.processKeyDown(key, mods)
+		w.ProcessKeyDown(key, mods)
 	}
 }
 

@@ -10,7 +10,9 @@ import (
 type FilePanel struct {
 	ui.Widget
 
-	topPanel     *ui.Panel
+	topPanel      *ui.Panel
+	topPanelLabel *ui.Label
+
 	contentPanel *ui.Panel
 	fileList     *ui.Table
 	bottomPanel  *ui.Panel
@@ -24,7 +26,8 @@ func NewFilePanel() *FilePanel {
 	c.SetYExpandable(true)
 
 	c.topPanel = ui.NewPanel()
-	c.topPanel.AddWidgetOnGrid(ui.NewLabel("File Panel"), 0, 0)
+	c.topPanelLabel = ui.NewLabel("File Panel Top")
+	c.topPanel.AddWidgetOnGrid(c.topPanelLabel, 0, 0)
 	c.AddWidgetOnGrid(c.topPanel, 0, 0)
 
 	c.contentPanel = ui.NewPanel()
@@ -35,6 +38,8 @@ func NewFilePanel() *FilePanel {
 	c.fileList.SetColumnName(0, "Name")
 	c.fileList.SetColumnName(1, "Size")
 	c.fileList.SetColumnName(2, "Modified")
+	c.fileList.SetAllowScroll(false, true)
+	c.fileList.SetSelectingCell(false)
 	c.contentPanel.AddWidget(c.fileList)
 
 	c.bottomPanel = ui.NewPanel()
@@ -44,6 +49,20 @@ func NewFilePanel() *FilePanel {
 	c.loadDirectory("D:/")
 
 	return &c
+}
+
+func (c *FilePanel) Select() {
+	c.topPanelLabel.SetText("Selected")
+	c.fileList.SetShowSelection(true)
+}
+
+func (c *FilePanel) Unselect() {
+	c.topPanelLabel.SetText("Unselected")
+	c.fileList.SetShowSelection(false)
+}
+
+func (c *FilePanel) SetOnFocused(onFocused func()) {
+	c.fileList.SetOnFocused(onFocused)
 }
 
 func (c *FilePanel) loadDirectory(path string) {

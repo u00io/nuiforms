@@ -32,6 +32,8 @@ type Form struct {
 	hoverWidget   Widgeter
 	focusedWidget Widgeter
 
+	onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
+
 	needUpdate         bool
 	lastFreeMemoryTime time.Time
 
@@ -74,7 +76,7 @@ type Widgeter interface {
 	processMouseMove(x int, y int, mods nuikey.KeyModifiers)
 	processMouseLeave()
 	processMouseEnter()
-	processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers)
+	ProcessKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers)
 	processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers)
 	processMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
 	processChar(char rune, mods nuikey.KeyModifiers)
@@ -171,6 +173,10 @@ func (c *Form) SetSize(width, height int) {
 	if c.wnd != nil {
 		c.wnd.Resize(width, height)
 	}
+}
+
+func (c *Form) SetOnGlobalKeyDown(onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool) {
+	c.onGlobalKeyDown = onGlobalKeyDown
 }
 
 func (c *Form) Panel() *Panel {
@@ -371,12 +377,19 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		c.lastKeyboardModifiers = mods
 	}
 
+	if c.onGlobalKeyDown != nil {
+		if c.onGlobalKeyDown(keyCode, mods) {
+			c.Update()
+			return
+		}
+	}
+
 	if c.focusedWidget != nil {
-		c.focusedWidget.processKeyDown(keyCode, mods)
+		c.focusedWidget.ProcessKeyDown(keyCode, mods)
 		c.Update()
 		return
 	}
-	c.topWidget.processKeyDown(keyCode, mods)
+	c.topWidget.ProcessKeyDown(keyCode, mods)
 	c.Update()
 }
 

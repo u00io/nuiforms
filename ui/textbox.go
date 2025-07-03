@@ -36,6 +36,7 @@ type TextBox struct {
 	cursorVisible         bool
 	skipOneCursorBlinking bool
 
+	onTextBoxKeyDown func(key nuikey.Key, mods nuikey.KeyModifiers) bool
 	onTextChanged    func(txtBox *TextBox)
 	onValidateNeeded func(oldValue string, newValue string) bool
 }
@@ -116,6 +117,10 @@ func (c *TextBox) SetReadOnly(readonly bool) {
 
 func (c *TextBox) SetIsPassword(isPassword bool) {
 	c.isPassword = isPassword
+}
+
+func (c *TextBox) SetOnTextBoxKeyDown(onKeyDown func(key nuikey.Key, mods nuikey.KeyModifiers) bool) {
+	c.onTextBoxKeyDown = onKeyDown
 }
 
 func (c *TextBox) SetOnTextChanged(onTextChanged func(txtBox *TextBox)) {
@@ -332,6 +337,12 @@ func (c *TextBox) paste() {
 }
 
 func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	if c.onTextBoxKeyDown != nil {
+		if c.onTextBoxKeyDown(key, mods) {
+			return true
+		}
+	}
+
 	c.redraw()
 
 	if mods.Ctrl && key == nuikey.KeyA {
@@ -785,6 +796,11 @@ func (c *TextBox) SelectAllText() {
 	c.selectionLeftY = 0
 	c.selectionRightX = len(runesLast)
 	c.selectionRightY = len(c.lines) - 1
+}
+
+func (c *TextBox) MoveCursorToEnd() {
+	runes := []rune(c.lines[c.cursorPosY])
+	c.moveCursor(len(runes), c.cursorPosY, nuikey.KeyModifiers{})
 }
 
 func (c *TextBox) ScrollToBegin() {

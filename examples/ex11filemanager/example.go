@@ -1,6 +1,9 @@
 package ex11filemanager
 
-import "github.com/u00io/nuiforms/ui"
+import (
+	"github.com/u00io/nui/nuikey"
+	"github.com/u00io/nuiforms/ui"
+)
 
 func Run(form *ui.Form) {
 	mainWidget := NewMainWidget()
@@ -13,6 +16,8 @@ type MainWidget struct {
 	contentPanel *ui.Panel
 	filePanels   []*FilePanel
 	bottomPanel  *ui.Panel
+
+	currentFilePanelIndex int
 
 	cmdLine *ui.TextBox
 }
@@ -33,9 +38,11 @@ func NewMainWidget() *MainWidget {
 	c.filePanels = make([]*FilePanel, 0)
 	panel1 := NewFilePanel()
 	panel1.SetName("Panel 1")
+	panel1.SetOnFocused(c.panel1Focused)
 	c.filePanels = append(c.filePanels, panel1)
 	panel2 := NewFilePanel()
 	panel2.SetName("Panel 2")
+	panel2.SetOnFocused(c.panel2Focused)
 	c.filePanels = append(c.filePanels, panel2)
 	c.contentPanel.AddWidgetOnGrid(panel1, 0, 0)
 	c.contentPanel.AddWidgetOnGrid(panel2, 1, 0)
@@ -44,8 +51,74 @@ func NewMainWidget() *MainWidget {
 	c.cmdLine = ui.NewTextBox()
 	c.cmdLine.SetName("CommandLine")
 	c.cmdLine.SetEmptyText("Enter command here...")
+	c.cmdLine.SetOnTextBoxKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+		if key == nuikey.KeyArrowUp || key == nuikey.KeyArrowDown {
+			c.filePanels[c.currentFilePanelIndex].Focus()
+			c.filePanels[c.currentFilePanelIndex].ProcessKeyDown(key, mods)
+			return true
+		}
+		return false
+	})
 	c.bottomPanel.AddWidgetOnGrid(c.cmdLine, 0, 0)
 	c.AddWidgetOnGrid(c.bottomPanel, 0, 2)
 
+	ui.MainForm.SetOnGlobalKeyDown(c.onKeyDown)
+
+	c.currentFilePanelIndex = -1
+	c.selectFilePanel(0)
+	c.filePanels[c.currentFilePanelIndex].Focus()
+
 	return &c
+}
+
+func (c *MainWidget) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	if key == nuikey.KeyTab {
+		if c.currentFilePanelIndex == 0 {
+			c.selectFilePanel(1)
+		} else {
+			c.selectFilePanel(0)
+		}
+		c.filePanels[c.currentFilePanelIndex].Focus()
+		return true
+	}
+
+	if key == nuikey.KeyArrowRight && !c.cmdLine.IsFocused() {
+		c.cmdLine.Focus()
+		c.cmdLine.MoveCursorToEnd()
+		c.cmdLine.SelectAllText()
+		return true
+	}
+
+	if key == nuikey.KeyEsc {
+		c.cmdLine.SetText("")
+		if c.cmdLine.IsFocused() {
+			c.filePanels[c.currentFilePanelIndex].Focus()
+		}
+	}
+	return false
+}
+
+func (c *MainWidget) panel1Focused() {
+	c.selectFilePanel(0)
+}
+
+func (c *MainWidget) panel2Focused() {
+	c.selectFilePanel(1)
+}
+
+func (c *MainWidget) selectFilePanel(index int) {
+	if index < 0 || index >= len(c.filePanels) {
+		return
+	}
+	if c.currentFilePanelIndex == index {
+		return
+	}
+	c.currentFilePanelIndex = index
+	if c.currentFilePanelIndex == 0 {
+		c.filePanels[0].Select()
+		c.filePanels[1].Unselect()
+	} else {
+		c.filePanels[0].Unselect()
+		c.filePanels[1].Select()
+	}
 }
