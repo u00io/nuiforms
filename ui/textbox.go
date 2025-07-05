@@ -328,12 +328,46 @@ func (c *TextBox) KeyChar(ch rune, mods nuikey.KeyModifiers) {
 }
 
 func (c *TextBox) cutSelected() {
+	if len(c.selectedLines()) == 0 {
+		return
+	}
+	selectedText := c.SelectedText()
+	if selectedText == "" {
+		return
+	}
+	ClipboardSetText(selectedText)
+	c.modifyText(textboxModifyCommandDelete, nuikey.KeyModifiers{}, nil)
 }
 
 func (c *TextBox) copySelected() {
+	if len(c.selectedLines()) == 0 {
+		return
+	}
+
+	selectedText := c.SelectedText()
+
+	if selectedText == "" {
+		return
+	}
+
+	ClipboardSetText(selectedText)
 }
 
 func (c *TextBox) paste() {
+	if c.readonly {
+		return
+	}
+
+	text, err := ClipboardGetText()
+	if err != nil {
+		return
+	}
+
+	if text == "" {
+		return
+	}
+
+	c.modifyText(textboxModifyCommandInsertString, nuikey.KeyModifiers{}, text)
 }
 
 func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
@@ -356,6 +390,7 @@ func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	}
 
 	if mods.Ctrl && key == nuikey.KeyV {
+		c.paste()
 		return true
 	}
 
