@@ -3,7 +3,7 @@ module github.com/u00io/nuiforms
 go 1.24.0
 
 require (
-	github.com/u00io/nui v0.0.3
+	github.com/u00io/nui v0.0.4
 	golang.design/x/clipboard v0.7.1
 	golang.org/x/image v0.28.0
 )

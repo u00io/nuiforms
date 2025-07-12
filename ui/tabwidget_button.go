@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -55,11 +53,6 @@ func (c *tabWidgetButton) buttonProcessMouseDown(button nuimouse.MouseButton, x 
 }
 
 func (c *tabWidgetButton) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
-	fmt.Println("Button clicked (MouseUp):", c.text)
-
-	if c.text == "Delete" {
-		fmt.Println("Delete button clicked, ignoring MouseUp event")
-	}
 	c.pressed = false
 
 	if x < 0 || x >= c.Width() || y < 0 || y >= c.Height() {

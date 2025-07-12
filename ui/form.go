@@ -232,7 +232,6 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 		widgetAtCoords.Focus()
 	}
 	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers)
-	fmt.Println("Mouse down at", x, y, "on widget", widgetAtCoords.Id(), "button:", button)
 	c.Update()
 }
 
