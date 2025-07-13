@@ -168,6 +168,10 @@ func (c *Widget) SetName(name string) {
 	c.name = name
 }
 
+func (c *Widget) Widgets() []Widgeter {
+	return c.widgets
+}
+
 func (c *Widget) SetVisible(visible bool) {
 	if c.visible != visible {
 		c.visible = visible

@@ -16,6 +16,8 @@ type Widgeter interface {
 	InnerWidth() int
 	InnerHeight() int
 
+	Widgets() []Widgeter
+
 	SetName(name string)
 	SetPosition(x, y int)
 	SetSize(width, height int)
