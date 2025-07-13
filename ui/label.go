@@ -32,7 +32,10 @@ func (c *Label) Text() string {
 func (c *Label) SetText(text string) {
 	c.text = text
 	c.updateInnerSize()
-	UpdateMainForm()
+	if MainForm != nil {
+		MainForm.Update()
+	}
+	UpdateMainFormLayout()
 }
 
 /////////////////////////////////////////////////////////////////////////////////

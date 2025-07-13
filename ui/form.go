@@ -56,6 +56,13 @@ func UpdateMainForm() {
 	}
 }
 
+func UpdateMainFormLayout() {
+	if MainForm != nil && MainForm.Panel() != nil {
+		MainForm.Panel().updateLayout(0, 0, 0, 0)
+		MainForm.Update()
+	}
+}
+
 func WidgetById(id string) Widgeter {
 	if widget, exists := allwidgets[id]; exists {
 		return widget
