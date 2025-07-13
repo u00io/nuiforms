@@ -173,7 +173,7 @@ func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	c.topWidget.ProcessPaint(cnv)
 	if c.hoverWidget != nil {
-		// c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
+		c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
 	}
 }
 

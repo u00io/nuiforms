@@ -204,8 +204,9 @@ func (c *Widget) SetGridPosition(x, y int) {
 func (c *Widget) MinWidth() int {
 	result := 0
 
-	//if !c.allowScrollX {
-	{
+	calcFromChildren := !c.allowScrollX
+
+	if calcFromChildren {
 		_, _, _, allCellPadding := c.makeColumnsInfo(c.Width())
 		columnsInfo, _, _, _ := c.makeColumnsInfo(c.Width() - (c.panelPadding + allCellPadding + c.panelPadding))
 		for _, columnInfo := range columnsInfo {
@@ -223,8 +224,9 @@ func (c *Widget) MinWidth() int {
 func (c *Widget) MinHeight() int {
 	result := 0
 
-	//if !c.allowScrollY {
-	{
+	calcFromChildren := !c.allowScrollY
+
+	if calcFromChildren {
 		_, _, _, allCellPadding := c.makeRowsInfo(c.Height())
 		rowsInfo, _, _, _ := c.makeRowsInfo(c.Height() - (c.panelPadding + allCellPadding + c.panelPadding))
 		for _, rowInfo := range rowsInfo {
@@ -1457,6 +1459,10 @@ func (c *Widget) getWidgetInGridCell(x, y int) Widgeter {
 }
 
 func (c *Widget) XExpandable() bool {
+	if c.xExpandable {
+		return true
+	}
+
 	if len(c.widgets) == 0 {
 		return c.xExpandable
 	}
@@ -1472,6 +1478,10 @@ func (c *Widget) XExpandable() bool {
 }
 
 func (c *Widget) YExpandable() bool {
+	if c.yExpandable {
+		return true
+	}
+
 	if len(c.widgets) == 0 {
 		return c.yExpandable
 	}

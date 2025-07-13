@@ -14,7 +14,7 @@ func NewLabel(text string) *Label {
 	var c Label
 	c.InitWidget()
 	c.SetTypeName("Label")
-	c.SetMaxWidth(labelMaxWidth)
+	//c.SetMaxWidth(labelMaxWidth)
 	c.SetOnPaint(func(cnv *Canvas) {
 		cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 	})

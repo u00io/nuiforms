@@ -27,6 +27,7 @@ func NewFilePanel() *FilePanel {
 
 	c.topPanel = ui.NewPanel()
 	c.topPanelLabel = ui.NewLabel("File Panel Top")
+
 	c.topPanel.AddWidgetOnGrid(c.topPanelLabel, 0, 0)
 	c.AddWidgetOnGrid(c.topPanel, 0, 0)
 

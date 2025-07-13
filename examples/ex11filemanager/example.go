@@ -31,6 +31,9 @@ func NewMainWidget() *MainWidget {
 
 	c.topPanel = ui.NewPanel()
 	c.topPanel.AddWidgetOnGrid(ui.NewLabel("File Manager Example"), 0, 0)
+	//c.topPanel.SetMinHeight(50)
+	c.topPanel.SetYExpandable(false)
+	c.topPanel.SetAllowScroll(false, false)
 	c.AddWidgetOnGrid(c.topPanel, 0, 0)
 
 	c.contentPanel = ui.NewPanel()
