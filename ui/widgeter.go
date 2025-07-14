@@ -7,6 +7,9 @@ import (
 
 type Widgeter interface {
 	Id() string
+	ParentWidgetId() string
+	SetParentWidgetId(id string)
+	FullPath() []string
 	TypeName() string
 	Name() string
 	X() int
@@ -28,15 +31,15 @@ type Widgeter interface {
 	Focus()
 
 	ProcessPaint(cnv *Canvas)
-	ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string)
-	ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers)
-	ProcessMouseLeave()
-	ProcessMouseEnter()
-	ProcessKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers)
-	ProcessKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers)
-	ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	ProcessChar(char rune, mods nuikey.KeyModifiers)
+	ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool
+	ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string, allowTranslateToChildren bool) bool
+	ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool
+	ProcessMouseLeave() bool
+	ProcessMouseEnter() bool
+	ProcessKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
+	ProcessKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
+	ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
+	ProcessChar(char rune, mods nuikey.KeyModifiers) bool
 	ProcessMouseWheel(deltaX int, deltaY int) bool
 	ProcessTimer()
 

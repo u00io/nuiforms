@@ -1,5 +1,10 @@
 package ui
 
+import (
+	"github.com/u00io/nui/nuikey"
+	"github.com/u00io/nui/nuimouse"
+)
+
 type Label struct {
 	Widget
 	text string
@@ -17,6 +22,14 @@ func NewLabel(text string) *Label {
 	//c.SetMaxWidth(labelMaxWidth)
 	c.SetOnPaint(func(cnv *Canvas) {
 		cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	})
+	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+		// Labels do not handle mouse down events by default
+		return true
+	})
+
+	c.SetOnMouseMove(func(x int, y int, mods nuikey.KeyModifiers) bool {
+		return true
 	})
 	c.SetText(text)
 	return &c

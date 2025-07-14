@@ -63,34 +63,40 @@ func NewTextBox() *TextBox {
 	c.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
 	//txtBox := newTextBox(&c.widget)
 
-	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) {
+	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		c.KeyDown(key, mods)
+		return true
 	})
 
-	c.SetOnChar(func(char rune, mods nuikey.KeyModifiers) {
+	c.SetOnChar(func(char rune, mods nuikey.KeyModifiers) bool {
 		c.KeyChar(char, mods)
+		return true
 	})
 
 	c.SetOnPaint(func(cnv *Canvas) {
 		c.Draw(cnv, c.innerWidth, c.innerHeight)
 	})
 
-	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) bool {
 		c.MouseDown(button, x, y, mods)
+		return true
 	})
 
-	c.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) {
+	c.SetOnMouseMove(func(x, y int, mods nuikey.KeyModifiers) bool {
 		c.MouseMove(x, y, mods)
+		return true
 	})
 
-	c.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) {
+	c.SetOnMouseUp(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) bool {
 		c.MouseUp(button, x, y, mods)
+		return true
 	})
 
 	c.AddTimer(250, func() {
 		c.timerCursorBlinking()
 	})
 
+	c.SetCanBeFocused(true)
 	c.multiline = false
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)

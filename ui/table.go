@@ -37,6 +37,17 @@ type Table struct {
 	currentCellY int
 
 	onSelectionChanged func(x int, y int)
+
+	headerWidget *tableHeader
+	innerWidgets []*innerWidget
+}
+
+type innerWidget struct {
+	widget        Widgeter
+	posCellX      int
+	posCellY      int
+	widthInCells  int
+	heightInCells int
 }
 
 type tableRow struct {
@@ -55,18 +66,28 @@ type tableCell struct {
 func NewTable() *Table {
 	var c Table
 	c.InitWidget()
+	c.SetAbsolutePositioning(true)
 	c.SetTypeName("Table")
 	c.SetXExpandable(true)
 	c.SetYExpandable(true)
-	c.SetOnPaint(c.draw)
 	c.SetAllowScroll(true, true)
 	c.SetBackgroundColor(color.RGBA{R: 50, G: 60, B: 70, A: 255})
+
+	// Events
+	c.SetOnPaint(c.draw)
+	c.SetOnPostPaint(c.drawPost)
 	c.SetOnMouseDown(c.onMouseDown)
 	c.SetOnMouseUp(c.onMouseUp)
 	c.SetOnKeyDown(c.onKeyDown)
 	c.SetOnKeyUp(c.onKeyUp)
 	c.SetOnMouseMove(c.onMouseMove)
 
+	c.SetOnScrollChanged(func(scrollX, scrollY int) {
+		c.updateInnerWidgetsLayout()
+	})
+
+	// Init runtime
+	c.SetCanBeFocused(true)
 	c.rows = make(map[int]*tableRow)
 	c.rowHeight = 30
 	c.cols = make(map[int]*tableColumn)
@@ -82,11 +103,62 @@ func NewTable() *Table {
 	c.selectingRow = true
 	c.selectingCell = true
 
+	c.headerWidget = newTableHeader()
+	c.headerWidget.OnHeaderMouseDown = func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) bool {
+		return c.onMouseDown(button, x+c.scrollX, y+c.scrollY, mods)
+	}
+	c.headerWidget.OnHeaderMouseUp = func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) bool {
+		return c.onMouseUp(button, x+c.scrollX, y+c.scrollY, mods)
+	}
+	c.headerWidget.OnHeaderMouseMove = func(x, y int, mods nuikey.KeyModifiers) nuimouse.MouseCursor {
+		return c.onMouseMoveHeader(x+c.scrollX, y+c.scrollY, mods)
+	}
+	c.AddWidget(c.headerWidget)
+	c.innerWidgets = make([]*innerWidget, 0)
+
+	c.updateInnerWidgetsLayout()
+
 	return &c
 }
 
 func (c *Table) SetOnSelectionChanged(callback func(x int, y int)) {
 	c.onSelectionChanged = callback
+}
+
+func (c *Table) AddWidgetOnTable(widget Widgeter, posCellX int, posCellY int, widthInCells int, heightInCells int) {
+	if posCellX < 0 || posCellY < 0 || posCellX >= c.columnCount || posCellY >= c.rowCount {
+		return
+	}
+	if posCellX+widthInCells > c.columnCount || posCellY+heightInCells > c.rowCount {
+		return
+	}
+
+	var inWidget innerWidget
+	inWidget.widget = widget
+	inWidget.posCellX = posCellX
+	inWidget.posCellY = posCellY
+	inWidget.widthInCells = widthInCells
+	inWidget.heightInCells = heightInCells
+	c.innerWidgets = append(c.innerWidgets, &inWidget)
+	c.AddWidget(widget)
+	c.updateInnerWidgetsLayout()
+}
+
+func (c *Table) updateInnerWidgetsLayout() {
+	c.headerWidget.SetPosition(c.scrollX, c.scrollY)
+	c.headerWidget.SetSize(c.innerWidth, c.headerHeight())
+
+	for _, inWidget := range c.innerWidgets {
+		widgetPosInPixelsX := c.columnOffset(inWidget.posCellX)
+		widgetPosInPixelsY := c.headerHeight() + inWidget.posCellY*c.rowHeight
+		widgetWidthInPixels := 0
+		for i := 0; i < inWidget.widthInCells; i++ {
+			widgetWidthInPixels += c.columnWidth(inWidget.posCellX + i)
+		}
+		widgetHeightInPixels := inWidget.heightInCells * c.rowHeight
+		inWidget.widget.SetPosition(widgetPosInPixelsX, widgetPosInPixelsY)
+		inWidget.widget.SetSize(widgetWidthInPixels, widgetHeightInPixels)
+	}
 }
 
 func (c *Table) RowCount() int {
@@ -96,11 +168,13 @@ func (c *Table) RowCount() int {
 func (c *Table) SetRowCount(count int) {
 	c.rowCount = count
 	c.updateInnerSize()
+	c.updateInnerWidgetsLayout()
 }
 
 func (c *Table) SetColumnCount(count int) {
 	c.columnCount = count
 	c.updateInnerSize()
+	c.updateInnerWidgetsLayout()
 }
 
 func (c *Table) SetColumnWidth(col int, width int) {
@@ -114,6 +188,7 @@ func (c *Table) SetColumnWidth(col int, width int) {
 	}
 	colInfo.width = width
 	c.updateInnerSize()
+	c.updateInnerWidgetsLayout()
 }
 
 func (c *Table) SetColumnName(col int, name string) {
@@ -207,31 +282,33 @@ func (c *Table) ScrollToCell(row, col int) {
 	UpdateMainForm()
 }
 
-func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
 		fmt.Println("Header column border clicked:", headerColumnBorder)
 		c.columnResizingIndex = headerColumnBorder
-		return
+		return true
 	}
 
 	headerColumn := c.headerColumnByPosition(x, y)
 	if headerColumn >= 0 {
 		fmt.Println("Header column clicked:", headerColumn)
-		return
+		return true
 	}
 
 	col, row := c.cellByPosition(x, y)
 	if row >= 0 && col >= 0 {
 		c.SetCurrentCell(col, row)
 	}
+	return true
 }
 
-func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.columnResizingIndex = -1
+	return true
 }
 
-func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
+func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyArrowLeft {
 		if c.currentCellX > 0 {
 			c.SetCurrentCell(c.currentCellX-1, c.currentCellY)
@@ -293,15 +370,18 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
 			UpdateMainForm()
 		}
 	}
+
+	return true
 }
 
-func (c *Table) onKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) {
+func (c *Table) onKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	return true
 }
 
-func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) {
+func (c *Table) onMouseMoveHeader(x int, y int, mods nuikey.KeyModifiers) nuimouse.MouseCursor {
 	if c.columnResizingIndex >= 0 {
 		if c.columnResizingIndex < 0 || c.columnResizingIndex >= c.columnCount {
-			return
+			return nuimouse.MouseCursorResizeHor
 		}
 		colInfo, exists := c.cols[c.columnResizingIndex]
 		if !exists {
@@ -315,18 +395,23 @@ func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 		if newWidth != colInfo.width {
 			colInfo.width = newWidth
 			c.updateInnerSize()
+			c.updateInnerWidgetsLayout()
 			c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
 			UpdateMainForm()
 		}
-		return
+		return nuimouse.MouseCursorResizeHor
 	}
 
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
-		c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
-		return
+		return nuimouse.MouseCursorResizeHor
 	}
+	return nuimouse.MouseCursorArrow
+}
+
+func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 	c.SetMouseCursor(nuimouse.MouseCursorArrow)
+	return true
 }
 
 func (c *Table) SetShowSelection(show bool) {
@@ -407,15 +492,6 @@ func (c *Table) draw(cnv *Canvas) {
 		yOffset += c.rowHeight
 	}
 
-	for colIndex := 0; colIndex < c.columnCount; colIndex++ {
-		colObj, exists := c.cols[colIndex]
-		if exists {
-			x := c.columnOffset(colIndex)
-			cnv.FillRect(x, c.scrollY, colObj.width, c.rowHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
-			cnv.DrawTextMultiline(x+c.cellPadding, c.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
-		}
-	}
-
 	// Draw cell borders
 	cnv.Save()
 	cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.scrollX, cnv.state.translateY+c.scrollY+c.headerHeight(), c.Width(), c.Height()-c.headerHeight())
@@ -434,6 +510,17 @@ func (c *Table) draw(cnv *Canvas) {
 		x2 := x1
 		y2 := (visibleRow2 + 1) * c.rowHeight
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+	}
+}
+
+func (c *Table) drawPost(cnv *Canvas) {
+	for colIndex := 0; colIndex < c.columnCount; colIndex++ {
+		colObj, exists := c.cols[colIndex]
+		if exists {
+			x := c.columnOffset(colIndex)
+			cnv.FillRect(x, c.scrollY, colObj.width, c.rowHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
+			cnv.DrawTextMultiline(x+c.cellPadding, c.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.rowHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+		}
 	}
 }
 
@@ -550,4 +637,7 @@ func (c *Table) cellByPosition(x, y int) (col int, row int) {
 
 func (c *Table) headerHeight() int {
 	return c.rowHeight
+}
+
+func (c *Table) EditCurrentCell(enteredText string) {
 }

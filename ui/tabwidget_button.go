@@ -28,6 +28,8 @@ func NewTabWidgetButton(text string) *tabWidgetButton {
 
 	c.SetText(text)
 
+	c.SetCanBeFocused(true)
+
 	return &c
 }
 
@@ -48,16 +50,17 @@ func (c *tabWidgetButton) draw(cnv *Canvas) {
 	cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 }
 
-func (c *tabWidgetButton) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *tabWidgetButton) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.pressed = true
+	return true
 }
 
-func (c *tabWidgetButton) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *tabWidgetButton) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.pressed = false
 
 	if x < 0 || x >= c.Width() || y < 0 || y >= c.Height() {
 		// MouseUp outside the button area, ignore
-		return
+		return false
 	}
 
 	hoverWidgeter := MainForm.hoverWidget
@@ -67,4 +70,6 @@ func (c *tabWidgetButton) buttonProcessMouseUp(button nuimouse.MouseButton, x in
 			c.onButtonClick(c)
 		}
 	}
+
+	return true
 }

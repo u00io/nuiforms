@@ -14,6 +14,8 @@ type Widget struct {
 	name     string
 	typeName string
 
+	parentWidgetId string
+
 	// position
 	x int
 	y int
@@ -72,6 +74,8 @@ type Widget struct {
 
 	visible bool
 
+	canBeFocused bool
+
 	// temp
 	lastMouseX       int // After scrolling
 	lastMouseY       int // After scrolling
@@ -83,17 +87,19 @@ type Widget struct {
 	backgroundColor color.RGBA
 
 	// callbacks
-	onCustomPaint func(cnv *Canvas)
-	onMouseDown   func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	onMouseUp     func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)
-	onMouseMove   func(x int, y int, mods nuikey.KeyModifiers)
-	onMouseLeave  func()
-	onMouseEnter  func()
-	onKeyDown     func(key nuikey.Key, mods nuikey.KeyModifiers)
-	onKeyUp       func(key nuikey.Key, mods nuikey.KeyModifiers)
-	onChar        func(char rune, mods nuikey.KeyModifiers)
-	onMouseWheel  func(deltaX, deltaY int)
-	onClick       func(button nuimouse.MouseButton, x int, y int)
+	onCustomPaint   func(cnv *Canvas)
+	onPostPaint     func(cnv *Canvas)
+	onMouseDown     func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
+	onMouseUp       func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
+	onMouseMove     func(x int, y int, mods nuikey.KeyModifiers) bool
+	onMouseLeave    func()
+	onMouseEnter    func()
+	onKeyDown       func(key nuikey.Key, mods nuikey.KeyModifiers) bool
+	onKeyUp         func(key nuikey.Key, mods nuikey.KeyModifiers) bool
+	onChar          func(char rune, mods nuikey.KeyModifiers) bool
+	onMouseWheel    func(deltaX, deltaY int) bool
+	onClick         func(button nuimouse.MouseButton, x int, y int) bool
+	onScrollChanged func(scrollX, scrollY int)
 
 	onFocused func()
 }
@@ -164,6 +170,32 @@ func (c *Widget) Id() string {
 	return c.id
 }
 
+func (c *Widget) FullPath() []string {
+	path := make([]string, 0)
+	path = append(path, c.Id())
+	parentWidgetId := c.parentWidgetId
+	for parentWidgetId != "" {
+		parentWidget := WidgetById(parentWidgetId)
+		if parentWidget == nil {
+			break
+		}
+		path = append(path, parentWidget.Id())
+		parentWidgetId = parentWidget.ParentWidgetId()
+	}
+	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+		path[i], path[j] = path[j], path[i]
+	}
+	return path
+}
+
+func (c *Widget) ParentWidgetId() string {
+	return c.parentWidgetId
+}
+
+func (c *Widget) SetParentWidgetId(id string) {
+	c.parentWidgetId = id
+}
+
 func (c *Widget) SetName(name string) {
 	c.name = name
 }
@@ -178,6 +210,14 @@ func (c *Widget) SetVisible(visible bool) {
 		c.updateLayout(c.w, c.h, c.w, c.h)
 		UpdateMainForm()
 	}
+}
+
+func (c *Widget) IsCanBeFocused() bool {
+	return c.canBeFocused
+}
+
+func (c *Widget) SetCanBeFocused(canBeFocused bool) {
+	c.canBeFocused = canBeFocused
 }
 
 func (c *Widget) SetTypeName(typeName string) {
@@ -266,6 +306,7 @@ func (c *Widget) AddWidget(w Widgeter) {
 		return
 	}
 	c.widgets = append(c.widgets, w)
+	w.SetParentWidgetId(c.Id())
 	allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
 }
@@ -280,6 +321,7 @@ func (c *Widget) AddWidgetOnGrid(w Widgeter, gridX int, gridY int) {
 	}
 	w.SetGridPosition(gridX, gridY)
 	c.widgets = append(c.widgets, w)
+	w.SetParentWidgetId(c.Id())
 	allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
 	MainForm.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
@@ -290,6 +332,7 @@ func (c *Widget) RemoveWidget(w Widgeter) {
 	for i, widget := range c.widgets {
 		widgeter := widget
 		if widgeter.Id() == w.Id() {
+			w.SetParentWidgetId("")
 			c.widgets = append(c.widgets[:i], c.widgets[i+1:]...)
 			return
 		}
@@ -300,6 +343,7 @@ func (c *Widget) RemoveWidget(w Widgeter) {
 func (c *Widget) RemoveAllWidgets() {
 	for _, w := range c.widgets {
 		delete(allwidgets, w.Id())
+		w.SetParentWidgetId("")
 	}
 	c.widgets = make([]Widgeter, 0)
 	c.updateLayout(0, 0, 0, 0)
@@ -429,6 +473,10 @@ func (c *Widget) SetOnFocused(onFocused func()) {
 }
 
 func (c *Widget) Focus() {
+	if !c.canBeFocused {
+		return
+	}
+	fmt.Println("Widget Focused", c.Name(), "Id:", c.Id(), "Type:", c.TypeName())
 	MainForm.focusedWidget = WidgetById(c.Id())
 	MainForm.Update()
 
@@ -482,23 +530,31 @@ func (c *Widget) SetAnchors(left, top, right, bottom bool) {
 	c.anchorBottom = bottom
 }
 
-func (c *Widget) SetOnClick(f func(button nuimouse.MouseButton, x int, y int)) {
+func (c *Widget) SetOnClick(f func(button nuimouse.MouseButton, x int, y int) bool) {
 	c.onClick = f
+}
+
+func (c *Widget) SetOnScrollChanged(f func(scrollX, scrollY int)) {
+	c.onScrollChanged = f
 }
 
 func (c *Widget) SetOnPaint(f func(cnv *Canvas)) {
 	c.onCustomPaint = f
 }
 
-func (c *Widget) SetOnMouseDown(f func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)) {
+func (c *Widget) SetOnPostPaint(f func(cnv *Canvas)) {
+	c.onPostPaint = f
+}
+
+func (c *Widget) SetOnMouseDown(f func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool) {
 	c.onMouseDown = f
 }
 
-func (c *Widget) SetOnMouseUp(f func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers)) {
+func (c *Widget) SetOnMouseUp(f func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool) {
 	c.onMouseUp = f
 }
 
-func (c *Widget) SetOnMouseMove(f func(x int, y int, mods nuikey.KeyModifiers)) {
+func (c *Widget) SetOnMouseMove(f func(x int, y int, mods nuikey.KeyModifiers) bool) {
 	c.onMouseMove = f
 }
 
@@ -510,36 +566,54 @@ func (c *Widget) SetOnMouseEnter(f func()) {
 	c.onMouseEnter = f
 }
 
-func (c *Widget) SetOnKeyDown(f func(key nuikey.Key, mods nuikey.KeyModifiers)) {
+func (c *Widget) SetOnKeyDown(f func(key nuikey.Key, mods nuikey.KeyModifiers) bool) {
 	c.onKeyDown = f
 }
 
-func (c *Widget) SetOnKeyUp(f func(key nuikey.Key, mods nuikey.KeyModifiers)) {
+func (c *Widget) SetOnKeyUp(f func(key nuikey.Key, mods nuikey.KeyModifiers) bool) {
 	c.onKeyUp = f
 }
 
-func (c *Widget) SetOnChar(f func(char rune, mods nuikey.KeyModifiers)) {
+func (c *Widget) SetOnChar(f func(char rune, mods nuikey.KeyModifiers) bool) {
 	c.onChar = f
 }
 
-func (c *Widget) SetOnMouseWheel(f func(deltaX, deltaY int)) {
+func (c *Widget) SetOnMouseWheel(f func(deltaX, deltaY int) bool) {
 	c.onMouseWheel = f
+}
+
+func (c *Widget) setScrollX(scrollX int) {
+	if c.scrollX != scrollX {
+		c.scrollX = scrollX
+		if c.onScrollChanged != nil {
+			c.onScrollChanged(c.scrollX, c.scrollY)
+		}
+	}
+}
+
+func (c *Widget) setScrollY(scrollY int) {
+	if c.scrollY != scrollY {
+		c.scrollY = scrollY
+		if c.onScrollChanged != nil {
+			c.onScrollChanged(c.scrollX, c.scrollY)
+		}
+	}
 }
 
 func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
 
 	if y1 < c.scrollY {
-		c.scrollY = y1
+		c.setScrollY(y1)
 	}
 	if y1 > c.scrollY+c.Height() {
-		c.scrollY = y1 - c.Height()
+		c.setScrollY(y1 - c.Height())
 	}
 
 	if x1 < c.scrollX {
-		c.scrollX = x1
+		c.setScrollX(x1)
 	}
 	if x1 > c.scrollX+c.Width() {
-		c.scrollX = x1 - c.Width()
+		c.setScrollX(x1 - c.Width())
 	}
 }
 
@@ -604,6 +678,10 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		cnv.Restore()
 	}
 
+	if c.onPostPaint != nil {
+		c.onPostPaint(cnv)
+	}
+
 	cnv.Restore()
 
 	// Draw ScrollBarX
@@ -634,7 +712,7 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 
 }
 
-func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool {
 	// Determine if the click is within the horizontal scroll bar area
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
 		isLeftBar := x < c.w*c.scrollX/c.innerWidth
@@ -643,10 +721,10 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			pageSize := c.w * c.w / c.innerWidth
 			c.scrollX -= pageSize // Scroll left
 			if c.scrollX < 0 {
-				c.scrollX = 0
+				c.setScrollX(0)
 			}
 			c.checkScrolls()
-			return
+			return true
 		}
 
 		isRightBar := x >= c.w*(c.scrollX+c.w)/c.innerWidth
@@ -655,10 +733,10 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			pageSize := c.w * c.w / c.innerWidth
 			c.scrollX += pageSize // Scroll right
 			if c.scrollX > c.innerWidth-c.w {
-				c.scrollX = c.innerWidth - c.w
+				c.setScrollX(c.innerWidth - c.w)
 			}
 			c.checkScrolls()
-			return
+			return true
 		}
 
 		// Clicked in the scroll bar
@@ -669,7 +747,7 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			c.scrollingXInitial = c.scrollX
 			c.scrollingXInitialMousePos = x
 			fmt.Println("Started scrollingX", c.scrollingXInitial, c.scrollingXInitialMousePos)
-			return
+			return true
 		}
 	}
 
@@ -681,10 +759,10 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			pageSize := c.h * c.h / c.innerHeight
 			c.scrollY -= pageSize // Scroll up
 			if c.scrollY < 0 {
-				c.scrollY = 0
+				c.setScrollY(0)
 			}
 			c.checkScrolls()
-			return
+			return true
 		}
 
 		isLowerBar := y >= c.h*(c.scrollY+c.h)/c.innerHeight
@@ -693,10 +771,10 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			pageSize := c.h * c.h / c.innerHeight
 			c.scrollY += pageSize // Scroll down
 			if c.scrollY > c.innerHeight-c.h {
-				c.scrollY = c.innerHeight - c.h
+				c.setScrollY(c.innerHeight - c.h)
 			}
 			c.checkScrolls()
-			return
+			return true
 		}
 
 		// Clicked in the scroll bar
@@ -707,71 +785,87 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			c.scrollingYInitial = c.scrollY
 			c.scrollingYInitialMousePos = y
 			fmt.Println("Started scrollingY", c.scrollingYInitial, c.scrollingYInitialMousePos)
-			return
+			return true
 		}
 	}
 
+	// Apply scrolling
 	x += c.scrollX
 	y += c.scrollY
-	if c.onMouseDown != nil {
-		c.onMouseDown(button, x, y, mods)
-	}
 
-	for _, w := range c.widgets {
-		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
-			w.ProcessMouseDown(button, x-w.X(), y-w.Y(), mods)
+	// Delegate the mouse down event to the widgets
+	processed := false
+
+	if allowTranslateToChildren {
+		if !processed {
+			for _, w := range c.widgets {
+				if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
+					processed = w.ProcessMouseDown(button, x-w.X(), y-w.Y(), mods, allowTranslateToChildren)
+					if processed {
+						break
+					}
+				}
+			}
 		}
 	}
 
-	//c.focused = true
+	if !processed && c.onMouseDown != nil {
+		processed = c.onMouseDown(button, x, y, mods)
+	}
+
+	return processed
 }
 
-func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string) {
+func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string, allowTranslateToChildren bool) bool {
 	// If scrolling is active, stop it
 	if c.scrollingX {
 		c.scrollingX = false
-		return
+		return true
 	}
 
 	// If scrolling is active, stop it
 	if c.scrollingY {
 		c.scrollingY = false
-		return
+		return true
 	}
 
 	x += c.scrollX
 	y += c.scrollY
 
+	if allowTranslateToChildren {
+		for _, w := range c.widgets {
+			w.ProcessMouseUp(button, x-w.X(), y-w.Y(), mods, onlyForWidgetId, allowTranslateToChildren)
+		}
+	}
+
 	if c.onMouseUp != nil && onlyForWidgetId == c.Id() {
 		c.onMouseUp(button, x, y, mods)
 	}
 
-	for _, w := range c.widgets {
-		w.ProcessMouseUp(button, x-w.X(), y-w.Y(), mods, onlyForWidgetId)
-	}
+	return false
 }
 
-func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) {
+func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool {
 	if c.scrollingX {
 		if c.allowScrollX && c.innerWidth > c.w {
 			k := float64(c.innerWidth) / float64(c.w)
 			newScrollFloat64 := float64(c.scrollingXInitial) + float64(x-c.scrollingXInitialMousePos)*k
-			c.scrollX = int(newScrollFloat64)
+			c.setScrollX(int(newScrollFloat64))
 			c.checkScrolls()
-			return
+			return true
 		}
-		return
+		return true
 	}
 
 	if c.scrollingY {
 		if c.allowScrollY && c.innerHeight > c.h {
 			k := float64(c.innerHeight) / float64(c.h)
 			newScrollFloat64 := float64(c.scrollingYInitial) + float64(y-c.scrollingYInitialMousePos)*k
-			c.scrollY = int(newScrollFloat64)
+			c.setScrollY(int(newScrollFloat64))
 			c.checkScrolls()
-			return
+			return true
 		}
-		return
+		return true
 	}
 
 	c.lastMouseAbsPosX = x
@@ -783,55 +877,93 @@ func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) {
 	c.lastMouseX = x
 	c.lastMouseY = y
 
-	if c.onMouseMove != nil {
-		c.onMouseMove(x, y, mods)
-	}
+	processed := false
 
-	for _, w := range c.widgets {
-		// Temporary process in the all widgets - perrormance issue
-		inWidget := true
-		//inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
-		if inWidget {
-			w.ProcessMouseMove(x-w.X(), y-w.Y(), mods)
+	if allowTranslateToChildren {
+		for _, w := range c.widgets {
+			// Temporary process in the all widgets - perrormance issue
+			//inWidget := true
+
+			inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
+			if MainForm.mouseLeftButtonPressed && MainForm.mouseLeftButtonPressedWidget != nil {
+				pathToPressedWidget := MainForm.mouseLeftButtonPressedWidget.FullPath()
+				itemsInPathAsSet := make(map[string]bool)
+				for _, item := range pathToPressedWidget {
+					itemsInPathAsSet[item] = true
+				}
+				if _, ok := itemsInPathAsSet[w.Id()]; ok {
+					inWidget = true // If the widget is in the path of the pressed widget, process it
+				}
+			}
+
+			if inWidget {
+				processed = w.ProcessMouseMove(x-w.X(), y-w.Y(), mods, allowTranslateToChildren)
+				if processed {
+					break
+				}
+			}
 		}
 	}
+
+	if !processed && c.onMouseMove != nil {
+		processed = c.onMouseMove(x, y, mods)
+		return processed
+	}
+
+	return processed
 }
 
-func (c *Widget) ProcessMouseLeave() {
+func (c *Widget) ProcessMouseLeave() bool {
 	if c.onMouseLeave != nil {
 		c.onMouseLeave()
 	}
 	MainForm.Update()
+	return true
 }
 
-func (c *Widget) ProcessMouseEnter() {
+func (c *Widget) ProcessMouseEnter() bool {
 	if c.onMouseEnter != nil {
 		c.onMouseEnter()
 	}
 	MainForm.Update()
+	return true
 }
 
-func (c *Widget) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) {
-	if c.onKeyDown != nil {
-		c.onKeyDown(key, mods)
+func (c *Widget) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	processed := false
+
+	/*for _, w := range c.widgets {
+		processed = w.ProcessKeyDown(key, mods)
+		if processed {
+			break
+		}
+	}*/
+
+	if !processed && c.onKeyDown != nil {
+		processed = c.onKeyDown(key, mods)
 	}
 
-	for _, w := range c.widgets {
-		w.ProcessKeyDown(key, mods)
-	}
+	return processed
 }
 
-func (c *Widget) ProcessKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) {
-	if c.onKeyUp != nil {
-		c.onKeyUp(key, mods)
+func (c *Widget) ProcessKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	processed := false
+
+	/*for _, w := range c.widgets {
+		processed = w.ProcessKeyUp(key, mods)
+		if processed {
+			break
+		}
+	}*/
+
+	if !processed && c.onKeyUp != nil {
+		processed = c.onKeyUp(key, mods)
 	}
 
-	for _, w := range c.widgets {
-		w.ProcessKeyUp(key, mods)
-	}
+	return processed
 }
 
-func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	x += c.scrollX
 	y += c.scrollY
 
@@ -839,21 +971,34 @@ func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int,
 		c.onMouseUp(button, x, y, mods)
 	}*/
 
+	processed := false
+
 	for _, w := range c.widgets {
 		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
-			w.ProcessMouseDblClick(button, x-w.X(), y-w.Y(), mods)
+			processed = w.ProcessMouseDblClick(button, x-w.X(), y-w.Y(), mods)
+			if processed {
+				break
+			}
 		}
 	}
+
+	return processed
 }
 
-func (c *Widget) ProcessChar(char rune, mods nuikey.KeyModifiers) {
-	if c.onChar != nil {
-		c.onChar(char, mods)
+func (c *Widget) ProcessChar(char rune, mods nuikey.KeyModifiers) bool {
+	processed := false
+	for _, w := range c.widgets {
+		processed = w.ProcessChar(char, mods)
+		if processed {
+			break
+		}
 	}
 
-	for _, w := range c.widgets {
-		w.ProcessChar(char, mods)
+	if !processed && c.onChar != nil {
+		processed = c.onChar(char, mods)
 	}
+
+	return processed
 }
 
 func (c *Widget) ProcessMouseWheel(deltaX, deltaY int) bool {
@@ -910,25 +1055,25 @@ func (c *Widget) ProcessTimer() {
 func (c *Widget) checkScrolls() {
 	if c.allowScrollX {
 		if c.scrollX > c.innerWidth-c.w {
-			c.scrollX = c.innerWidth - c.w
+			c.setScrollX(c.innerWidth - c.w)
 		}
 		if c.scrollX < 0 {
-			c.scrollX = 0
+			c.setScrollX(0)
 		}
 		if c.innerWidth < c.w {
-			c.scrollX = 0
+			c.setScrollX(0)
 		}
 	}
 
 	if c.allowScrollY {
 		if c.scrollY > c.innerHeight-c.h {
-			c.scrollY = c.innerHeight - c.h
+			c.setScrollY(c.innerHeight - c.h)
 		}
 		if c.scrollY < 0 {
-			c.scrollY = 0
+			c.setScrollY(0)
 		}
 		if c.innerHeight < c.h {
-			c.scrollY = 0
+			c.setScrollY(0)
 		}
 	}
 }

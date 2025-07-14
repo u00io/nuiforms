@@ -21,6 +21,7 @@ func NewButton(text string) *Button {
 	c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
+	c.SetCanBeFocused(true)
 
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
@@ -58,16 +59,17 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 }
 
-func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.pressed = true
+	return true
 }
 
-func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) {
+func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.pressed = false
 
 	if x < 0 || x >= c.Width() || y < 0 || y >= c.Height() {
 		// MouseUp outside the button area, ignore
-		return
+		return false
 	}
 
 	hoverWidgeter := MainForm.hoverWidget
@@ -77,4 +79,6 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 			c.onButtonClick(c)
 		}
 	}
+
+	return true
 }
