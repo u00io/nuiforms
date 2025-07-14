@@ -712,7 +712,7 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 
 }
 
-func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool {
+func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	// Determine if the click is within the horizontal scroll bar area
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
 		isLeftBar := x < c.w*c.scrollX/c.innerWidth
@@ -796,14 +796,12 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 	// Delegate the mouse down event to the widgets
 	processed := false
 
-	if allowTranslateToChildren {
-		if !processed {
-			for _, w := range c.widgets {
-				if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
-					processed = w.ProcessMouseDown(button, x-w.X(), y-w.Y(), mods, allowTranslateToChildren)
-					if processed {
-						break
-					}
+	if !processed {
+		for _, w := range c.widgets {
+			if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
+				processed = w.ProcessMouseDown(button, x-w.X(), y-w.Y(), mods)
+				if processed {
+					break
 				}
 			}
 		}
@@ -816,7 +814,7 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 	return processed
 }
 
-func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string, allowTranslateToChildren bool) bool {
+func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string) bool {
 	// If scrolling is active, stop it
 	if c.scrollingX {
 		c.scrollingX = false
@@ -832,10 +830,8 @@ func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 	x += c.scrollX
 	y += c.scrollY
 
-	if allowTranslateToChildren {
-		for _, w := range c.widgets {
-			w.ProcessMouseUp(button, x-w.X(), y-w.Y(), mods, onlyForWidgetId, allowTranslateToChildren)
-		}
+	for _, w := range c.widgets {
+		w.ProcessMouseUp(button, x-w.X(), y-w.Y(), mods, onlyForWidgetId)
 	}
 
 	if c.onMouseUp != nil && onlyForWidgetId == c.Id() {
@@ -845,7 +841,7 @@ func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 	return false
 }
 
-func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool {
+func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 	if c.scrollingX {
 		if c.allowScrollX && c.innerWidth > c.w {
 			k := float64(c.innerWidth) / float64(c.w)
@@ -879,28 +875,26 @@ func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers, allowT
 
 	processed := false
 
-	if allowTranslateToChildren {
-		for _, w := range c.widgets {
-			// Temporary process in the all widgets - perrormance issue
-			//inWidget := true
+	for _, w := range c.widgets {
+		// Temporary process in the all widgets - perrormance issue
+		//inWidget := true
 
-			inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
-			if MainForm.mouseLeftButtonPressed && MainForm.mouseLeftButtonPressedWidget != nil {
-				pathToPressedWidget := MainForm.mouseLeftButtonPressedWidget.FullPath()
-				itemsInPathAsSet := make(map[string]bool)
-				for _, item := range pathToPressedWidget {
-					itemsInPathAsSet[item] = true
-				}
-				if _, ok := itemsInPathAsSet[w.Id()]; ok {
-					inWidget = true // If the widget is in the path of the pressed widget, process it
-				}
+		inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
+		if MainForm.mouseLeftButtonPressed && MainForm.mouseLeftButtonPressedWidget != nil {
+			pathToPressedWidget := MainForm.mouseLeftButtonPressedWidget.FullPath()
+			itemsInPathAsSet := make(map[string]bool)
+			for _, item := range pathToPressedWidget {
+				itemsInPathAsSet[item] = true
 			}
+			if _, ok := itemsInPathAsSet[w.Id()]; ok {
+				inWidget = true // If the widget is in the path of the pressed widget, process it
+			}
+		}
 
-			if inWidget {
-				processed = w.ProcessMouseMove(x-w.X(), y-w.Y(), mods, allowTranslateToChildren)
-				if processed {
-					break
-				}
+		if inWidget {
+			processed = w.ProcessMouseMove(x-w.X(), y-w.Y(), mods)
+			if processed {
+				break
 			}
 		}
 	}

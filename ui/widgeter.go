@@ -31,9 +31,9 @@ type Widgeter interface {
 	Focus()
 
 	ProcessPaint(cnv *Canvas)
-	ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool
-	ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string, allowTranslateToChildren bool) bool
-	ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers, allowTranslateToChildren bool) bool
+	ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
+	ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string) bool
+	ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) bool
 	ProcessMouseLeave() bool
 	ProcessMouseEnter() bool
 	ProcessKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool

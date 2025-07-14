@@ -238,7 +238,7 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
-	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers, true)
+	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -253,7 +253,7 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressedWidget = nil
 	}
 
-	c.topWidget.ProcessMouseUp(button, x, y, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId, true)
+	c.topWidget.ProcessMouseUp(button, x, y, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId)
 
 	c.Update()
 }
@@ -268,7 +268,7 @@ func (c *Form) processMouseMove(x int, y int) {
 		return
 	}*/
 
-	c.topWidget.ProcessMouseMove(x, y, c.lastKeyboardModifiers, true)
+	c.topWidget.ProcessMouseMove(x, y, c.lastKeyboardModifiers)
 	c.lastMouseX = x
 	c.lastMouseY = y
 	hoverWidget := c.topWidget.findWidgetAt(x, y)
