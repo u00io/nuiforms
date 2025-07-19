@@ -12,8 +12,11 @@ type Table struct {
 	Widget
 
 	// Content of the table
-	cols map[int]*tableColumn
-	rows map[int]*tableRow
+	headerRowsCount  int
+	headerRows       map[int]*tableHeaderRow
+	headerRowHeights map[int]int
+	columnsWidths    map[int]int
+	rows             map[int]*tableRow
 
 	rowHeight1         int // Can be changed
 	defaultColumnWidth int // Default width for columns if not set
@@ -55,9 +58,12 @@ type tableRow struct {
 	cells map[int]*tableCell
 }
 
-type tableColumn struct {
-	name  string
-	width int
+type tableHeaderRow struct {
+	cells map[int]*tableHeaderCell
+}
+
+type tableHeaderCell struct {
+	name string
 }
 
 type tableCell struct {
@@ -93,8 +99,12 @@ func NewTable() *Table {
 	c.SetCanBeFocused(true)
 	c.rows = make(map[int]*tableRow)
 	c.rowHeight1 = 30
-	c.cols = make(map[int]*tableColumn)
+	c.headerRows = make(map[int]*tableHeaderRow)
+	c.columnsWidths = make(map[int]int)
+	c.headerRowHeights = make(map[int]int)
 	c.defaultColumnWidth = 200
+
+	c.headerRowsCount = 2
 
 	c.columnResizingIndex = -1
 
@@ -155,6 +165,41 @@ func (c *Table) rowOffset(row int) int {
 	return c.headerHeight() + row*c.rowHeight1
 }
 
+func (c *Table) headerCell(colIndex int, rowIndex int) *tableHeaderCell {
+	if colIndex < 0 || colIndex >= c.columnCount {
+		return &tableHeaderCell{name: ""}
+	}
+
+	if rowIndex < 0 || rowIndex >= c.headerRowsCount {
+		return &tableHeaderCell{name: ""}
+	}
+
+	headerRow, exists := c.headerRows[rowIndex]
+	if !exists {
+		headerRow = &tableHeaderRow{cells: make(map[int]*tableHeaderCell)}
+		c.headerRows[rowIndex] = headerRow
+	}
+
+	cell, exists := headerRow.cells[colIndex]
+	if !exists {
+		cell = &tableHeaderCell{name: ""}
+		headerRow.cells[colIndex] = cell
+	}
+
+	return cell
+}
+
+/*func (c *Table) columnWidth(col int) int {
+	if col < 0 || col >= c.columnCount {
+		return c.defaultColumnWidth
+	}
+	colWidth, exists := c.columnsWidths[col]
+	if !exists {
+		return c.defaultColumnWidth
+	}
+	return colWidth
+}*/
+
 func (c *Table) updateInnerWidgetsLayout() {
 	c.headerWidget.SetPosition(c.scrollX, c.scrollY)
 	c.headerWidget.SetSize(c.innerWidth, c.headerHeight())
@@ -189,29 +234,37 @@ func (c *Table) SetColumnCount(count int) {
 }
 
 func (c *Table) SetColumnWidth(col int, width int) {
-	if col < 0 || col >= c.columnCount {
+	/*if col < 0 || col >= c.columnCount {
 		return
 	}
 	colInfo, exists := c.cols[col]
 	if !exists {
 		colInfo = &tableColumn{name: "", width: c.defaultColumnWidth}
 		c.cols[col] = colInfo
-	}
-	colInfo.width = width
+	}*/
+	//colInfo.width = width
+
+	c.columnsWidths[col] = width
+
 	c.updateInnerSize()
 	c.updateInnerWidgetsLayout()
+}
+
+func (c *Table) SetColumnCellName(col int, row int, name string) {
+	if col < 0 || col >= c.columnCount {
+		return
+	}
+	headerCell := c.headerCell(col, row)
+	headerCell.name = name
+	c.updateInnerSize()
 }
 
 func (c *Table) SetColumnName(col int, name string) {
 	if col < 0 || col >= c.columnCount {
 		return
 	}
-	colInfo, exists := c.cols[col]
-	if !exists {
-		colInfo = &tableColumn{name: "", width: c.defaultColumnWidth}
-		c.cols[col] = colInfo
-	}
-	colInfo.name = name
+	headerCell := c.headerCell(col, 0)
+	headerCell.name = name
 	c.updateInnerSize()
 }
 
@@ -416,17 +469,20 @@ func (c *Table) onMouseMoveHeader(x int, y int, mods nuikey.KeyModifiers) nuimou
 		if c.columnResizingIndex < 0 || c.columnResizingIndex >= c.columnCount {
 			return nuimouse.MouseCursorResizeHor
 		}
-		colInfo, exists := c.cols[c.columnResizingIndex]
+		/*colInfo, exists := c.cols[c.columnResizingIndex]
 		if !exists {
 			colInfo = &tableColumn{name: "", width: c.defaultColumnWidth}
 			c.cols[c.columnResizingIndex] = colInfo
-		}
+		}*/
+
+		colWidth := c.columnWidth(c.columnResizingIndex)
+
 		newWidth := x - c.columnOffset(c.columnResizingIndex)
 		if newWidth < 50 {
 			newWidth = 50
 		}
-		if newWidth != colInfo.width {
-			colInfo.width = newWidth
+		if newWidth != colWidth {
+			c.columnsWidths[c.columnResizingIndex] = newWidth
 			c.updateInnerSize()
 			c.updateInnerWidgetsLayout()
 			c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
@@ -547,13 +603,37 @@ func (c *Table) draw(cnv *Canvas) {
 }
 
 func (c *Table) drawPost(cnv *Canvas) {
-	for colIndex := 0; colIndex < c.columnCount; colIndex++ {
-		colObj, exists := c.cols[colIndex]
-		if exists {
+	// Draw header
+	for headerRowIndex := 0; headerRowIndex < c.headerRowsCount; headerRowIndex++ {
+		for colIndex := 0; colIndex < c.columnCount; colIndex++ {
+			headerCell := c.headerCell(colIndex, headerRowIndex)
+			headerRowOffset := c.headerRowOffset(headerRowIndex)
+			headerRowHeight := c.headerRowHeight(headerRowIndex)
+			cellWidth := c.columnWidth(colIndex)
+			cellHeight := headerRowHeight
 			x := c.columnOffset(colIndex)
-			cnv.FillRect(x, c.scrollY, colObj.width, c.headerHeight(), color.RGBA{R: 70, G: 80, B: 90, A: 255})
-			cnv.DrawTextMultiline(x+c.cellPadding, c.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.headerHeight()-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+			y := headerRowOffset + c.scrollY
+			cnv.FillRect(x, y, cellWidth, cellHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
+			cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, headerCell.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
 		}
+	}
+
+	/*
+		for colIndex := 0; colIndex < c.columnCount; colIndex++ {
+			colObj, exists := c.cols[colIndex]
+			if exists {
+				x := c.columnOffset(colIndex)
+				cnv.FillRect(x, c.scrollY, colObj.width, c.headerHeight(), color.RGBA{R: 70, G: 80, B: 90, A: 255})
+				cnv.DrawTextMultiline(x+c.cellPadding, c.scrollY+c.cellPadding, colObj.width-c.cellPadding*2, c.headerHeight()-c.cellPadding*2, HAlignLeft, VAlignCenter, colObj.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+			}
+		}*/
+
+	for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
+		x1 := c.columnOffset(colIndex)
+		y1 := c.scrollY
+		x2 := x1
+		y2 := c.headerHeight() + c.scrollY
+		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
 	}
 }
 
@@ -575,19 +655,21 @@ func (c *Table) columnWidth(col int) int {
 	if col < 0 || col >= c.columnCount {
 		return c.defaultColumnWidth
 	}
-	colInfo, exists := c.cols[col]
+
+	colWidth, exists := c.columnsWidths[col]
 	if !exists {
 		return c.defaultColumnWidth
 	}
-	return colInfo.width
+
+	return colWidth
 }
 
 func (c *Table) columnOffset(col int) int {
 	result := 0
 	for i := 0; i < col; i++ {
 		colWidth := c.defaultColumnWidth
-		if column, exists := c.cols[i]; exists {
-			colWidth = column.width
+		if colWidthValue, exists := c.columnsWidths[i]; exists {
+			colWidth = colWidthValue
 		}
 		result += colWidth
 	}
@@ -598,8 +680,8 @@ func (c *Table) updateInnerSize() {
 	width := 0
 	for i := 0; i < c.columnCount; i++ {
 		colWidth := c.defaultColumnWidth
-		if column, exists := c.cols[i]; exists {
-			colWidth = column.width
+		if colWidthValue, exists := c.columnsWidths[i]; exists {
+			colWidth = colWidthValue
 		}
 		width += colWidth
 	}
@@ -668,9 +750,30 @@ func (c *Table) cellByPosition(x, y int) (col int, row int) {
 	return col, row
 }
 
+func (c *Table) headerRowOffset(headerRowIndex int) int {
+	result := 0
+	for i := 0; i < headerRowIndex; i++ {
+		rowHeight := c.headerRowHeight(i)
+		result += rowHeight
+	}
+	return result
+}
+
+func (c *Table) headerRowHeight(headerRowIndex int) int {
+	result := c.rowHeight1
+	if headerRowHeight, exists := c.headerRowHeights[headerRowIndex]; exists {
+		result = headerRowHeight
+	}
+	return result
+}
+
 func (c *Table) headerHeight() int {
-	//return c.rowHeight1
-	return 200
+	result := 0
+	for i := 0; i < c.headerRowsCount; i++ {
+		rowHeight := c.headerRowHeight(i)
+		result += rowHeight
+	}
+	return result
 }
 
 func (c *Table) EditCurrentCell(enteredText string) {
