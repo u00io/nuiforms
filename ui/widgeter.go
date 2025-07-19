@@ -42,6 +42,8 @@ type Widgeter interface {
 	ProcessChar(char rune, mods nuikey.KeyModifiers) bool
 	ProcessMouseWheel(deltaX int, deltaY int) bool
 	ProcessTimer()
+	ProcessFocused()
+	ProcessFocusLost()
 
 	SetMouseCursor(cursor nuimouse.MouseCursor)
 	MouseCursor() nuimouse.MouseCursor

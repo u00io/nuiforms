@@ -102,7 +102,8 @@ type Widget struct {
 	onClick         func(button nuimouse.MouseButton, x int, y int) bool
 	onScrollChanged func(scrollX, scrollY int)
 
-	onFocused func()
+	onFocused   func()
+	onFocusLost func()
 }
 
 /*func NewWidget() *Widget {
@@ -473,16 +474,47 @@ func (c *Widget) SetOnFocused(onFocused func()) {
 	c.onFocused = onFocused
 }
 
+func (c *Widget) SetOnFocusLost(onFocusLost func()) {
+	c.onFocusLost = onFocusLost
+}
+
 func (c *Widget) Focus() {
 	if !c.canBeFocused {
 		return
 	}
 	//fmt.Println("Widget Focused", c.Name(), "Id:", c.Id(), "Type:", c.TypeName())
-	MainForm.focusedWidget = WidgetById(c.Id())
-	MainForm.Update()
+	widgetToFocus := WidgetById(c.Id())
+	if widgetToFocus == nil {
+		return
+	}
+	focusChanged := false
+	previousFocusedWidget := MainForm.focusedWidget
 
+	if (MainForm.focusedWidget != nil && MainForm.focusedWidget.Id() != widgetToFocus.Id()) || previousFocusedWidget == nil {
+		focusChanged = true
+	}
+
+	if focusChanged {
+		if previousFocusedWidget != nil {
+			previousFocusedWidget.ProcessFocusLost()
+		}
+
+		MainForm.focusedWidget = widgetToFocus
+		MainForm.Update()
+
+		widgetToFocus.ProcessFocused()
+	}
+}
+
+func (c *Widget) ProcessFocused() {
 	if c.onFocused != nil {
 		c.onFocused()
+	}
+}
+
+func (c *Widget) ProcessFocusLost() {
+	if c.onFocusLost != nil {
+		c.onFocusLost()
 	}
 }
 

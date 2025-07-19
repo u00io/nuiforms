@@ -440,10 +440,6 @@ func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods 
 }
 
 func (c *Table) onFocused() {
-	if c.editorTextBox != nil {
-		c.RemoveWidget(c.editorTextBox)
-		c.editorTextBox = nil
-	}
 }
 
 func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
@@ -894,6 +890,14 @@ func (c *Table) EditCurrentCell(enteredText string) {
 			return true
 		}
 		return false
+	})
+	c.editorTextBox.SetOnFocusLost(func() {
+		if c.editorTextBox != nil {
+			c.RemoveWidget(c.editorTextBox)
+			c.editorTextBox = nil
+			UpdateMainForm()
+			c.Focus()
+		}
 	})
 	c.AddWidgetOnTable(c.editorTextBox, c.currentCellX, c.currentCellY, 1, 1)
 	c.editorTextBox.Focus()
