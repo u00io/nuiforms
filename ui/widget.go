@@ -91,6 +91,7 @@ type Widget struct {
 	onPostPaint     func(cnv *Canvas)
 	onMouseDown     func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
 	onMouseUp       func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
+	onMouseDblClick func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
 	onMouseMove     func(x int, y int, mods nuikey.KeyModifiers) bool
 	onMouseLeave    func()
 	onMouseEnter    func()
@@ -554,6 +555,10 @@ func (c *Widget) SetOnMouseUp(f func(button nuimouse.MouseButton, x int, y int, 
 	c.onMouseUp = f
 }
 
+func (c *Widget) SetOnMouseDblClick(f func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool) {
+	c.onMouseDblClick = f
+}
+
 func (c *Widget) SetOnMouseMove(f func(x int, y int, mods nuikey.KeyModifiers) bool) {
 	c.onMouseMove = f
 }
@@ -961,10 +966,6 @@ func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int,
 	x += c.scrollX
 	y += c.scrollY
 
-	/*if c.onMouseUp != nil {
-		c.onMouseUp(button, x, y, mods)
-	}*/
-
 	processed := false
 
 	for _, w := range c.widgets {
@@ -976,17 +977,22 @@ func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int,
 		}
 	}
 
+	if !processed && c.onMouseDblClick != nil {
+		processed = c.onMouseDblClick(button, x, y, mods)
+	}
+
 	return processed
 }
 
 func (c *Widget) ProcessChar(char rune, mods nuikey.KeyModifiers) bool {
 	processed := false
-	for _, w := range c.widgets {
+
+	/*for _, w := range c.widgets {
 		processed = w.ProcessChar(char, mods)
 		if processed {
 			break
 		}
-	}
+	}*/
 
 	if !processed && c.onChar != nil {
 		processed = c.onChar(char, mods)

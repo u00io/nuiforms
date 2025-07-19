@@ -33,8 +33,8 @@ func NewTableWidget() *TableWidget {
 	c.lvItem.SetColumnName(0, "Col1")
 	c.lvItem.SetColumnName(1, "Col2")
 	c.lvItem.SetColumnName(2, "Col3")
-	c.lvItem.SetRowCount(30)
-	for i := 0; i < 30; i++ {
+	c.lvItem.SetRowCount(10)
+	for i := 0; i < 10; i++ {
 		c.lvItem.SetCellText(0, i, "row "+fmt.Sprint(i))
 		c.lvItem.SetCellText(1, i, "col2 text")
 		c.lvItem.SetCellText(2, i, "col2 text")
