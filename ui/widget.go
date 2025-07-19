@@ -151,8 +151,8 @@ func (c *Widget) InitWidget() {
 	c.maxWidth = MAX_WIDTH
 	c.maxHeight = MAX_HEIGHT
 	c.visible = true
-	c.panelPadding = 10
-	c.cellPadding = 0
+	c.panelPadding = 2
+	c.cellPadding = 2
 	c.scrollBarXSize = 10
 	c.scrollBarYSize = 10
 	c.scrollBarXColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
