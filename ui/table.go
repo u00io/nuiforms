@@ -418,6 +418,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 	col, row := c.cellByPosition(x, y)
 	if row >= 0 && col >= 0 {
 		c.SetCurrentCell(col, row)
+		fmt.Println("Cell clicked:", col, row, " at ", x, y)
 	}
 	return true
 }
@@ -429,6 +430,7 @@ func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey
 
 func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	col, row := c.cellByPosition(x, y)
+	fmt.Println("Cell double clicked:", col, row, " at ", x, y)
 	if row >= 0 && col >= 0 {
 		c.SetCurrentCell(col, row)
 		c.EditCurrentCell("")
@@ -857,6 +859,11 @@ func (c *Table) headerHeight() int {
 }
 
 func (c *Table) EditCurrentCell(enteredText string) {
+	if c.editorTextBox != nil {
+		c.RemoveWidget(c.editorTextBox)
+		c.editorTextBox = nil
+	}
+
 	c.editorTextBox = NewTextBox()
 
 	if len(enteredText) == 0 {

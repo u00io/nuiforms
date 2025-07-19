@@ -228,6 +228,7 @@ func (c *Form) processResize(width, height int) {
 }
 
 func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
+	fmt.Println("Mouse CLK at:", x, y, "Button:", button)
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = true
 	}
@@ -239,6 +240,22 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 		widgetAtCoords.Focus()
 	}
 	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers)
+	c.Update()
+}
+
+func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
+	fmt.Println("Mouse DBL at:", x, y, "Button:", button)
+	if button == nuimouse.MouseButtonLeft {
+		c.mouseLeftButtonPressed = true
+	}
+	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
+	if c.mouseLeftButtonPressed {
+		c.mouseLeftButtonPressedWidget = widgetAtCoords
+	}
+	if widgetAtCoords != nil {
+		widgetAtCoords.Focus()
+	}
+	c.topWidget.ProcessMouseDblClick(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -317,6 +334,7 @@ func (c *Form) processMouseEnter() {
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
+
 	if c.lastKeyboardModifiers != mods {
 		c.lastKeyboardModifiers = mods
 	}
@@ -347,16 +365,6 @@ func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		return
 	}
 	c.topWidget.ProcessKeyUp(keyCode, mods)
-	c.Update()
-}
-
-func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
-	if c.focusedWidget != nil {
-		c.focusedWidget.ProcessMouseDblClick(button, x, y, c.lastKeyboardModifiers)
-		c.Update()
-		return
-	}
-	c.topWidget.ProcessMouseDblClick(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
 }
 
