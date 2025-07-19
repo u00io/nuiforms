@@ -74,6 +74,8 @@ type Widget struct {
 
 	visible bool
 
+	contextMenu *ContextMenu
+
 	canBeFocused bool
 
 	// temp
@@ -884,6 +886,29 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		}
 	}
 
+	if !processed {
+		contextMenuFound := false
+		//if event.Button == nuimouse.MouseButtonRight {
+		if button == nuimouse.MouseButtonRight {
+			wX, wY := c.RectClientAreaOnWindow()
+			if c.ContextMenu() != nil {
+				c.ContextMenu().ShowMenu(wX+x-c.scrollX, wY+y-c.scrollY)
+				contextMenuFound = true
+			} /*else {
+				if c.OnContextMenuNeed != nil {
+					m := c.OnContextMenuNeed(me.X, me.Y)
+					if m != nil {
+						m.ShowMenu(wX+me.X-c.ScrollOffsetX(), wY+me.Y-c.ScrollOffsetY())
+						contextMenuFound = true
+					}
+				}
+			}*/
+		}
+		if contextMenuFound {
+			processed = true
+		}
+	}
+
 	if !processed && c.onMouseDown != nil {
 		processed = c.onMouseDown(button, x, y, mods)
 	}
@@ -1190,7 +1215,7 @@ func (c *Widget) AppendPopupWidget(w Widgeter) {
 	UpdateMainForm()
 }
 
-func (c *Widget) CloseAfterPopupWidget(w Widget) {
+func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 	foundIndex := -1
 	for index, popupWidget := range c.PopupWidgets {
 		if popupWidget.Id() == w.Id() {
@@ -1779,4 +1804,16 @@ func (c *Widget) FontFamily() string {
 
 func (c *Widget) FontSize() float64 {
 	return 16
+}
+
+func (c *Widget) SetContextMenu(menu *ContextMenu) {
+	c.contextMenu = menu
+}
+
+func (c *Widget) ContextMenu() *ContextMenu {
+	return c.contextMenu
+}
+
+func (c *Widget) RectClientAreaOnWindow() (x, y int) {
+	return c.X() + c.scrollX, c.Y() + c.scrollY
 }
