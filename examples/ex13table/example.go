@@ -42,6 +42,8 @@ func NewTableWidget() *TableWidget {
 		c.lvItem.SetCellText(2, i, "col2 text")
 	}
 
+	c.lvItem.SetHeaderCellSpan(0, 0, 1, 2)
+
 	c.AddWidgetOnGrid(c.lvItem, 0, 0)
 	c.SetYExpandable(false)
 

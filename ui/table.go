@@ -63,7 +63,23 @@ type tableHeaderRow struct {
 }
 
 type tableHeaderCell struct {
-	name string
+	name  string
+	spanX int
+	spanY int
+}
+
+func (c tableHeaderCell) SpanX() int {
+	if c.spanX <= 0 {
+		return 1
+	}
+	return c.spanX
+}
+
+func (c tableHeaderCell) SpanY() int {
+	if c.spanY <= 0 {
+		return 1
+	}
+	return c.spanY
 }
 
 type tableCell struct {
@@ -189,6 +205,34 @@ func (c *Table) headerCell(colIndex int, rowIndex int) *tableHeaderCell {
 	return cell
 }
 
+func (c *Table) headerCellShadowed(colIndex int, rowIndex int) bool {
+	result := false
+
+	for headerRowIndex := 0; headerRowIndex < c.headerRowsCount; headerRowIndex++ {
+		for headerColIndex := 0; headerColIndex < c.columnCount; headerColIndex++ {
+			if headerRowIndex == rowIndex && headerColIndex == colIndex {
+				continue
+			}
+			headerCell := c.headerCell(headerColIndex, headerRowIndex)
+			spanX := headerCell.SpanX()
+			spanY := headerCell.SpanY()
+			if spanX > 1 || spanY > 1 {
+				cellSpanX1 := headerColIndex
+				cellSpanX2 := headerColIndex + spanX - 1
+				cellSpanY1 := headerRowIndex
+				cellSpanY2 := headerRowIndex + spanY - 1
+				if colIndex >= cellSpanX1 && colIndex <= cellSpanX2 &&
+					rowIndex >= cellSpanY1 && rowIndex <= cellSpanY2 {
+					result = true
+					break
+				}
+			}
+		}
+	}
+
+	return result
+}
+
 /*func (c *Table) columnWidth(col int) int {
 	if col < 0 || col >= c.columnCount {
 		return c.defaultColumnWidth
@@ -300,6 +344,17 @@ func (c *Table) SetCurrentCell(col int, row int) {
 	if c.onSelectionChanged != nil {
 		c.onSelectionChanged(c.currentCellX, c.currentCellY)
 	}
+}
+
+func (c *Table) SetHeaderCellSpan(col int, row int, spanX int, spanY int) {
+	if col < 0 || col >= c.columnCount || row < 0 || row >= c.headerRowsCount {
+		return
+	}
+	headerCell := c.headerCell(col, row)
+	headerCell.spanX = spanX
+	headerCell.spanY = spanY
+	c.updateInnerSize()
+	c.updateInnerWidgetsLayout()
 }
 
 func (c *Table) CurrentRow() int {
@@ -606,13 +661,38 @@ func (c *Table) drawPost(cnv *Canvas) {
 	// Draw header
 	for headerRowIndex := 0; headerRowIndex < c.headerRowsCount; headerRowIndex++ {
 		for colIndex := 0; colIndex < c.columnCount; colIndex++ {
+			needToDisplay := true
+			if c.headerCellShadowed(colIndex, headerRowIndex) {
+				needToDisplay = false
+			}
+
+			if !needToDisplay {
+				continue
+			}
+
 			headerCell := c.headerCell(colIndex, headerRowIndex)
+
+			cellSpanX := headerCell.SpanX()
+			cellSpanY := headerCell.SpanY()
+
 			headerRowOffset := c.headerRowOffset(headerRowIndex)
-			headerRowHeight := c.headerRowHeight(headerRowIndex)
-			cellWidth := c.columnWidth(colIndex)
-			cellHeight := headerRowHeight
+			//headerRowHeight := c.headerRowHeight(headerRowIndex)
+
+			//cellWidth := c.columnWidth(colIndex)
+			cellWidth := 0
+			for i := 0; i < cellSpanX; i++ {
+				cellWidth += c.columnWidth(colIndex + i)
+			}
+
+			cellHeight := 0
+			for i := 0; i < cellSpanY; i++ {
+				cellHeight += c.headerRowHeight(headerRowIndex + i)
+			}
+			//cellHeight := headerRowHeight
+
 			x := c.columnOffset(colIndex)
 			y := headerRowOffset + c.scrollY
+
 			cnv.FillRect(x, y, cellWidth, cellHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
 			cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, headerCell.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
 		}
