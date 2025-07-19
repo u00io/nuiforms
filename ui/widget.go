@@ -86,6 +86,8 @@ type Widget struct {
 
 	backgroundColor color.RGBA
 
+	PopupWidgets []Widgeter
+
 	// callbacks
 	onCustomPaint   func(cnv *Canvas)
 	onPostPaint     func(cnv *Canvas)
@@ -166,6 +168,7 @@ func (c *Widget) InitWidget() {
 	c.widgets = make([]Widgeter, 0)
 	c.mouseCursor = nuimouse.MouseCursorArrow
 	c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0} // transparent by default
+	c.PopupWidgets = make([]Widgeter, 0)
 }
 
 func (c *Widget) Id() string {
@@ -655,6 +658,7 @@ func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
 }
 
 func (c *Widget) getWidgetAt(x, y int) Widgeter {
+
 	for _, w := range c.widgets {
 		innerWidth := w.Width()
 		innerHeight := w.Height()
@@ -669,6 +673,18 @@ func (c *Widget) getWidgetAt(x, y int) Widgeter {
 }
 
 func (c *Widget) findWidgetAt(x, y int) Widgeter {
+
+	for i := len(c.PopupWidgets) - 1; i >= 0; i-- {
+		popupWidget := c.PopupWidgets[i]
+		if x > popupWidget.X() && x < popupWidget.X()+popupWidget.Width() && y > popupWidget.Y() && y < popupWidget.Y()+popupWidget.Height() && popupWidget.IsVisible() {
+			innerW := popupWidget.findWidgetAt(x-popupWidget.X(), y-popupWidget.Y())
+			if innerW != nil {
+				return innerW
+			} else {
+				return popupWidget
+			}
+		}
+	}
 
 	// if it is the bar area, return self
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
@@ -747,9 +763,32 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		cnv.FillRect(c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, barColor)
 	}
 
+	for _, popupWidget := range c.PopupWidgets {
+		cnv.Save()
+		cnv.SetDirectTranslateAndClip(popupWidget.X(), popupWidget.Y(), popupWidget.Width(), popupWidget.Height())
+		popupWidget.ProcessPaint(cnv)
+		cnv.Restore()
+	}
 }
 
 func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+
+	popupWidgetsBefore := len(c.PopupWidgets)
+
+	for len(c.PopupWidgets) > 0 {
+		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
+		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
+			topWidget.ProcessMouseDown(button, x-topWidget.X(), y-topWidget.Y(), mods)
+			return true
+		} else {
+			c.CloseTopPopup()
+		}
+	}
+
+	if popupWidgetsBefore != len(c.PopupWidgets) {
+		return true
+	}
+
 	// Determine if the click is within the horizontal scroll bar area
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
 		isLeftBar := x < c.w*c.scrollX/c.innerWidth
@@ -1144,7 +1183,62 @@ func (c *Widget) SetMaxHeight(maxHeight int) {
 	c.maxHeight = maxHeight
 }
 
+func (c *Widget) AppendPopupWidget(w Widgeter) {
+	if w != nil {
+		c.PopupWidgets = append(c.PopupWidgets, w)
+	}
+	UpdateMainForm()
+}
+
+func (c *Widget) CloseAfterPopupWidget(w Widget) {
+	foundIndex := -1
+	for index, popupWidget := range c.PopupWidgets {
+		if popupWidget.Id() == w.Id() {
+			foundIndex = index
+			break
+		}
+	}
+
+	if foundIndex > -1 {
+		foundIndex++
+
+		for i := foundIndex; i < len(c.PopupWidgets); i++ {
+			popupWidget := c.PopupWidgets[i]
+			popupWidget.ProcessClosePopup()
+		}
+
+		if foundIndex < len(c.PopupWidgets) {
+			c.PopupWidgets = append(c.PopupWidgets[:foundIndex], c.PopupWidgets[foundIndex+1:]...)
+		}
+		UpdateMainForm()
+	}
+}
+
+func (c *Widget) CloseAllPopup() {
+	for _, popupWidget := range c.PopupWidgets {
+		popupWidget.ProcessClosePopup()
+	}
+
+	c.PopupWidgets = make([]Widgeter, 0)
+	UpdateMainForm()
+}
+
+func (c *Widget) CloseTopPopup() {
+	if len(c.PopupWidgets) == 0 {
+		return
+	}
+	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
+	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
+}
+
+func (c *Widget) ProcessClosePopup() {
+}
+
 func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
+	for _, popupWidget := range c.PopupWidgets {
+		popupWidget.updateLayout(oldWidth, oldHeight, newWidth, newHeight)
+	}
+
 	if c.absolutePositioning {
 		for _, w := range c.widgets {
 			deltaWidth := newWidth - oldWidth

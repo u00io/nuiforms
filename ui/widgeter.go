@@ -45,6 +45,10 @@ type Widgeter interface {
 	ProcessFocused()
 	ProcessFocusLost()
 
+	ProcessClosePopup()
+
+	updateLayout(oldWidth, oldHeight, newWidth, newHeight int)
+
 	SetMouseCursor(cursor nuimouse.MouseCursor)
 	MouseCursor() nuimouse.MouseCursor
 
