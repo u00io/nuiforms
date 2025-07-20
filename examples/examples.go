@@ -11,6 +11,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex12cards"
 	"github.com/u00io/nuiforms/examples/ex13table"
 	"github.com/u00io/nuiforms/examples/ex14popup"
+	"github.com/u00io/nuiforms/examples/ex15dialog"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -74,6 +75,11 @@ func Run() {
 		addButton("Example 14 - Popup", func(btn *ui.Button) {
 			form.Panel().RemoveAllWidgets()
 			ex14popup.Run(form)
+		})
+
+		addButton("Example 15 - Dialog", func(btn *ui.Button) {
+			form.Panel().RemoveAllWidgets()
+			ex15dialog.Run(form)
 		})
 
 		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, form.Panel().NextGridY())

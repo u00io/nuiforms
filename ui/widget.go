@@ -322,6 +322,10 @@ func (c *Widget) SetPanelPadding(padding int) {
 	c.panelPadding = padding
 }
 
+func (c *Widget) SetCellPadding(padding int) {
+	c.cellPadding = padding
+}
+
 func (c *Widget) AddWidgetOnGrid(w Widgeter, gridX int, gridY int) {
 	if _, exists := allwidgets[w.Id()]; exists {
 		return
@@ -683,17 +687,19 @@ func (c *Widget) getWidgetAt(x, y int) Widgeter {
 }
 
 func (c *Widget) findWidgetAt(x, y int) Widgeter {
-
-	for i := len(c.PopupWidgets) - 1; i >= 0; i-- {
-		popupWidget := c.PopupWidgets[i]
-		if x > popupWidget.X() && x < popupWidget.X()+popupWidget.Width() && y > popupWidget.Y() && y < popupWidget.Y()+popupWidget.Height() && popupWidget.IsVisible() {
-			innerW := popupWidget.findWidgetAt(x-popupWidget.X(), y-popupWidget.Y())
-			if innerW != nil {
-				return innerW
-			} else {
-				return popupWidget
+	if len(c.PopupWidgets) > 0 {
+		for i := len(c.PopupWidgets) - 1; i >= 0; i-- {
+			popupWidget := c.PopupWidgets[i]
+			if x > popupWidget.X() && x < popupWidget.X()+popupWidget.Width() && y > popupWidget.Y() && y < popupWidget.Y()+popupWidget.Height() && popupWidget.IsVisible() {
+				innerW := popupWidget.findWidgetAt(x-popupWidget.X(), y-popupWidget.Y())
+				if innerW != nil {
+					return innerW
+				} else {
+					return popupWidget
+				}
 			}
 		}
+		return nil
 	}
 
 	// if it is the bar area, return self
@@ -792,6 +798,7 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			return true
 		} else {
 			c.CloseTopPopup()
+			return true
 		}
 	}
 
@@ -925,6 +932,14 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 }
 
 func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string) bool {
+	if len(c.PopupWidgets) > 0 {
+		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
+		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
+			topWidget.ProcessMouseUp(button, x-topWidget.X(), y-topWidget.Y(), mods, onlyForWidgetId)
+			return true
+		}
+	}
+
 	// If scrolling is active, stop it
 	if c.scrollingX {
 		c.scrollingX = false
@@ -952,6 +967,14 @@ func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 }
 
 func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
+	if len(c.PopupWidgets) > 0 {
+		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
+		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
+			topWidget.ProcessMouseMove(x-topWidget.X(), y-topWidget.Y(), mods)
+			return true
+		}
+	}
+
 	if c.scrollingX {
 		if c.allowScrollX && c.innerWidth > c.w {
 			k := float64(c.innerWidth) / float64(c.w)
@@ -1219,6 +1242,8 @@ func (c *Widget) SetMaxHeight(maxHeight int) {
 func (c *Widget) AppendPopupWidget(w Widgeter) {
 	if w != nil {
 		c.PopupWidgets = append(c.PopupWidgets, w)
+		w.SetParentWidgetId(MainForm.Panel().Id())
+		allwidgets[w.Id()] = w
 	}
 	UpdateMainForm()
 }
@@ -1238,6 +1263,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 		for i := foundIndex; i < len(c.PopupWidgets); i++ {
 			popupWidget := c.PopupWidgets[i]
 			popupWidget.ProcessClosePopup()
+			delete(allwidgets, popupWidget.Id())
 		}
 
 		if foundIndex < len(c.PopupWidgets) {
@@ -1250,6 +1276,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 func (c *Widget) CloseAllPopup() {
 	for _, popupWidget := range c.PopupWidgets {
 		popupWidget.ProcessClosePopup()
+		delete(allwidgets, popupWidget.Id())
 	}
 
 	c.PopupWidgets = make([]Widgeter, 0)
@@ -1261,6 +1288,7 @@ func (c *Widget) CloseTopPopup() {
 		return
 	}
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
+	delete(allwidgets, c.PopupWidgets[len(c.PopupWidgets)-1].Id())
 	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
 }
 

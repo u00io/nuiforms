@@ -45,6 +45,12 @@ func (c *Button) SetOnButtonClick(fn func(btn *Button)) {
 	c.onButtonClick = fn
 }
 
+func (c *Button) Press() {
+	if c.onButtonClick != nil {
+		c.onButtonClick(c)
+	}
+}
+
 func (c *Button) draw(cnv *Canvas) {
 	backColor := GetThemeColor("background", DefaultBackground)
 	if c.IsHovered() {

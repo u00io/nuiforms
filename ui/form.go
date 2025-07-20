@@ -59,6 +59,11 @@ func UpdateMainForm() {
 func UpdateMainFormLayout() {
 	if MainForm != nil && MainForm.Panel() != nil {
 		MainForm.Panel().updateLayout(0, 0, 0, 0)
+		for _, popupWidget := range MainForm.Panel().PopupWidgets {
+			if popupWidget != nil {
+				popupWidget.updateLayout(0, 0, 0, 0)
+			}
+		}
 		MainForm.Update()
 	}
 }
@@ -276,16 +281,15 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 }
 
 func (c *Form) processMouseMove(x int, y int) {
-
-	// TODO:
-	/*if c.mouseLeftButtonPressedWidget != nil {
-		widgetX, widgetY := GetWidgeter(c.topWidget).absolutePositionOfWidget(0, 0, GetWidgeter(c.mouseLeftButtonPressedWidget))
-		c.mouseLeftButtonPressedWidget.processMouseMove(x-widgetX, y-widgetY, c.lastKeyboardModifiers)
+	if c.mouseLeftButtonPressedWidget != nil {
+		wX, wY := c.mouseLeftButtonPressedWidget.RectClientAreaOnWindow()
+		c.mouseLeftButtonPressedWidget.ProcessMouseMove(x-wX, y-wY, c.lastKeyboardModifiers)
 		c.Update()
 		return
-	}*/
+	}
 
 	c.topWidget.ProcessMouseMove(x, y, c.lastKeyboardModifiers)
+
 	c.lastMouseX = x
 	c.lastMouseY = y
 	hoverWidget := c.topWidget.findWidgetAt(x, y)
