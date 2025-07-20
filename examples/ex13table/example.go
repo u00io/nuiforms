@@ -57,3 +57,32 @@ func NewTableWidget() *TableWidget {
 
 	return &c
 }
+
+type ValueSelector struct {
+	ui.Widget
+	items []*ValueSelectorItem
+}
+
+type ValueSelectorItem struct {
+	text  string
+	value interface{}
+}
+
+func NewValueSelector() *ValueSelector {
+	var c ValueSelector
+	c.InitWidget()
+	return &c
+}
+
+func (c *ValueSelector) AddItem(text string, value interface{}) {
+	var item ValueSelectorItem
+	item.text = text
+	item.value = value
+	c.items = append(c.items, &item)
+}
+
+func (c *ValueSelector) Show(xAtForm int, yAtForm int) {
+	c.SetPosition(xAtForm, yAtForm)
+	ui.MainForm.Panel().AppendPopupWidget(c)
+	ui.UpdateMainForm()
+}

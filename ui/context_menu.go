@@ -86,32 +86,15 @@ func (c *ContextMenu) needToClose() {
 }
 
 func (c *ContextMenu) rebuildVisualElements() {
-	//c.Panel.RemoveAllWidgets()
 	yOffset := 0
 	for _, item := range c.items {
-
-		//var item PopupMenuItem
-		//item.InitControl(&c.Panel, &item, 0, 0, 200, PopupMenuItemHeight, 0)
-		/*item.Text = itemOrig.Text
-		item.OnClick = itemOrig.OnClick
-		item.Image = itemOrig.Image
-		item.KeyCombination = itemOrig.KeyCombination
-		item.innerMenu = itemOrig.innerMenu*/
 		item.needToClosePopupMenu = c.needToClose
 		item.parentMenu = c
-
-		//item.SetX(0)
-		//item.SetY(yOffset)
 		item.SetPosition(0, yOffset)
-		//item.SetWidth(c.Width())
-		//item.SetHeight(PopupMenuItemHeight)
 		item.SetSize(c.Width(), ContextMenuItemHeight)
 		yOffset += ContextMenuItemHeight
 	}
-	//c.SetWidth(300)
-	//c.SetHeight(yOffset)
 	c.SetSize(300, yOffset)
-
 	c.menuWidth = 300
 	c.menuHeight = yOffset
 }
