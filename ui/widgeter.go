@@ -49,6 +49,11 @@ type Widgeter interface {
 
 	updateLayout(oldWidth, oldHeight, newWidth, newHeight int)
 
+	RectClientAreaOnWindow() (x, y int)
+
+	ScrollX() int
+	ScrollY() int
+
 	SetMouseCursor(cursor nuimouse.MouseCursor)
 	MouseCursor() nuimouse.MouseCursor
 

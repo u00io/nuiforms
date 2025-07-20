@@ -642,6 +642,14 @@ func (c *Widget) setScrollY(scrollY int) {
 	}
 }
 
+func (c *Widget) ScrollX() int {
+	return c.scrollX
+}
+
+func (c *Widget) ScrollY() int {
+	return c.scrollY
+}
+
 func (c *Widget) ScrollEnsureVisible(x1, y1 int) {
 
 	if y1 < c.scrollY {
@@ -1814,6 +1822,26 @@ func (c *Widget) ContextMenu() *ContextMenu {
 	return c.contextMenu
 }
 
+func (c *Widget) ParentWidget() Widgeter {
+	parentWidgetId := c.parentWidgetId
+	if parentWidgetId == "" {
+		return nil
+	}
+	return WidgetById(parentWidgetId)
+}
+
 func (c *Widget) RectClientAreaOnWindow() (x, y int) {
-	return c.X() + c.scrollX, c.Y() + c.scrollY
+	x = c.X()
+	y = c.Y()
+	parentWidget := c.ParentWidget()
+	if parentWidget != nil {
+		xx, yy := parentWidget.RectClientAreaOnWindow()
+		x += xx
+		y += yy
+
+		x -= parentWidget.ScrollX()
+		y -= parentWidget.ScrollY()
+	}
+
+	return x, y
 }

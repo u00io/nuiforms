@@ -147,7 +147,8 @@ func (c *ContextMenuItem) SetInnerMenu(menu *ContextMenu) {
 func (c *ContextMenuItem) timerShowInnerMenuHandler() {
 	if c.timerEnabled && time.Now().UnixNano()/1000000-c.timerLastElapsedDTMSec > 200 {
 		c.timerEnabled = false
-		x, y := c.RectClientAreaOnWindow()
+		x, y := c.parentMenu.RectClientAreaOnWindow()
+		y += c.Y()
 		w := c.Width()
 		c.innerMenu.showMenu(x+w, y, c.parentMenu)
 	}

@@ -49,6 +49,7 @@ func (c *ContextMenu) ClosePopup() {
 
 func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 	item := NewContextMenuItem()
+	item.parentWidgetId = c.Id()
 	item.SetText(text)
 	item.OnClick = onClick
 
@@ -59,6 +60,7 @@ func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 
 func (c *ContextMenu) AddItemWithSubmenu(text string, img image.Image, innerMenu *ContextMenu) *ContextMenuItem {
 	item := NewContextMenuItem()
+	item.parentWidgetId = c.Id()
 	item.SetText(text)
 	item.innerMenu = innerMenu
 	c.items = append(c.items, item)
