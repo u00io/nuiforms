@@ -62,7 +62,7 @@ func NewDialogHeader() *dialogHeader {
 	c.headerText.SetOnMouseLeave(c.onMouseLeave)
 	c.AddWidget(c.headerText)
 
-	c.btnClose = NewButton("X")
+	c.btnClose = NewButton("\u00D7")
 	c.btnClose.SetPosition(170, 0)
 	c.btnClose.SetSize(30, 30)
 	c.btnClose.SetAnchors(false, true, true, true)

@@ -57,10 +57,10 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	ctx.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 
 	if c.innerMenu != nil {
-		rectSize := c.Height() / 2
+		rectSize := c.Height()
 		x := c.Width() - c.Height()
-		y := c.Height()/2 - rectSize/2
-		ctx.DrawTextMultiline(x, y, rectSize, rectSize, HAlignCenter, VAlignCenter, ">", GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+		y := 0
+		ctx.DrawTextMultiline(x, y, rectSize, rectSize, HAlignRight, VAlignCenter, "\u00BB", GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 	}
 }
 
