@@ -97,15 +97,15 @@ func NewDialog(title string, width, height int) *Dialog {
 
 	menu := ui.NewContextMenu(nil)
 	menu.AddItem("Item 1", func() {
-		fmt.Println("Item 1 clicked")
+		c.headerPanel.setTitle("Item 1 clicked")
 	})
 	menu.AddItem("Item 2", func() {
-		fmt.Println("Item 2 clicked")
+		c.headerPanel.setTitle("Item 2 clicked")
 	})
 
 	subMenu := ui.NewContextMenu(menu)
 	subMenu.AddItem("Sub Item 1", func() {
-		fmt.Println("Sub Item 1 clicked")
+		c.headerPanel.setTitle("Sub Item 1 clicked")
 	})
 	menu.AddItemWithSubmenu("Sub Menu", subMenu)
 
