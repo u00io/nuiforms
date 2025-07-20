@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"image/color"
 	"time"
 
 	"github.com/u00io/nui/nuikey"
@@ -31,6 +32,9 @@ func NewContextMenuItem() *ContextMenuItem {
 	var item ContextMenuItem
 	item.InitWidget()
 	item.SetAbsolutePositioning(true)
+	item.SetMouseCursor(nuimouse.MouseCursorPointer)
+
+	item.SetOnPaint(item.Draw)
 
 	item.SetOnMouseDown(item.mouseDownHandler)
 	item.SetOnMouseMove(item.MouseMove)
@@ -56,8 +60,12 @@ func (c *ContextMenuItem) ControlType() string {
 }
 
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
-	ctx.SetColor(DefaultBackground)
-	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), DefaultBackground)
+	backColor := GetThemeColor("background", DefaultBackground)
+	if c.IsHovered() {
+		backColor = color.RGBA{R: 20, G: 20, B: 50, A: 255}
+	}
+	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
+	ctx.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 
 	//xOffset := 0
 	/*if c.Image != nil || c.ImageResource != nil {
@@ -85,6 +93,7 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 		textWidth -= c.InnerHeight()
 	}
 	ctx.DrawText(xOffset+5, 0, textWidth, c.InnerHeight(), c.text)*/
+
 	/*if c.innerMenu != nil {
 		imgArrow := uiresources.ResImgCol(uiresources.R_icons_material4_png_av_play_arrow_materialicons_48dp_1x_baseline_play_arrow_black_48dp_png, c.ForeColor())
 		ctx.DrawImage(c.InnerWidth()-c.InnerHeight(), 0, imgArrow.Bounds().Max.X, imgArrow.Bounds().Max.Y, resize.Resize(uint(c.InnerHeight()), uint(c.InnerHeight()), imgArrow, resize.Bicubic))
