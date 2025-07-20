@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"image"
 	"image/color"
 )
 
@@ -58,7 +57,7 @@ func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 	return item
 }
 
-func (c *ContextMenu) AddItemWithSubmenu(text string, img image.Image, innerMenu *ContextMenu) *ContextMenuItem {
+func (c *ContextMenu) AddItemWithSubmenu(text string, innerMenu *ContextMenu) *ContextMenuItem {
 	item := NewContextMenuItem()
 	item.parentWidgetId = c.Id()
 	item.SetText(text)

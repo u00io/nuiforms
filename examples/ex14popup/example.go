@@ -48,7 +48,7 @@ func Run(form *ui.Form) {
 		fmt.Println("Inner Item 2 clicked")
 	})
 
-	contextMenu.AddItemWithSubmenu("Submenu", nil, innerMenu)
+	contextMenu.AddItemWithSubmenu("Submenu", innerMenu)
 
 	lbl.SetContextMenu(contextMenu)
 }
