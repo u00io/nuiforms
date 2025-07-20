@@ -394,6 +394,12 @@ func (c *Form) processTimer() {
 
 	c.topWidget.ProcessTimer()
 
+	for _, popupWidget := range c.topWidget.PopupWidgets {
+		if popupWidget != nil {
+			popupWidget.ProcessTimer()
+		}
+	}
+
 	if c.needUpdate {
 		c.realUpdate()
 	}

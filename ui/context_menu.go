@@ -13,7 +13,6 @@ type ContextMenu struct {
 	menuHeight int
 	items      []*ContextMenuItem
 	CloseEvent func()
-	closingAll func()
 	parentMenu *ContextMenu
 }
 

@@ -33,5 +33,15 @@ func Run(form *ui.Form) {
 		fmt.Println("Item 2 clicked")
 	})
 
+	innerMenu := ui.NewContextMenu(nil)
+	innerMenu.AddItem("Inner Item 1", func() {
+		fmt.Println("Inner Item 1 clicked")
+	})
+	innerMenu.AddItem("Inner Item 2", func() {
+		fmt.Println("Inner Item 2 clicked")
+	})
+
+	contextMenu.AddItemWithSubmenu("Submenu", nil, innerMenu)
+
 	lbl.SetContextMenu(contextMenu)
 }
