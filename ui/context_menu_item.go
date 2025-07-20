@@ -10,16 +10,10 @@ import (
 
 type ContextMenuItem struct {
 	Widget
-	text    string
-	OnClick func()
-	//Image          image.Image
-	//ImageResource  []byte
-	//KeyCombination string
+	text                 string
+	OnClick              func()
 	parentMenu           *ContextMenu
 	needToClosePopupMenu func()
-
-	//timerShowInnerMenu  *FormTimer
-	//AdjustColorForImage bool
 
 	timerEnabled bool
 
@@ -45,11 +39,6 @@ func NewContextMenuItem() *ContextMenuItem {
 	return &item
 }
 
-func (c *ContextMenuItem) OnInit() {
-	//c.timerShowInnerMenu = c.ownWindow.NewTimer(200, c.timerShowInnerMenuHandler)
-	//c.AdjustColorForImage = true
-}
-
 func (c *ContextMenuItem) SetText(text string) {
 	c.text = text
 	UpdateMainForm()
@@ -67,37 +56,12 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 
-	//xOffset := 0
-	/*if c.Image != nil || c.ImageResource != nil {
-		imageSource := c.Image
-		if c.ImageResource != nil {
-			imageSource = uiresources.ResImgCol(c.ImageResource, DefaultForeground)
-		}
-
-		img := resize.Resize(24, 24, imageSource, resize.Bicubic)
-		if c.AdjustColorForImage {
-			img = canvas.AdjustImageForColor(img, img.Bounds().Max.X, img.Bounds().Max.Y, c.foregroundColor.Color())
-		}
-
-		height := img.Bounds().Max.Y
-		yOffset := (c.Height() - height) / 2
-
-		ctx.DrawImage(3, yOffset, img.Bounds().Max.X, height, img)
-		xOffset += 32
-	}*/
-
-	/*ctx.SetColor(c.foregroundColor.Color())
-	ctx.SetFontSize(c.fontSize.Float64())
-	textWidth := c.InnerWidth()
 	if c.innerMenu != nil {
-		textWidth -= c.InnerHeight()
+		rectSize := c.Height() / 2
+		x := c.Width() - c.Height()
+		y := c.Height()/2 - rectSize/2
+		ctx.DrawTextMultiline(x, y, rectSize, rectSize, HAlignCenter, VAlignCenter, ">", GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
 	}
-	ctx.DrawText(xOffset+5, 0, textWidth, c.InnerHeight(), c.text)*/
-
-	/*if c.innerMenu != nil {
-		imgArrow := uiresources.ResImgCol(uiresources.R_icons_material4_png_av_play_arrow_materialicons_48dp_1x_baseline_play_arrow_black_48dp_png, c.ForeColor())
-		ctx.DrawImage(c.InnerWidth()-c.InnerHeight(), 0, imgArrow.Bounds().Max.X, imgArrow.Bounds().Max.Y, resize.Resize(uint(c.InnerHeight()), uint(c.InnerHeight()), imgArrow, resize.Bicubic))
-	}*/
 }
 
 func (c *ContextMenuItem) mouseDownHandler(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
@@ -122,13 +86,11 @@ func (c *ContextMenuItem) mouseDownHandler(button nuimouse.MouseButton, x int, y
 
 func (c *ContextMenuItem) MouseEnter() {
 	MainForm.Panel().CloseAfterPopupWidget(c.parentMenu)
-
 	if c.innerMenu != nil {
 		c.timerEnabled = true
 		c.timerLastElapsedDTMSec = time.Now().UnixNano() / 1000000
 		return
 	}
-
 }
 
 func (c *ContextMenuItem) MouseLeave() {
