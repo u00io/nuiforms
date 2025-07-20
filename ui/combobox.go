@@ -32,6 +32,7 @@ func NewComboBox() *ComboBox {
 	})
 
 	c.SetTypeName("ComboBox")
+	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetOnPaint(c.draw)
 	return &c
 }
