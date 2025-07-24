@@ -35,6 +35,7 @@ func Run(form *ui.Form) {
 	contextMenu := ui.NewContextMenu(nil)
 	contextMenu.AddItem("Item 1", func() {
 		fmt.Println("Item 1 clicked")
+		form.SetTitle("Item 1 clicked")
 	})
 	contextMenu.AddItem("Item 2", func() {
 		fmt.Println("Item 2 clicked")

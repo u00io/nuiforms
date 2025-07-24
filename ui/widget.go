@@ -86,7 +86,7 @@ type Widget struct {
 
 	mouseCursor nuimouse.MouseCursor
 
-	backgroundColor color.RGBA
+	backgroundColor color.Color
 
 	PopupWidgets []Widgeter
 
@@ -169,7 +169,7 @@ func (c *Widget) InitWidget() {
 	c.anchorBottom = false
 	c.widgets = make([]Widgeter, 0)
 	c.mouseCursor = nuimouse.MouseCursorArrow
-	c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0} // transparent by default
+	//	c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0} // transparent by default
 	c.PopupWidgets = make([]Widgeter, 0)
 }
 
@@ -389,7 +389,7 @@ func (c *Widget) NextGridY() int {
 	return maxY
 }
 
-func (c *Widget) SetBackgroundColor(col color.RGBA) {
+func (c *Widget) SetBackgroundColor(col color.Color) {
 	c.backgroundColor = col
 }
 
@@ -723,9 +723,13 @@ func (c *Widget) findWidgetAt(x, y int) Widgeter {
 
 func (c *Widget) ProcessPaint(cnv *Canvas) {
 	// Draw the background color if set
-	if c.backgroundColor.A > 0 {
-		cnv.SetColor(c.backgroundColor)
-		cnv.FillRect(0, 0, c.w, c.h, c.backgroundColor)
+	{
+		backgroundColor := c.BackgroundColor()
+		_, _, _, a := backgroundColor.RGBA()
+		if a > 0 {
+			cnv.SetColor(backgroundColor)
+			cnv.FillRect(0, 0, c.w, c.h, backgroundColor)
+		}
 	}
 
 	// Draw using the custom paint function if set
@@ -1835,15 +1839,30 @@ func (c *Widget) YExpandable() bool {
 }
 
 func (c *Widget) FontFamily() string {
-	return "robotomono"
+	return ThemeFontFamily()
 }
 
 func (c *Widget) FontSize() float64 {
-	return 16
+	return ThemeFontSize()
 }
 
 func (c *Widget) Color() color.Color {
-	return color.RGBA{R: 255, G: 255, B: 255, A: 255} // Default white color
+	return ThemeForegroundColor()
+}
+
+func (c *Widget) BackgroundColor() color.Color {
+	if c.backgroundColor != nil {
+		return c.backgroundColor
+	}
+	return ThemeBackgroundColor()
+}
+
+func (c *Widget) BackgroundColorAccent1() color.Color {
+	return ThemeBackgroundColorAccent1()
+}
+
+func (c *Widget) BackgroundColorAccent2() color.Color {
+	return ThemeBackgroundColorAccent2()
 }
 
 func (c *Widget) SetContextMenu(menu *ContextMenu) {

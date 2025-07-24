@@ -94,7 +94,7 @@ func NewTable() *Table {
 	c.SetXExpandable(true)
 	c.SetYExpandable(true)
 	c.SetAllowScroll(true, true)
-	c.SetBackgroundColor(color.RGBA{R: 50, G: 60, B: 70, A: 255})
+	c.SetBackgroundColor(c.BackgroundColor())
 
 	// Events
 	c.SetOnPaint(c.draw)
@@ -610,13 +610,13 @@ func (c *Table) draw(cnv *Canvas) {
 						cellIsSelected = false
 					}
 
-					backColor := color.RGBA{R: 50, G: 60, B: 70, A: 255}
+					backColor := c.BackgroundColor()
 					if c.showSelection {
 						if rowIsSelected {
-							backColor = color.RGBA{R: 80, G: 90, B: 100, A: 255}
+							backColor = c.BackgroundColorAccent1()
 						}
 						if cellIsSelected {
-							backColor = color.RGBA{R: 100, G: 110, B: 120, A: 255}
+							backColor = c.BackgroundColorAccent2()
 						}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight1, backColor)
@@ -696,13 +696,12 @@ func (c *Table) drawPost(cnv *Canvas) {
 			x := c.columnOffset(colIndex)
 			y := headerRowOffset + c.scrollY
 
-			cnv.FillRect(x, y, cellWidth, cellHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
+			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColor())
 			cnv.SetHAlign(HAlignLeft)
 			cnv.SetVAlign(VAlignCenter)
+			cnv.SetColor(c.Color())
 			cnv.SetFontFamily(c.FontFamily())
 			cnv.SetFontSize(c.FontSize())
-			cnv.SetColor(c.Color())
-
 			cnv.DrawText(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, headerCell.name)
 		}
 	}

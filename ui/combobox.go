@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"image/color"
-
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -80,11 +78,11 @@ func (c *ComboBox) OpenPopup() {
 }
 
 func (c *ComboBox) draw(cnv *Canvas) {
-	backColor := GetThemeColor("background", DefaultBackground)
+	backColor := c.BackgroundColorAccent1()
 	if c.IsHovered() {
-		backColor = GetThemeColor("button.background.hover", DefaultBackground)
+		backColor = c.BackgroundColorAccent2()
 	}
-	foreColor := GetThemeColor("foreground", DefaultForeground)
+	foreColor := c.Color()
 
 	itemText := c.SelectedItemText()
 
@@ -92,6 +90,8 @@ func (c *ComboBox) draw(cnv *Canvas) {
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(foreColor)
+	cnv.SetFontFamily(c.FontFamily())
+	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), itemText)
 }
 
@@ -156,14 +156,16 @@ func newComboBoxPopupItem(index int, text string) *comboBoxPopupItem {
 }
 
 func (c *comboBoxPopupItem) Draw(ctx *Canvas) {
-	backColor := GetThemeColor("background", DefaultBackground)
+	backColor := c.BackgroundColorAccent1()
 	if c.IsHovered() {
-		backColor = color.RGBA{R: 20, G: 20, B: 50, A: 255}
+		backColor = c.BackgroundColorAccent2()
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
-	ctx.SetColor(GetThemeColor("foreground", DefaultForeground))
+	ctx.SetColor(c.Color())
+	ctx.SetFontFamily(c.FontFamily())
+	ctx.SetFontSize(c.FontSize())
 	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)
 }
 

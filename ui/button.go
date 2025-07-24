@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"image/color"
-
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -54,21 +52,21 @@ func (c *Button) Press() {
 }
 
 func (c *Button) draw(cnv *Canvas) {
-	backColor := GetThemeColor("background", DefaultBackground)
+	backColor := c.BackgroundColorAccent1()
 	if c.IsHovered() {
-		backColor = GetThemeColor("button.background.hover", DefaultBackground)
+		backColor = c.BackgroundColorAccent2()
 	}
 	if c.pressed {
-		backColor = GetThemeColor("button.background.pressed", DefaultBackground)
+		backColor = c.BackgroundColorAccent1()
 	}
-	foreColor := color.RGBA{R: 255, G: 255, B: 255, A: 255}
-
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
+
+	foreColor := c.Color()
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(foreColor)
-	cnv.SetFontFamily("robotomono")
-	cnv.SetFontSize(16)
+	cnv.SetFontFamily(c.FontFamily())
+	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 }
 

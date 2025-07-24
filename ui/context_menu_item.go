@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"image/color"
 	"time"
 
 	"github.com/u00io/nui/nuikey"
@@ -49,13 +48,16 @@ func (c *ContextMenuItem) ControlType() string {
 }
 
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
-	backColor := GetThemeColor("background", DefaultBackground)
+	backColor := c.BackgroundColorAccent1()
 	if c.IsHovered() {
-		backColor = color.RGBA{R: 20, G: 20, B: 50, A: 255}
+		backColor = c.BackgroundColorAccent2()
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
+	ctx.SetColor(c.Color())
+	ctx.SetFontFamily(c.FontFamily())
+	ctx.SetFontSize(c.FontSize())
 	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)
 
 	if c.innerMenu != nil {
@@ -64,6 +66,9 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 		y := 0
 		ctx.SetHAlign(HAlignLeft)
 		ctx.SetVAlign(VAlignCenter)
+		ctx.SetColor(c.Color())
+		ctx.SetFontFamily(c.FontFamily())
+		ctx.SetFontSize(c.FontSize())
 		ctx.DrawText(x, y, rectSize, rectSize, "\u00BB")
 	}
 }

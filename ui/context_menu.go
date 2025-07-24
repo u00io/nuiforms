@@ -1,9 +1,5 @@
 package ui
 
-import (
-	"image/color"
-)
-
 const ContextMenuItemHeight = 32
 
 type ContextMenu struct {
@@ -20,7 +16,7 @@ func NewContextMenu(parent Widgeter) *ContextMenu {
 	c.InitWidget()
 	c.SetAbsolutePositioning(true)
 	c.SetName("PopupMenuPanel")
-	c.SetBackgroundColor(color.RGBA{R: 255, G: 255, B: 255, A: 255})
+	c.SetBackgroundColor(c.BackgroundColor())
 	return &c
 }
 

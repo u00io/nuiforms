@@ -49,6 +49,9 @@ func (c *tabWidgetButton) SetOnButtonClick(fn func(btn *tabWidgetButton)) {
 func (c *tabWidgetButton) draw(cnv *Canvas) {
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
+	cnv.SetColor(c.Color())
+	cnv.SetFontFamily(c.FontFamily())
+	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 }
 
