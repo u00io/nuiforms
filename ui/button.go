@@ -52,19 +52,18 @@ func (c *Button) Press() {
 }
 
 func (c *Button) draw(cnv *Canvas) {
-	backColor := c.BackgroundColorAccent1()
+	backColor := c.BackgroundColor()
 	if c.IsHovered() {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorAccent1()
 	}
 	if c.pressed {
-		backColor = c.BackgroundColorAccent1()
+		backColor = c.BackgroundColorAccent2()
 	}
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 
-	foreColor := c.Color()
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(foreColor)
+	cnv.SetColor(c.Color())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
