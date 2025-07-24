@@ -1842,6 +1842,10 @@ func (c *Widget) FontSize() float64 {
 	return 16
 }
 
+func (c *Widget) Color() color.Color {
+	return color.RGBA{R: 255, G: 255, B: 255, A: 255} // Default white color
+}
+
 func (c *Widget) SetContextMenu(menu *ContextMenu) {
 	c.contextMenu = menu
 }

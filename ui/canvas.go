@@ -8,7 +8,7 @@ import (
 )
 
 type canvasState struct {
-	col color.RGBA
+	col color.Color
 
 	translateX int
 	translateY int
@@ -17,6 +17,12 @@ type canvasState struct {
 	clipY int
 	clipW int
 	clipH int
+
+	vAlign     VAlign
+	hAlign     HAlign
+	fontSize   float64
+	fontFamily string
+	underline  bool
 }
 
 type Canvas struct {
@@ -62,8 +68,28 @@ func (c *Canvas) Restore() {
 	c.stack = c.stack[:len(c.stack)-1]
 }
 
-func (c *Canvas) SetColor(col color.RGBA) {
+func (c *Canvas) SetColor(col color.Color) {
 	c.state.col = col
+}
+
+func (c *Canvas) SetFontFamily(fontFamily string) {
+	c.state.fontFamily = fontFamily
+}
+
+func (c *Canvas) SetFontSize(fontSize float64) {
+	c.state.fontSize = fontSize
+}
+
+func (c *Canvas) SetUnderline(underline bool) {
+	c.state.underline = underline
+}
+
+func (c *Canvas) SetHAlign(hAlign HAlign) {
+	c.state.hAlign = hAlign
+}
+
+func (c *Canvas) SetVAlign(vAlign VAlign) {
+	c.state.vAlign = vAlign
 }
 
 func (c *Canvas) SetDirectTranslateAndClip(x, y, w, h int) {
@@ -726,8 +752,15 @@ func (c *Canvas) TranslatedY() int {
 	return c.state.translateY
 }
 
-func (c *Canvas) DrawTextMultiline(x int, y int, width int, height int, hAlign HAlign, vAlign VAlign, text string, colr color.Color, fontFamily string, fontSize float64, underline bool) {
+func (c *Canvas) DrawText(x int, y int, width int, height int, text string) {
 	lines := strings.Split(text, "\r\n")
+
+	fontFamily := c.state.fontFamily
+	fontSize := c.state.fontSize
+	colr := c.state.col
+	underline := c.state.underline
+	vAlign := c.state.vAlign
+	hAlign := c.state.hAlign
 
 	yOffset := 0
 

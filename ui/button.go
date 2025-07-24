@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"image/color"
+
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -56,13 +58,18 @@ func (c *Button) draw(cnv *Canvas) {
 	if c.IsHovered() {
 		backColor = GetThemeColor("button.background.hover", DefaultBackground)
 	}
-
 	if c.pressed {
 		backColor = GetThemeColor("button.background.pressed", DefaultBackground)
 	}
+	foreColor := color.RGBA{R: 255, G: 255, B: 255, A: 255}
 
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
-	cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	cnv.SetHAlign(HAlignCenter)
+	cnv.SetVAlign(VAlignCenter)
+	cnv.SetColor(foreColor)
+	cnv.SetFontFamily("robotomono")
+	cnv.SetFontSize(16)
+	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

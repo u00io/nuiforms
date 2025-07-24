@@ -21,7 +21,12 @@ func NewLabel(text string) *Label {
 	c.SetTypeName("Label")
 	//c.SetMaxWidth(labelMaxWidth)
 	c.SetOnPaint(func(cnv *Canvas) {
-		cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+		cnv.SetHAlign(HAlignLeft)
+		cnv.SetVAlign(VAlignCenter)
+		cnv.SetFontFamily(c.FontFamily())
+		cnv.SetFontSize(c.FontSize())
+		cnv.SetColor(c.Color())
+		cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 	})
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 		// Labels do not handle mouse down events by default

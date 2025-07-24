@@ -47,7 +47,9 @@ func (c *tabWidgetButton) SetOnButtonClick(fn func(btn *tabWidgetButton)) {
 }
 
 func (c *tabWidgetButton) draw(cnv *Canvas) {
-	cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	cnv.SetHAlign(HAlignCenter)
+	cnv.SetVAlign(VAlignCenter)
+	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 }
 
 func (c *tabWidgetButton) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

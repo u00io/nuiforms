@@ -84,11 +84,15 @@ func (c *ComboBox) draw(cnv *Canvas) {
 	if c.IsHovered() {
 		backColor = GetThemeColor("button.background.hover", DefaultBackground)
 	}
+	foreColor := GetThemeColor("foreground", DefaultForeground)
 
 	itemText := c.SelectedItemText()
 
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
-	cnv.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignCenter, VAlignCenter, itemText, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	cnv.SetHAlign(HAlignLeft)
+	cnv.SetVAlign(VAlignCenter)
+	cnv.SetColor(foreColor)
+	cnv.DrawText(0, 0, c.Width(), c.Height(), itemText)
 }
 
 type comboBoxPopup struct {
@@ -157,7 +161,10 @@ func (c *comboBoxPopupItem) Draw(ctx *Canvas) {
 		backColor = color.RGBA{R: 20, G: 20, B: 50, A: 255}
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
-	ctx.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	ctx.SetHAlign(HAlignLeft)
+	ctx.SetVAlign(VAlignCenter)
+	ctx.SetColor(GetThemeColor("foreground", DefaultForeground))
+	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)
 }
 
 func (c *comboBoxPopupItem) mouseDownHandler(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

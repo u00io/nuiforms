@@ -54,13 +54,17 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 		backColor = color.RGBA{R: 20, G: 20, B: 50, A: 255}
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
-	ctx.DrawTextMultiline(0, 0, c.Width(), c.Height(), HAlignLeft, VAlignCenter, c.text, GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+	ctx.SetHAlign(HAlignLeft)
+	ctx.SetVAlign(VAlignCenter)
+	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)
 
 	if c.innerMenu != nil {
 		rectSize := c.Height()
 		x := c.Width() - c.Height()
 		y := 0
-		ctx.DrawTextMultiline(x, y, rectSize, rectSize, HAlignRight, VAlignCenter, "\u00BB", GetThemeColor("foreground", DefaultForeground), "robotomono", 16, false)
+		ctx.SetHAlign(HAlignLeft)
+		ctx.SetVAlign(VAlignCenter)
+		ctx.DrawText(x, y, rectSize, rectSize, "\u00BB")
 	}
 }
 

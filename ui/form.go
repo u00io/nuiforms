@@ -211,7 +211,11 @@ func (c *Form) DrawWidgetDebugInfo(w Widgeter, cnv *Canvas) {
 	for _, line := range lines {
 		cnv.FillRect(posX, posY, 200, 20, color.RGBA{R: 0, G: 0, B: 0, A: 150})
 		//cnv.DrawText(posX, posY, line, "roboto", 16, col, false)
-		cnv.DrawTextMultiline(posX, posY, 200, 20, HAlignLeft, VAlignTop, line, col, "robotomono", 12, false)
+		cnv.SetHAlign(HAlignLeft)
+		cnv.SetVAlign(VAlignTop)
+		cnv.SetColor(col)
+		cnv.SetFontSize(12)
+		cnv.DrawText(posX, posY, 200, 20, line)
 		fmt.Println("PosX:", posX, "PosY:", posY, "Line:", line)
 		posY += 20
 	}

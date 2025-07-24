@@ -626,7 +626,12 @@ func (c *Table) draw(cnv *Canvas) {
 						cellText = cellObj.text
 					}
 
-					cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight1-c.cellPadding*2, HAlignLeft, VAlignCenter, cellText, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+					cnv.SetHAlign(HAlignLeft)
+					cnv.SetVAlign(VAlignCenter)
+					cnv.SetFontFamily(c.FontFamily())
+					cnv.SetFontSize(c.FontSize())
+					cnv.SetColor(c.Color())
+					cnv.DrawText(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight1-c.cellPadding*2, cellText)
 				}
 			}
 		}
@@ -692,7 +697,13 @@ func (c *Table) drawPost(cnv *Canvas) {
 			y := headerRowOffset + c.scrollY
 
 			cnv.FillRect(x, y, cellWidth, cellHeight, color.RGBA{R: 70, G: 80, B: 90, A: 255})
-			cnv.DrawTextMultiline(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, HAlignLeft, VAlignCenter, headerCell.name, color.RGBA{R: 200, G: 200, B: 200, A: 255}, "robotomono", 16, false)
+			cnv.SetHAlign(HAlignLeft)
+			cnv.SetVAlign(VAlignCenter)
+			cnv.SetFontFamily(c.FontFamily())
+			cnv.SetFontSize(c.FontSize())
+			cnv.SetColor(c.Color())
+
+			cnv.DrawText(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, headerCell.name)
 		}
 	}
 

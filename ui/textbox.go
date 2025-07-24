@@ -290,7 +290,11 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		line = c.lineToPasswordChars(line)
 		ctx.SetColor(color.RGBA{0x88, 0x88, 0x88, 0xff}) // c.foregroundColor.Color()
 		_, textHeightInLine, err := MeasureText(c.FontFamily(), c.FontSize(), line)
-		ctx.DrawTextMultiline(c.leftAndRightPadding, yStaticOffset+yOffset, width-c.leftAndRightPadding*2, textHeightInLine, HAlignLeft, VAlignCenter, line, color.RGBA{150, 150, 150, 255}, c.FontFamily(), c.FontSize(), false)
+		ctx.SetHAlign(HAlignLeft)
+		ctx.SetVAlign(VAlignCenter)
+		ctx.SetFontFamily(c.FontFamily())
+		ctx.SetFontSize(c.FontSize())
+		ctx.DrawText(c.leftAndRightPadding, yStaticOffset+yOffset, width-c.leftAndRightPadding*2, textHeightInLine, line)
 
 		if err != nil {
 			return
@@ -316,7 +320,9 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 	}
 
 	if c.Text() == "" && c.emptyText != "" && !focus {
-		ctx.DrawTextMultiline(c.leftAndRightPadding, 0, c.w, c.h, HAlignLeft, VAlignCenter, c.emptyText, color.RGBA{0x88, 0x88, 0x88, 0xff}, c.FontFamily(), c.FontSize(), false)
+		ctx.SetHAlign(HAlignLeft)
+		ctx.SetVAlign(VAlignCenter)
+		ctx.DrawText(c.leftAndRightPadding, 0, c.w, c.h, c.emptyText)
 	}
 }
 
