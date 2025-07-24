@@ -744,6 +744,21 @@ func (c *Canvas) FillRect(x int, y int, width int, height int, colr color.Color)
 	}
 }
 
+func (c *Canvas) DrawRect(x int, y int, width int, height int) {
+	x = x + c.state.translateX
+	y = y + c.state.translateY
+
+	for xx := x; xx < x+width; xx++ {
+		c.MixPixel(xx, y, c.state.col)
+		c.MixPixel(xx, y+height-1, c.state.col)
+	}
+
+	for yy := y; yy < y+height; yy++ {
+		c.MixPixel(x, yy, c.state.col)
+		c.MixPixel(x+width-1, yy, c.state.col)
+	}
+}
+
 func (c *Canvas) TranslatedX() int {
 	return c.state.translateX
 }

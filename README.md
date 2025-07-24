@@ -20,10 +20,14 @@ Doc: [NUIForms Documentation](doc)
 - Linux
 
 # Base Widgets
-- Panel
-- TextBox
-- Label
 - Button
-- Table
+- ComboBox
+- ContextMenu
+- Dialog
 - HSpacer
+- Label
+- Panel
+- Table
+- TabWidget
+- TextBox
 - VSpacer

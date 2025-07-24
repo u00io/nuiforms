@@ -68,6 +68,9 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
+
+	cnv.SetColor(c.BackgroundColorAccent2())
+	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
