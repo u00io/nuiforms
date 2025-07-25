@@ -5,10 +5,9 @@ import (
 )
 
 func Run(form *ui.Form) {
-	btn := ui.NewButton("abc23456789def")
+	btn := ui.NewCheckbox("Click me")
 	panel := form.Panel()
-	panel.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
-	panel.AddWidgetOnGrid(btn, 1, 0)
-	panel.AddWidgetOnGrid(ui.NewHSpacer(), 2, 0)
+	panel.AddWidgetOnGrid(btn, 0, 0)
+	panel.AddWidgetOnGrid(ui.NewHSpacer(), 1, 0)
 	panel.AddWidgetOnGrid(ui.NewVSpacer(), 0, 1)
 }
