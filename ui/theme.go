@@ -12,6 +12,7 @@ func init() {
 	Theme["background"] = color.RGBA{10, 10, 10, 255}
 	Theme["background.accent1"] = color.RGBA{30, 30, 30, 255}
 	Theme["background.accent2"] = color.RGBA{50, 50, 50, 255}
+	Theme["background.selection"] = color.RGBA{38, 79, 120, 255}
 	Theme["foreground"] = color.RGBA{255, 255, 255, 255}
 	Theme["fontFamily"] = "robotomono"
 	Theme["fontSize"] = 16
@@ -42,6 +43,15 @@ func ThemeBackgroundColorAccent2() color.RGBA {
 		}
 	}
 	return color.RGBA{50, 50, 50, 255} // Default accent2 background color
+}
+
+func ThemeBackgroundColorSelection() color.RGBA {
+	if v, ok := Theme["background.selection"]; ok {
+		if bgSelectionColor, ok := v.(color.RGBA); ok {
+			return bgSelectionColor
+		}
+	}
+	return color.RGBA{38, 79, 120, 255} // Default selection background color
 }
 
 func ThemeForegroundColor() color.RGBA {

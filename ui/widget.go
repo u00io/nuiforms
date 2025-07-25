@@ -1865,6 +1865,10 @@ func (c *Widget) BackgroundColorAccent2() color.Color {
 	return ThemeBackgroundColorAccent2()
 }
 
+func (c *Widget) BackgroundColorSelection() color.Color {
+	return ThemeBackgroundColorSelection()
+}
+
 func (c *Widget) SetContextMenu(menu *ContextMenu) {
 	c.contextMenu = menu
 }

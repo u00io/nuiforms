@@ -279,7 +279,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 				rectY = yStaticOffset
 			}
 
-			ctx.FillRect(selXBegin, rectY, selXWidth, oneLineHeight, color.RGBA{0x00, 0x00, 0xFF, 0xFF}) // c.selectionBackground.Color())
+			ctx.FillRect(selXBegin, rectY, selXWidth, oneLineHeight, c.BackgroundColorSelection())
 		}
 	}
 
