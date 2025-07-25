@@ -51,6 +51,10 @@ func (c *Checkbox) SetChecked(checked bool) {
 	}
 }
 
+func (c *Checkbox) Checked() bool {
+	return c.checked
+}
+
 func (c *Checkbox) draw(cnv *Canvas) {
 	backColor := c.BackgroundColor()
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
