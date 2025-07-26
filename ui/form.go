@@ -237,7 +237,7 @@ func (c *Form) processResize(width, height int) {
 }
 
 func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
-	fmt.Println("Mouse CLK at:", x, y, "Button:", button)
+	// fmt.Println("Mouse CLK at:", x, y, "Button:", button)
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = true
 	}

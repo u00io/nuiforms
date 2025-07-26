@@ -55,6 +55,7 @@ func NewFilePanel() *FilePanel {
 func (c *FilePanel) Select() {
 	c.topPanelLabel.SetText("Selected")
 	c.fileList.SetShowSelection(true)
+	c.fileList.Focus()
 }
 
 func (c *FilePanel) Unselect() {

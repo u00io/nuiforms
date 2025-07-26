@@ -95,7 +95,7 @@ func (c *MainWidget) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyEsc {
 		c.cmdLine.SetText("")
 		if c.cmdLine.IsFocused() {
-			c.filePanels[c.currentFilePanelIndex].Focus()
+			c.filePanels[c.currentFilePanelIndex].Select()
 		}
 	}
 	return false

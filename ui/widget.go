@@ -491,7 +491,7 @@ func (c *Widget) Focus() {
 	if !c.canBeFocused {
 		return
 	}
-	//fmt.Println("Widget Focused", c.Name(), "Id:", c.Id(), "Type:", c.TypeName())
+	fmt.Println("Widget Focused", c.Name(), "Id:", c.Id(), "Type:", c.TypeName())
 	widgetToFocus := WidgetById(c.Id())
 	if widgetToFocus == nil {
 		return

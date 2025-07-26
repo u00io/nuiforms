@@ -44,6 +44,11 @@ type Table struct {
 	headerWidget  *tableHeader
 	editorTextBox *TextBox
 	innerWidgets  []*innerWidget
+
+	editTriggerDoubleClick bool
+	editTriggerEnter       bool
+	editTriggerF2          bool
+	editTriggerKeyDown     bool
 }
 
 type innerWidget struct {
@@ -149,6 +154,22 @@ func NewTable() *Table {
 	c.updateInnerWidgetsLayout()
 
 	return &c
+}
+
+func (c *Table) SetEditTriggerDoubleClick(enabled bool) {
+	c.editTriggerDoubleClick = enabled
+}
+
+func (c *Table) SetEditTriggerEnter(enabled bool) {
+	c.editTriggerEnter = enabled
+}
+
+func (c *Table) SetEditTriggerF2(enabled bool) {
+	c.editTriggerF2 = enabled
+}
+
+func (c *Table) SetEditTriggerKeyDown(enabled bool) {
+	c.editTriggerKeyDown = enabled
 }
 
 func (c *Table) SetOnSelectionChanged(callback func(x int, y int)) {
@@ -418,7 +439,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 	col, row := c.cellByPosition(x, y)
 	if row >= 0 && col >= 0 {
 		c.SetCurrentCell(col, row)
-		fmt.Println("Cell clicked:", col, row, " at ", x, y)
+		//fmt.Println("Cell clicked:", col, row, " at ", x, y)
 	}
 	return true
 }
@@ -433,7 +454,9 @@ func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods 
 	fmt.Println("Cell double clicked:", col, row, " at ", x, y)
 	if row >= 0 && col >= 0 {
 		c.SetCurrentCell(col, row)
-		c.EditCurrentCell("")
+		if c.editTriggerDoubleClick {
+			c.EditCurrentCell("")
+		}
 		return true
 	}
 	return false
@@ -481,9 +504,18 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		UpdateMainForm()
 	}
 
-	if key == nuikey.KeyEnter || key == nuikey.KeyF2 {
-		c.EditCurrentCell("")
-		UpdateMainForm()
+	if key == nuikey.KeyEnter {
+		if c.editTriggerEnter {
+			c.EditCurrentCell("")
+			UpdateMainForm()
+		}
+	}
+
+	if key == nuikey.KeyF2 {
+		if c.editTriggerF2 {
+			c.EditCurrentCell("")
+			UpdateMainForm()
+		}
 	}
 
 	if key == nuikey.KeyPageUp {
@@ -657,6 +689,7 @@ func (c *Table) draw(cnv *Canvas) {
 		y2 := visibleRow2 * c.rowHeight1
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
 	}
+
 	cnv.Restore()
 }
 
@@ -723,6 +756,10 @@ func (c *Table) drawPost(cnv *Canvas) {
 		y2 := c.headerHeight() + c.scrollY
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
 	}
+
+	// Draw table border
+	cnv.SetColor(c.BackgroundColorAccent2())
+	cnv.DrawRect(c.scrollX, c.scrollY, c.Width(), c.Height())
 }
 
 func (c *Table) visibleRows() (min int, max int) {
