@@ -107,7 +107,7 @@ func NewTable() *Table {
 	c.SetOnMouseDown(c.onMouseDown)
 	c.SetOnMouseUp(c.onMouseUp)
 	c.SetOnMouseDblClick(c.onMouseDblClick)
-	c.SetOnKeyDown(c.onKeyDown)
+	//c.SetOnKeyDown(c.onKeyDown)
 	c.SetOnKeyUp(c.onKeyUp)
 	c.SetOnMouseMove(c.onMouseMove)
 	c.SetOnFocused(c.onFocused)
@@ -465,11 +465,22 @@ func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods 
 func (c *Table) onFocused() {
 }
 
-func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	processed := false
+
+	if c.onKeyDown != nil {
+		processed = c.onKeyDown(key, mods)
+	}
+
+	if processed {
+		return processed
+	}
+
 	if key == nuikey.KeyArrowLeft {
 		if c.currentCellX > 0 {
 			c.SetCurrentCell(c.currentCellX-1, c.currentCellY)
 			UpdateMainForm()
+			processed = true
 		}
 	}
 
@@ -477,37 +488,51 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		if c.currentCellX < c.columnCount-1 {
 			c.SetCurrentCell(c.currentCellX+1, c.currentCellY)
 			UpdateMainForm()
+			processed = true
 		}
 	}
 
 	if key == nuikey.KeyArrowUp {
 		if c.currentCellY > 0 {
-			c.SetCurrentCell(c.currentCellX, c.currentCellY-1)
+			selectRowIndex := c.currentCellY - 1
+			if selectRowIndex >= c.rowCount {
+				selectRowIndex = c.rowCount - 1
+			}
+			c.SetCurrentCell(c.currentCellX, selectRowIndex)
 			UpdateMainForm()
+			processed = true
 		}
 	}
 
 	if key == nuikey.KeyArrowDown {
 		if c.currentCellY < c.rowCount-1 {
-			c.SetCurrentCell(c.currentCellX, c.currentCellY+1)
+			selectRowIndex := c.currentCellY + 1
+			if selectRowIndex >= c.rowCount {
+				selectRowIndex = c.rowCount - 1
+			}
+			c.SetCurrentCell(c.currentCellX, selectRowIndex)
 			UpdateMainForm()
+			processed = true
 		}
 	}
 
 	if key == nuikey.KeyHome {
 		c.SetCurrentCell(c.currentCellX, 0)
 		UpdateMainForm()
+		processed = true
 	}
 
 	if key == nuikey.KeyEnd {
 		c.SetCurrentCell(c.currentCellX, c.rowCount-1)
 		UpdateMainForm()
+		processed = true
 	}
 
 	if key == nuikey.KeyEnter {
 		if c.editTriggerEnter {
 			c.EditCurrentCell("")
 			UpdateMainForm()
+			processed = true
 		}
 	}
 
@@ -515,6 +540,7 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		if c.editTriggerF2 {
 			c.EditCurrentCell("")
 			UpdateMainForm()
+			processed = true
 		}
 	}
 
@@ -528,6 +554,7 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			c.SetCurrentCell(c.currentCellX, targetRow)
 			UpdateMainForm()
 		}
+		processed = true
 	}
 
 	if key == nuikey.KeyPageDown {
@@ -540,9 +567,10 @@ func (c *Table) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			c.SetCurrentCell(c.currentCellX, targetRow)
 			UpdateMainForm()
 		}
+		processed = true
 	}
 
-	return true
+	return processed
 }
 
 func (c *Table) onKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) bool {

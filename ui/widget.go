@@ -1063,13 +1063,6 @@ func (c *Widget) ProcessMouseEnter() bool {
 func (c *Widget) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	processed := false
 
-	/*for _, w := range c.widgets {
-		processed = w.ProcessKeyDown(key, mods)
-		if processed {
-			break
-		}
-	}*/
-
 	if !processed && c.onKeyDown != nil {
 		processed = c.onKeyDown(key, mods)
 	}

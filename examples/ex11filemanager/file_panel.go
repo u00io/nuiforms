@@ -2,13 +2,15 @@ package ex11filemanager
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nuiforms/ui"
 )
 
 type FilePanel struct {
 	ui.Widget
+
+	currentEntry *Entry
 
 	topPanel      *ui.Panel
 	topPanelLabel *ui.Label
@@ -41,15 +43,44 @@ func NewFilePanel() *FilePanel {
 	c.fileList.SetColumnName(2, "Modified")
 	c.fileList.SetAllowScroll(false, true)
 	c.fileList.SetSelectingCell(false)
+	c.fileList.SetOnKeyDown(c.fileListKeyDown)
 	c.contentPanel.AddWidget(c.fileList)
 
 	c.bottomPanel = ui.NewPanel()
 	c.bottomPanel.AddWidgetOnGrid(ui.NewLabel("File panel bottom"), 0, 0)
 	c.AddWidgetOnGrid(c.bottomPanel, 0, 2)
 
-	c.loadDirectory("D:/")
+	rootEntries := readRootEntries()
+
+	c.currentEntry = rootEntries[0]
+
+	c.loadDirectory(c.currentEntry)
 
 	return &c
+}
+
+func (c *FilePanel) fileListKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	if key == nuikey.KeyEnter {
+		currentRowIndex := c.fileList.CurrentRow()
+		if currentRowIndex < 0 || currentRowIndex >= c.fileList.RowCount() {
+			return false
+		}
+		fileName := c.fileList.GetCellText(0, currentRowIndex)
+		newEntry := c.currentEntry.CreateChildEntry(fileName)
+		c.loadDirectory(newEntry)
+
+		return true
+	}
+
+	if key == nuikey.KeyBackspace {
+		if len(c.currentEntry.ServicePath) > 1 {
+			newEntry := c.currentEntry.CreateParentEntry()
+			c.loadDirectory(newEntry)
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *FilePanel) Select() {
@@ -67,25 +98,28 @@ func (c *FilePanel) SetOnFocused(onFocused func()) {
 	c.fileList.SetOnFocused(onFocused)
 }
 
-func (c *FilePanel) loadDirectory(path string) {
-	// Get file list from the specified path
-	dirEntries, err := os.ReadDir(path)
-	if err != nil {
+func (c *FilePanel) loadDirectory(entry *Entry) {
+	if entry == nil {
 		return
 	}
 
-	c.fileList.SetRowCount(len(dirEntries))
-	for i, entry := range dirEntries {
-		fileInfo, err := entry.Info()
-		if err != nil {
-			continue
-		}
-		c.fileList.SetCellText(0, i, fileInfo.Name())
-		if fileInfo.IsDir() {
+	entries, err := ReadEntry(entry)
+	if err != nil {
+		c.fileList.SetRowCount(0)
+		c.fileList.SetCellText(0, 0, fmt.Sprintf("Error: %v", err))
+		return
+	}
+
+	c.fileList.SetRowCount(len(entries))
+	for i, entry := range entries {
+		c.fileList.SetCellText(0, i, entry.DisplayName())
+		if entry.IsDir {
 			c.fileList.SetCellText(1, i, "<DIR>")
 		} else {
-			c.fileList.SetCellText(1, i, fmt.Sprint(fileInfo.Size()))
+			c.fileList.SetCellText(1, i, fmt.Sprint(entry.Size))
 		}
-		c.fileList.SetCellText(2, i, fileInfo.ModTime().Format("2006-01-02 15:04:05"))
+		c.fileList.SetCellText(2, i, entry.Modified.Format("2006-01-02 15:04:05"))
 	}
+
+	c.currentEntry = entry
 }
