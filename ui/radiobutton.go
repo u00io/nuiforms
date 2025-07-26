@@ -5,21 +5,21 @@ import (
 	"github.com/u00io/nui/nuimouse"
 )
 
-type Checkbox struct {
+type RadioButton struct {
 	Widget
 	checked        bool
 	text           string
-	onStateChanged func(btn *Checkbox, checked bool)
+	onStateChanged func(btn *RadioButton, checked bool)
 }
 
-func NewCheckbox(text string) *Checkbox {
-	var c Checkbox
+func NewRadioButton(text string) *RadioButton {
+	var c RadioButton
 	c.InitWidget()
-	c.SetTypeName("Checkbox")
+	c.SetTypeName("RadioButton")
 	c.SetMinSize(150, 30)
 	c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
-	c.SetText("Checkbox")
+	c.SetText("RadioButton")
 	c.SetCanBeFocused(true)
 
 	c.SetOnPaint(c.draw)
@@ -31,22 +31,34 @@ func NewCheckbox(text string) *Checkbox {
 	return &c
 }
 
-func (c *Checkbox) Text() string {
+func (c *RadioButton) Text() string {
 	return c.text
 }
 
-func (c *Checkbox) SetText(text string) {
+func (c *RadioButton) SetText(text string) {
 	c.text = text
 	UpdateMainForm()
 }
 
-func (c *Checkbox) SetOnStateChanged(fn func(btn *Checkbox, checked bool)) {
+func (c *RadioButton) SetOnStateChanged(fn func(btn *RadioButton, checked bool)) {
 	c.onStateChanged = fn
 }
 
-func (c *Checkbox) SetChecked(checked bool) {
+func (c *RadioButton) SetChecked(checked bool) {
 	if c.checked == checked {
 		return
+	}
+
+	if checked {
+		// Uncheck all other radio buttons in the same group
+		parentWidget := c.ParentWidget()
+		if parentWidget != nil {
+			for _, child := range parentWidget.Widgets() {
+				if radioButton, ok := child.(*RadioButton); ok && radioButton.Id() != c.Id() {
+					radioButton.SetChecked(false)
+				}
+			}
+		}
 	}
 
 	c.checked = checked
@@ -55,11 +67,11 @@ func (c *Checkbox) SetChecked(checked bool) {
 	}
 }
 
-func (c *Checkbox) Checked() bool {
+func (c *RadioButton) Checked() bool {
 	return c.checked
 }
 
-func (c *Checkbox) draw(cnv *Canvas) {
+func (c *RadioButton) draw(cnv *Canvas) {
 	backColor := c.BackgroundColor()
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 
@@ -80,11 +92,11 @@ func (c *Checkbox) draw(cnv *Canvas) {
 	}
 }
 
-func (c *Checkbox) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+func (c *RadioButton) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	return true
 }
 
-func (c *Checkbox) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+func (c *RadioButton) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	if x < 0 || x >= c.Width() || y < 0 || y >= c.Height() {
 		// MouseUp outside the button area, ignore
 		return false
@@ -93,7 +105,9 @@ func (c *Checkbox) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y in
 	hoverWidgeter := MainForm.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
-		c.SetChecked(!c.checked)
+		if !c.checked {
+			c.SetChecked(true)
+		}
 	}
 
 	return true
