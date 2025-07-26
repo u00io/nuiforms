@@ -9,9 +9,11 @@ import (
 func Run(form *ui.Form) {
 	panel := ui.NewPanel()
 
+	progressBar := ui.NewProgressBar(0, 100, 0)
 	cb1 := ui.NewCheckbox("Checkbox 1")
 	cb1.SetOnStateChanged(func(btn *ui.Checkbox, checked bool) {
-		fmt.Println("Checkbox 1 checked:", checked)
+		progressBar.SetValue(progressBar.Value() + 1)
+		progressBar.SetText(fmt.Sprintf("Progress: %.0f%%", progressBar.Value()))
 	})
 
 	rb1 := ui.NewRadioButton("Option 1")
@@ -30,6 +32,8 @@ func Run(form *ui.Form) {
 	rb1.SetChecked(true) // Set the first radio button as checked by default
 
 	panel.AddWidgetOnGrid(cb1, 0, 2)
+
+	panel.AddWidgetOnGrid(progressBar, 0, 3)
 
 	form.Panel().AddWidgetOnGrid(panel, 0, 0)
 }
