@@ -3,6 +3,7 @@ package ui
 import (
 	"image"
 	"image/color"
+	"image/draw"
 	"math"
 	"strings"
 )
@@ -757,6 +758,45 @@ func (c *Canvas) DrawRect(x int, y int, width int, height int) {
 		c.MixPixel(x, yy, c.state.col)
 		c.MixPixel(x+width-1, yy, c.state.col)
 	}
+}
+
+func (c *Canvas) DrawImage(x int, y int, img image.Image) {
+	bInner := image.Rectangle{}
+	bInner.Min.X = x + c.state.translateX
+	bInner.Min.Y = y + c.state.translateY
+	bInner.Max.X += bInner.Min.X + img.Bounds().Max.X
+	bInner.Max.Y += bInner.Min.Y + img.Bounds().Max.Y
+
+	xOffset := 0
+	yOffset := 0
+
+	if bInner.Min.X < c.state.clipX {
+		xOffset = c.state.clipX - bInner.Min.X
+		bInner.Min.X = c.state.clipX
+	}
+
+	if bInner.Min.Y < c.state.clipY {
+		yOffset = c.state.clipY - bInner.Min.Y
+		bInner.Min.Y = c.state.clipY
+	}
+
+	if bInner.Max.X > c.state.clipX+c.state.clipW {
+		bInner.Max.X = c.state.clipX + c.state.clipW
+	}
+
+	if bInner.Max.Y > c.state.clipY+c.state.clipH {
+		bInner.Max.Y = c.state.clipY + c.state.clipH
+	}
+
+	if bInner.Min.X >= bInner.Max.X {
+		return
+	}
+
+	if bInner.Min.Y >= bInner.Max.Y {
+		return
+	}
+
+	draw.Draw(c.rgba, bInner, img, image.Point{xOffset, yOffset}, draw.Over)
 }
 
 func (c *Canvas) TranslatedX() int {
