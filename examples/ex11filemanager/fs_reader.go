@@ -44,8 +44,8 @@ func readRootEntries() []*Entry {
 	return entries
 }
 
-func readLocalDirectory(entry *Entry) ([]*Entry, error) {
-	fullPath := entry.FullPath()
+func readLocalDirectory(entryToRead *Entry) ([]*Entry, error) {
+	fullPath := entryToRead.FullPath()
 	dirEntries, err := os.ReadDir(fullPath)
 	if err != nil {
 		return nil, err
@@ -53,24 +53,50 @@ func readLocalDirectory(entry *Entry) ([]*Entry, error) {
 
 	result := make([]*Entry, 0)
 
+	if len(entryToRead.ServicePath) > 1 {
+		parentEntry := NewEntry()
+		parentEntry.ServicePath = make([]string, len(entryToRead.ServicePath)-1)
+		copy(parentEntry.ServicePath, entryToRead.ServicePath[:len(entryToRead.ServicePath)-1])
+		parentEntry.IsDir = true
+		parentEntry.DriverType = DriverTypeLocal
+		parentEntry.selectedChildIndex = entryToRead.selectedChildIndex
+		parentEntry.isLinkToParentDirectory = true
+		result = append(result, parentEntry)
+	}
+
+	items := make([]*Entry, 0)
 	for _, e := range dirEntries {
-		entry := NewEntry()
-		entry.ServicePath = make([]string, len(entry.ServicePath)+1)
-		copy(entry.ServicePath, entry.ServicePath)
-		entry.ServicePath[len(entry.ServicePath)-1] = e.Name()
-		entry.IsDir = e.IsDir()
-		entry.DriverType = DriverTypeLocal
+		en := NewEntry()
+		en.ServicePath = make([]string, len(entryToRead.ServicePath)+1)
+		copy(en.ServicePath, entryToRead.ServicePath)
+		en.ServicePath[len(en.ServicePath)-1] = e.Name()
+		en.IsDir = e.IsDir()
+		en.DriverType = DriverTypeLocal
 
 		fileInfo, err := e.Info()
 		if err != nil {
-			entry.Error = err
+			en.Error = err
 			continue
 		}
 
-		entry.Size = fileInfo.Size()
-		entry.Created = fileInfo.ModTime()
-		entry.Modified = fileInfo.ModTime()
-		result = append(result, entry)
+		en.Size = fileInfo.Size()
+		en.Created = fileInfo.ModTime()
+		en.Modified = fileInfo.ModTime()
+		items = append(items, en)
+	}
+
+	// Add all directories first
+	for _, item := range items {
+		if item.IsDir {
+			result = append(result, item)
+		}
+	}
+
+	// Add all files
+	for _, item := range items {
+		if !item.IsDir {
+			result = append(result, item)
+		}
 	}
 
 	return result, nil

@@ -10,7 +10,7 @@ import (
 type FilePanel struct {
 	ui.Widget
 
-	currentEntry *Entry
+	folderStack []*Entry
 
 	topPanel      *ui.Panel
 	topPanelLabel *ui.Label
@@ -18,6 +18,8 @@ type FilePanel struct {
 	contentPanel *ui.Panel
 	fileList     *ui.Table
 	bottomPanel  *ui.Panel
+
+	onColumnResize func(col int, newWidth int)
 }
 
 func NewFilePanel() *FilePanel {
@@ -44,6 +46,7 @@ func NewFilePanel() *FilePanel {
 	c.fileList.SetAllowScroll(false, true)
 	c.fileList.SetSelectingCell(false)
 	c.fileList.SetOnKeyDown(c.fileListKeyDown)
+	c.fileList.SetOnColumnResize(c.columnResized)
 	c.contentPanel.AddWidget(c.fileList)
 
 	c.bottomPanel = ui.NewPanel()
@@ -52,11 +55,33 @@ func NewFilePanel() *FilePanel {
 
 	rootEntries := readRootEntries()
 
-	c.currentEntry = rootEntries[0]
-
-	c.loadDirectory(c.currentEntry)
+	c.gotoFolder(rootEntries[0])
 
 	return &c
+}
+
+func (c *FilePanel) gotoFolder(entry *Entry) {
+	if entry.isLinkToParentDirectory {
+		c.gotoParentFolder()
+		return
+	}
+	if entry == nil || !entry.IsDir {
+		return
+	}
+	if len(c.folderStack) > 0 {
+		currentEntry := c.folderStack[len(c.folderStack)-1]
+		currentEntry.selectedChildIndex = c.fileList.CurrentRow()
+	}
+	c.folderStack = append(c.folderStack, entry)
+	c.loadDirectory(entry)
+}
+
+func (c *FilePanel) gotoParentFolder() {
+	if len(c.folderStack) < 2 {
+		return
+	}
+	c.folderStack = c.folderStack[:len(c.folderStack)-1]
+	c.loadDirectory(c.folderStack[len(c.folderStack)-1])
 }
 
 func (c *FilePanel) fileListKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
@@ -65,22 +90,38 @@ func (c *FilePanel) fileListKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bo
 		if currentRowIndex < 0 || currentRowIndex >= c.fileList.RowCount() {
 			return false
 		}
-		fileName := c.fileList.GetCellText(0, currentRowIndex)
-		newEntry := c.currentEntry.CreateChildEntry(fileName)
-		c.loadDirectory(newEntry)
+		entry, ok := c.fileList.GetCellData(0, currentRowIndex).(*Entry)
+		if !ok {
+			return false
+		}
+		c.gotoFolder(entry)
 
 		return true
 	}
 
 	if key == nuikey.KeyBackspace {
-		if len(c.currentEntry.ServicePath) > 1 {
-			newEntry := c.currentEntry.CreateParentEntry()
-			c.loadDirectory(newEntry)
-			return true
-		}
+		c.gotoParentFolder()
+		return true
 	}
 
 	return false
+}
+
+func (c *FilePanel) SetColumnWidth(col int, width int) {
+	if c.fileList == nil {
+		return
+	}
+	c.fileList.SetColumnWidth(col, width)
+}
+
+func (c *FilePanel) SetOnColumnResize(onColumnResize func(col int, newWidth int)) {
+	c.onColumnResize = onColumnResize
+}
+
+func (c *FilePanel) columnResized(col int, newWidth int) {
+	if c.onColumnResize != nil {
+		c.onColumnResize(col, newWidth)
+	}
 }
 
 func (c *FilePanel) Select() {
@@ -111,15 +152,16 @@ func (c *FilePanel) loadDirectory(entry *Entry) {
 	}
 
 	c.fileList.SetRowCount(len(entries))
-	for i, entry := range entries {
-		c.fileList.SetCellText(0, i, entry.DisplayName())
-		if entry.IsDir {
+	for i, en := range entries {
+		c.fileList.SetCellText(0, i, en.DisplayName())
+		c.fileList.SetCellData(0, i, en)
+		if en.IsDir {
 			c.fileList.SetCellText(1, i, "<DIR>")
 		} else {
-			c.fileList.SetCellText(1, i, fmt.Sprint(entry.Size))
+			c.fileList.SetCellText(1, i, fmt.Sprint(en.Size))
 		}
-		c.fileList.SetCellText(2, i, entry.Modified.Format("2006-01-02 15:04:05"))
+		c.fileList.SetCellText(2, i, en.Modified.Format("2006-01-02 15:04:05"))
 	}
 
-	c.currentEntry = entry
+	c.fileList.SetCurrentCell(0, entry.selectedChildIndex)
 }

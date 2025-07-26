@@ -19,6 +19,9 @@ type Entry struct {
 	IsDir       bool      // True if this entry is a directory
 	DriverType  string    // Type of the driver (e.g., "local", "network")
 	Error       error     // Error if any occurred while reading this entry
+
+	selectedChildIndex      int  // Index of the selected child in the file list
+	isLinkToParentDirectory bool // True if this entry is a link to the parent directory
 }
 
 func NewEntry() *Entry {
@@ -49,24 +52,10 @@ func (c *Entry) DisplayName() string {
 	if len(c.ServicePath) == 0 {
 		return ""
 	}
-	return c.ServicePath[len(c.ServicePath)-1]
-}
 
-func (c *Entry) CreateChildEntry(name string) *Entry {
-	child := NewEntry()
-	child.ServicePath = append(c.ServicePath, name)
-	child.IsDir = true
-	child.DriverType = c.DriverType
-	return child
-}
-
-func (c *Entry) CreateParentEntry() *Entry {
-	parent := NewEntry()
-	if len(c.ServicePath) > 1 {
-		parent.ServicePath = make([]string, len(c.ServicePath)-1)
-		copy(parent.ServicePath, c.ServicePath[:len(c.ServicePath)-1])
+	if c.isLinkToParentDirectory {
+		return ".."
 	}
-	parent.IsDir = true
-	parent.DriverType = c.DriverType
-	return parent
+
+	return c.ServicePath[len(c.ServicePath)-1]
 }

@@ -49,6 +49,8 @@ type Table struct {
 	editTriggerEnter       bool
 	editTriggerF2          bool
 	editTriggerKeyDown     bool
+
+	onColumnResize func(col int, newWidth int)
 }
 
 type innerWidget struct {
@@ -89,6 +91,7 @@ func (c tableHeaderCell) SpanY() int {
 
 type tableCell struct {
 	text string
+	data interface{}
 }
 
 func NewTable() *Table {
@@ -125,7 +128,7 @@ func NewTable() *Table {
 	c.headerRowHeights = make(map[int]int)
 	c.defaultColumnWidth = 200
 
-	c.headerRowsCount = 2
+	c.headerRowsCount = 1
 
 	c.columnResizingIndex = -1
 
@@ -154,6 +157,10 @@ func NewTable() *Table {
 	c.updateInnerWidgetsLayout()
 
 	return &c
+}
+
+func (c *Table) SetOnColumnResize(callback func(col int, newWidth int)) {
+	c.onColumnResize = callback
 }
 
 func (c *Table) SetEditTriggerDoubleClick(enabled bool) {
@@ -313,6 +320,10 @@ func (c *Table) SetColumnWidth(col int, width int) {
 
 	c.updateInnerSize()
 	c.updateInnerWidgetsLayout()
+
+	if c.onColumnResize != nil {
+		c.onColumnResize(col, width)
+	}
 }
 
 func (c *Table) SetColumnCellName(col int, row int, name string) {
@@ -345,6 +356,21 @@ func (c *Table) SetCellText(col int, row int, text string) {
 		rowObj.cells[col] = cellObj
 	}
 	cellObj.text = text
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellData(col int, row int, data interface{}) {
+	rowObj, exists := c.rows[row]
+	if !exists {
+		rowObj = &tableRow{cells: make(map[int]*tableCell)}
+		c.rows[row] = rowObj
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		cellObj = &tableCell{}
+		rowObj.cells[col] = cellObj
+	}
+	cellObj.data = data
 	UpdateMainForm()
 }
 
@@ -405,6 +431,21 @@ func (c *Table) GetCellText(col int, row int) string {
 		return ""
 	}
 	return cellObj.text
+}
+
+func (c *Table) GetCellData(col int, row int) interface{} {
+	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
+		return nil
+	}
+	rowObj, exists := c.rows[row]
+	if !exists {
+		return nil
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		return nil
+	}
+	return cellObj.data
 }
 
 func (c *Table) ScrollToCell(row, col int) {
@@ -595,9 +636,10 @@ func (c *Table) onMouseMoveHeader(x int, y int, mods nuikey.KeyModifiers) nuimou
 			newWidth = 50
 		}
 		if newWidth != colWidth {
-			c.columnsWidths[c.columnResizingIndex] = newWidth
+			/*c.columnsWidths[c.columnResizingIndex] = newWidth
 			c.updateInnerSize()
-			c.updateInnerWidgetsLayout()
+			c.updateInnerWidgetsLayout()*/
+			c.SetColumnWidth(c.columnResizingIndex, newWidth)
 			c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
 			UpdateMainForm()
 		}

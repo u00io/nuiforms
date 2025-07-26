@@ -18,6 +18,7 @@ type MainWidget struct {
 	bottomPanel  *ui.Panel
 
 	currentFilePanelIndex int
+	columnResizing        bool // Prevent recursive column resizing calls
 
 	cmdLine *ui.TextBox
 }
@@ -42,10 +43,12 @@ func NewMainWidget() *MainWidget {
 	panel1 := NewFilePanel()
 	panel1.SetName("Panel 1")
 	panel1.SetOnFocused(c.panel1Focused)
+	panel1.SetOnColumnResize(c.onPanel1ColumnResize)
 	c.filePanels = append(c.filePanels, panel1)
 	panel2 := NewFilePanel()
 	panel2.SetName("Panel 2")
 	panel2.SetOnFocused(c.panel2Focused)
+	panel2.SetOnColumnResize(c.onPanel2ColumnResize)
 	c.filePanels = append(c.filePanels, panel2)
 	c.contentPanel.AddWidgetOnGrid(panel1, 0, 0)
 	c.contentPanel.AddWidgetOnGrid(panel2, 1, 0)
@@ -72,6 +75,24 @@ func NewMainWidget() *MainWidget {
 	c.filePanels[c.currentFilePanelIndex].Focus()
 
 	return &c
+}
+
+func (c *MainWidget) onPanel1ColumnResize(col int, newWidth int) {
+	if c.columnResizing {
+		return
+	}
+	c.columnResizing = true
+	c.filePanels[1].SetColumnWidth(col, newWidth)
+	c.columnResizing = false
+}
+
+func (c *MainWidget) onPanel2ColumnResize(col int, newWidth int) {
+	if c.columnResizing {
+		return
+	}
+	c.columnResizing = true
+	c.filePanels[0].SetColumnWidth(col, newWidth)
+	c.columnResizing = false
 }
 
 func (c *MainWidget) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
