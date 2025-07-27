@@ -375,6 +375,7 @@ func (c *Table) SetCellData(col int, row int, data interface{}) {
 }
 
 func (c *Table) SetCurrentCell(col int, row int) {
+	fmt.Println("SetCurrentCell:", col, row)
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
@@ -391,6 +392,12 @@ func (c *Table) SetCurrentCell(col int, row int) {
 	if c.onSelectionChanged != nil {
 		c.onSelectionChanged(c.currentCellX, c.currentCellY)
 	}
+}
+
+func (c *Table) SetHeaderRowCount(count int) {
+	c.headerRowsCount = count
+	c.updateInnerSize()
+	c.updateInnerWidgetsLayout()
 }
 
 func (c *Table) SetHeaderCellSpan(col int, row int, spanX int, spanY int) {
@@ -806,6 +813,9 @@ func (c *Table) drawPost(cnv *Canvas) {
 			cnv.SetFontFamily(c.FontFamily())
 			cnv.SetFontSize(c.FontSize())
 			cnv.DrawText(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, headerCell.name)
+
+			cnv.SetColor(c.cellBorderColor)
+			cnv.DrawRect(x, y, cellWidth+1, cellHeight+1)
 		}
 	}
 
@@ -819,13 +829,13 @@ func (c *Table) drawPost(cnv *Canvas) {
 			}
 		}*/
 
-	for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
+	/*for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
 		x1 := c.columnOffset(colIndex)
 		y1 := c.scrollY
 		x2 := x1
 		y2 := c.headerHeight() + c.scrollY
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
-	}
+	}*/
 
 	// Draw table border
 	cnv.SetColor(c.BackgroundColorAccent2())

@@ -33,6 +33,7 @@ func NewTableWidget() *TableWidget {
 	c.lvItem.SetColumnName(0, "Col1")
 	c.lvItem.SetColumnName(1, "Col2")
 	c.lvItem.SetColumnName(2, "Col3")
+	c.lvItem.SetHeaderRowCount(2)
 
 	c.lvItem.SetColumnCellName(0, 1, "Col1 Header")
 	c.lvItem.SetRowCount(10)
@@ -43,6 +44,11 @@ func NewTableWidget() *TableWidget {
 	}
 
 	c.lvItem.SetHeaderCellSpan(0, 0, 1, 2)
+	c.lvItem.SetHeaderCellSpan(1, 0, 2, 1)
+
+	c.lvItem.SetColumnCellName(1, 0, "SPANNED COLUMN")
+	c.lvItem.SetColumnCellName(1, 1, "COL1 HEADER")
+	c.lvItem.SetColumnCellName(2, 1, "COL2 HEADER")
 
 	c.AddWidgetOnGrid(c.lvItem, 0, 0)
 	c.SetYExpandable(false)
