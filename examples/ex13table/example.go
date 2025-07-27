@@ -35,6 +35,10 @@ func NewTableWidget() *TableWidget {
 	c.lvItem.SetColumnName(2, "Col3")
 	c.lvItem.SetHeaderRowCount(2)
 
+	c.lvItem.SetEditTriggerDoubleClick(true)
+	c.lvItem.SetEditTriggerEnter(true)
+	c.lvItem.SetEditTriggerF2(true)
+
 	c.lvItem.SetColumnCellName(0, 1, "Col1 Header")
 	c.lvItem.SetRowCount(10)
 	for i := 0; i < 10; i++ {
