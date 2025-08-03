@@ -86,6 +86,7 @@ type Widget struct {
 
 	mouseCursor nuimouse.MouseCursor
 
+	foregroundColor color.Color
 	backgroundColor color.Color
 
 	PopupWidgets []Widgeter
@@ -387,6 +388,10 @@ func (c *Widget) NextGridY() int {
 		}
 	}
 	return maxY
+}
+
+func (c *Widget) SetForegroundColor(col color.Color) {
+	c.foregroundColor = col
 }
 
 func (c *Widget) SetBackgroundColor(col color.Color) {
@@ -1840,6 +1845,9 @@ func (c *Widget) FontSize() float64 {
 }
 
 func (c *Widget) Color() color.Color {
+	if c.foregroundColor != nil {
+		return c.foregroundColor
+	}
 	return ThemeForegroundColor()
 }
 
