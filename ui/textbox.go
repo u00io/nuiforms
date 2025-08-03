@@ -134,12 +134,14 @@ func (c *TextBox) SetOnTextChanged(onTextChanged func(txtBox *TextBox)) {
 }
 
 func (c *TextBox) timerCursorBlinking() {
-	if MainForm.focusedWidget.Id() == c.id {
-		if !c.skipOneCursorBlinking {
-			c.cursorVisible = !c.cursorVisible
-			UpdateMainForm()
+	if MainForm.focusedWidget != nil {
+		if MainForm.focusedWidget.Id() == c.id {
+			if !c.skipOneCursorBlinking {
+				c.cursorVisible = !c.cursorVisible
+				UpdateMainForm()
+			}
+			c.skipOneCursorBlinking = false
 		}
-		c.skipOneCursorBlinking = false
 	}
 }
 
