@@ -38,6 +38,8 @@ type Form struct {
 	lastFreeMemoryTime time.Time
 
 	lastUpdateTime time.Time
+
+	updateBlockStack int
 }
 
 var MainForm *Form
@@ -169,6 +171,10 @@ func (c *Form) realUpdate() {
 }
 
 func (c *Form) Update() {
+	if c.updateBlockStack > 0 {
+		c.needUpdate = true
+		return
+	}
 	c.needUpdate = true
 	if time.Since(c.lastUpdateTime) > 50*time.Millisecond {
 		c.realUpdate()
@@ -420,4 +426,18 @@ func (c *Form) processWindowMove(x, y int) {
 func (c *Form) freeMemory() {
 	runtime.GC()
 	debug.FreeOSMemory()
+}
+
+func (c *Form) UpdateBlockPush() {
+	c.updateBlockStack++
+}
+
+func (c *Form) UpdateBlockPop() {
+	if c.updateBlockStack <= 0 {
+		return
+	}
+	c.updateBlockStack--
+	if c.updateBlockStack == 0 {
+		c.Update()
+	}
 }
