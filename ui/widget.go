@@ -1509,33 +1509,8 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 	fmt.Println(prefix+"Widget", c.name, "layout updated:", "type", c.typeName, "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight, "Duration:", duration)
 }
 
-var makeColumnsInfoCounter int
-
-func (c *Widget) calcMinWidth() int {
-	result := 0
-	for _, w := range c.widgets {
-		if w.IsVisible() {
-			minWidth := w.MinWidth()
-			result += minWidth
-		}
-	}
-	return result
-}
-
-func (c *Widget) calcMinHeight() int {
-	result := 0
-	for _, w := range c.widgets {
-		if w.IsVisible() {
-			minHeight := w.MinHeight()
-			result += minHeight
-		}
-	}
-	return result
-}
-
 func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInfo, int, int, int) {
 	//fmt.Println("makeColumnsInfo", makeColumnsInfoCounter)
-	makeColumnsInfoCounter++
 
 	minX := MaxInt
 	minY := MaxInt

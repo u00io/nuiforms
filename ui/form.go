@@ -191,16 +191,12 @@ func (c *Form) forceUpdate() {
 }
 
 func (c *Form) processPaint(rgba *image.RGBA) {
-	dt := time.Now()
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	c.topWidget.ProcessPaint(cnv)
 	if c.hoverWidget != nil {
 		// c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
 	}
-
-	duration := time.Since(dt)
-	fmt.Println("FORM - Process Paint Duration:", duration)
 }
 
 func (c *Form) DrawWidgetDebugInfo(w Widgeter, cnv *Canvas) {
