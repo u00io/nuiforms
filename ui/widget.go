@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"time"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -68,11 +69,15 @@ type Widget struct {
 	scrollingYInitial         int
 	scrollingYInitialMousePos int
 
+	enabled bool
+
 	props map[string]interface{}
 
 	timers []*timer
 
 	visible bool
+
+	autoFillBackground bool
 
 	contextMenu *ContextMenu
 
@@ -170,12 +175,25 @@ func (c *Widget) InitWidget() {
 	c.anchorBottom = false
 	c.widgets = make([]Widgeter, 0)
 	c.mouseCursor = nuimouse.MouseCursorArrow
-	//	c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0} // transparent by default
+	c.enabled = true
+	// c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0}
 	c.PopupWidgets = make([]Widgeter, 0)
 }
 
 func (c *Widget) Id() string {
 	return c.id
+}
+
+func (c *Widget) SetAutoFillBackground(autoFill bool) {
+	c.autoFillBackground = autoFill
+}
+
+func (c *Widget) Enabled() bool {
+	return c.enabled
+}
+
+func (c *Widget) SetEnabled(enabled bool) {
+	c.enabled = enabled
 }
 
 func (c *Widget) FullPath() []string {
@@ -728,7 +746,7 @@ func (c *Widget) findWidgetAt(x, y int) Widgeter {
 
 func (c *Widget) ProcessPaint(cnv *Canvas) {
 	// Draw the background color if set
-	{
+	if c.autoFillBackground {
 		backgroundColor := c.BackgroundColor()
 		_, _, _, a := backgroundColor.RGBA()
 		if a > 0 {
@@ -793,6 +811,16 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		cnv.SetDirectTranslateAndClip(popupWidget.X(), popupWidget.Y(), popupWidget.Width(), popupWidget.Height())
 		popupWidget.ProcessPaint(cnv)
 		cnv.Restore()
+	}
+
+	if !c.Enabled() {
+		backgroundColor := color.RGBA{R: 55, G: 55, B: 55, A: 55}
+		_, _, _, a := backgroundColor.RGBA()
+		if a > 0 {
+			cnv.SetColor(backgroundColor)
+			cnv.FillRect(0, 0, c.w, c.h, backgroundColor)
+		}
+
 	}
 }
 
@@ -1297,7 +1325,20 @@ func (c *Widget) CloseTopPopup() {
 func (c *Widget) ProcessClosePopup() {
 }
 
+var updateLayoutStack int
+
 func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
+	//fmt.Println("Begin Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
+	dt := time.Now()
+	updateLayoutStack++
+	defer func() {
+		updateLayoutStack--
+	}()
+
+	if MainForm.layoutingBlockStack > 0 {
+		return
+	}
+
 	for _, popupWidget := range c.PopupWidgets {
 		popupWidget.updateLayout(oldWidth, oldHeight, newWidth, newHeight)
 	}
@@ -1435,10 +1476,41 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 	}
 
-	// fmt.Println("Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
+	duration := time.Since(dt)
+	prefix := ""
+	for i := 0; i < updateLayoutStack; i++ {
+		prefix += "."
+	}
+	fmt.Println(prefix+"Widget", c.name, "layout updated:", "type", c.typeName, "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight, "Duration:", duration)
+}
+
+var makeColumnsInfoCounter int
+
+func (c *Widget) calcMinWidth() int {
+	result := 0
+	for _, w := range c.widgets {
+		if w.IsVisible() {
+			minWidth := w.MinWidth()
+			result += minWidth
+		}
+	}
+	return result
+}
+
+func (c *Widget) calcMinHeight() int {
+	result := 0
+	for _, w := range c.widgets {
+		if w.IsVisible() {
+			minHeight := w.MinHeight()
+			result += minHeight
+		}
+	}
+	return result
 }
 
 func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInfo, int, int, int) {
+	//fmt.Println("makeColumnsInfo", makeColumnsInfoCounter)
+	makeColumnsInfoCounter++
 
 	minX := MaxInt
 	minY := MaxInt
