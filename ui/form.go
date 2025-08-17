@@ -61,6 +61,7 @@ func UpdateMainForm() {
 
 func UpdateMainFormLayout() {
 	if MainForm != nil && MainForm.Panel() != nil {
+		MainForm.Panel().ClearLayoutCache()
 		MainForm.Panel().updateLayout(0, 0, 0, 0)
 		for _, popupWidget := range MainForm.Panel().PopupWidgets {
 			if popupWidget != nil {
@@ -459,6 +460,6 @@ func (c *Form) LayoutingBlockPop() {
 	}
 	c.layoutingBlockStack--
 	if c.layoutingBlockStack == 0 {
-		c.Panel().updateLayout(0, 0, 0, 0)
+		UpdateMainFormLayout()
 	}
 }

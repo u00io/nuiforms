@@ -86,4 +86,6 @@ type Widgeter interface {
 	SetAbsolutePositioning(absolute bool)
 	SetXExpandable(expandable bool)
 	SetYExpandable(expandable bool)
+
+	ClearLayoutCache()
 }

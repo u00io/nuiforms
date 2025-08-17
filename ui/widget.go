@@ -96,6 +96,16 @@ type Widget struct {
 
 	PopupWidgets []Widgeter
 
+	layoutCacheXExpandableValid bool
+	layoutCacheYExpandableValid bool
+	layoutCacheMinWidthValid    bool
+	layoutCacheMinHeightValid   bool
+
+	layoutCacheXExpandable bool
+	layoutCacheYExpandable bool
+	layoutCacheMinWidth    int
+	layoutCacheMinHeight   int
+
 	// callbacks
 	onCustomPaint   func(cnv *Canvas)
 	onPostPaint     func(cnv *Canvas)
@@ -272,6 +282,10 @@ func (c *Widget) SetGridPosition(x, y int) {
 }
 
 func (c *Widget) MinWidth() int {
+	if c.layoutCacheMinWidthValid {
+		return c.layoutCacheMinWidth
+	}
+
 	result := 0
 
 	calcFromChildren := !c.allowScrollX
@@ -285,13 +299,21 @@ func (c *Widget) MinWidth() int {
 		result = result + c.panelPadding + allCellPadding + c.panelPadding
 	}
 
+	c.layoutCacheMinWidthValid = true
 	if c.minWidth > result {
+		c.layoutCacheMinWidth = c.minWidth
 		return c.minWidth
 	}
+	c.layoutCacheMinWidth = result
+
 	return result
 }
 
 func (c *Widget) MinHeight() int {
+	if c.layoutCacheMinHeightValid {
+		return c.layoutCacheMinHeight
+	}
+
 	result := 0
 
 	calcFromChildren := !c.allowScrollY
@@ -305,9 +327,12 @@ func (c *Widget) MinHeight() int {
 		result += c.panelPadding + allCellPadding + c.panelPadding
 	}
 
+	c.layoutCacheMinHeightValid = true
 	if c.minHeight > result {
+		c.layoutCacheMinHeight = c.minHeight
 		return c.minHeight
 	}
+	c.layoutCacheMinHeight = result
 	return result
 }
 
@@ -1879,12 +1904,21 @@ func (c *Widget) XExpandable() bool {
 		return c.xExpandable
 	}
 
+	if c.layoutCacheXExpandableValid {
+		return c.layoutCacheXExpandable
+	}
+
 	colsInfo, _, _, _ := c.makeColumnsInfo(1000)
 	for _, ci := range colsInfo {
 		if ci.expandable {
+			c.layoutCacheXExpandableValid = true
+			c.layoutCacheXExpandable = true
 			return true
 		}
 	}
+
+	c.layoutCacheXExpandableValid = true
+	c.layoutCacheXExpandable = false
 
 	return false
 }
@@ -1898,12 +1932,21 @@ func (c *Widget) YExpandable() bool {
 		return c.yExpandable
 	}
 
+	if c.layoutCacheYExpandableValid {
+		return c.layoutCacheYExpandable
+	}
+
 	rowsInfo, _, _, _ := c.makeRowsInfo(1000)
 	for _, ri := range rowsInfo {
 		if ri.expandable {
+			c.layoutCacheYExpandableValid = true
+			c.layoutCacheYExpandable = true
 			return true
 		}
 	}
+
+	c.layoutCacheYExpandableValid = true
+	c.layoutCacheYExpandable = false
 
 	return false
 }
@@ -1972,4 +2015,19 @@ func (c *Widget) RectClientAreaOnWindow() (x, y int) {
 	}
 
 	return x, y
+}
+
+func (c *Widget) ClearLayoutCache() {
+	c.layoutCacheXExpandableValid = false
+	c.layoutCacheYExpandableValid = false
+	c.layoutCacheMinWidthValid = false
+	c.layoutCacheMinHeightValid = false
+
+	for _, w := range c.Widgets() {
+		w.ClearLayoutCache()
+	}
+
+	for _, popupWidget := range c.PopupWidgets {
+		popupWidget.ClearLayoutCache()
+	}
 }
