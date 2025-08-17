@@ -8,6 +8,8 @@ import (
 type Label struct {
 	Widget
 	text string
+
+	textAlign HAlign
 }
 
 const labelMaxWidth = 200
@@ -21,7 +23,7 @@ func NewLabel(text string) *Label {
 	c.SetTypeName("Label")
 	//c.SetMaxWidth(labelMaxWidth)
 	c.SetOnPaint(func(cnv *Canvas) {
-		cnv.SetHAlign(HAlignLeft)
+		cnv.SetHAlign(c.textAlign)
 		cnv.SetVAlign(VAlignCenter)
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
@@ -49,6 +51,19 @@ func (c *Label) Text() string {
 
 func (c *Label) SetText(text string) {
 	c.text = text
+	c.updateInnerSize()
+	if MainForm != nil {
+		MainForm.Update()
+	}
+	UpdateMainFormLayout()
+}
+
+func (c *Label) TextAlign() HAlign {
+	return c.textAlign
+}
+
+func (c *Label) SetTextAlign(align HAlign) {
+	c.textAlign = align
 	c.updateInnerSize()
 	if MainForm != nil {
 		MainForm.Update()
