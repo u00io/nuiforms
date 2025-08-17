@@ -34,8 +34,8 @@ func Run() {
 	}
 
 	form.Panel().AddWidgetOnGrid(w00, 0, 0)
-	form.Panel().AddWidgetOnGrid(w01, 0, 1)
-	form.Panel().AddWidgetOnGrid(w10, 1, 0)
+	form.Panel().AddWidgetOnGrid(w01, 1, 0)
+	form.Panel().AddWidgetOnGrid(w10, 0, 1)
 	form.Panel().AddWidgetOnGrid(w11, 1, 1)
 	form.Exec()
 }

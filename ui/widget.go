@@ -276,9 +276,9 @@ func (c *Widget) GridY() int {
 	return c.gridY
 }
 
-func (c *Widget) SetGridPosition(x, y int) {
-	c.gridX = x
-	c.gridY = y
+func (c *Widget) SetGridPosition(row, column int) {
+	c.gridX = column
+	c.gridY = row
 }
 
 func (c *Widget) MinWidth() int {
@@ -370,11 +370,11 @@ func (c *Widget) SetCellPadding(padding int) {
 	c.cellPadding = padding
 }
 
-func (c *Widget) AddWidgetOnGrid(w Widgeter, gridX int, gridY int) {
+func (c *Widget) AddWidgetOnGrid(w Widgeter, gridRow int, gridColumn int) {
 	if _, exists := allwidgets[w.Id()]; exists {
 		return
 	}
-	w.SetGridPosition(gridX, gridY)
+	w.SetGridPosition(gridRow, gridColumn)
 	c.widgets = append(c.widgets, w)
 	w.SetParentWidgetId(c.Id())
 	allwidgets[w.Id()] = w
@@ -405,7 +405,7 @@ func (c *Widget) RemoveAllWidgets() {
 	UpdateMainForm()
 }
 
-func (c *Widget) NextGridX() int {
+func (c *Widget) NextGridColumn() int {
 	if len(c.widgets) == 0 {
 		return 0
 	}
@@ -419,7 +419,7 @@ func (c *Widget) NextGridX() int {
 	return maxX
 }
 
-func (c *Widget) NextGridY() int {
+func (c *Widget) NextGridRow() int {
 	if len(c.widgets) == 0 {
 		return 0
 	}

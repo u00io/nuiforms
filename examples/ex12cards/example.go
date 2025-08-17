@@ -40,7 +40,7 @@ func (c *Cards) loadCards() {
 	c.panelCards.RemoveAllWidgets()
 	for _, name := range cardNames {
 		widget := NewCategoryWidget(name)
-		c.panelCards.AddWidgetOnGrid(widget, 0, c.panelCards.NextGridY())
+		c.panelCards.AddWidgetOnGrid(widget, c.panelCards.NextGridRow(), 0)
 	}
 
 }

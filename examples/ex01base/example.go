@@ -13,5 +13,5 @@ func Run(form *ui.Form) {
 		lbl.SetText("Button clicked!")
 		btn.SetText("Clicked")
 	})
-	panel.AddWidgetOnGrid(btn, 0, 1)
+	panel.AddWidgetOnGrid(btn, 1, 0)
 }

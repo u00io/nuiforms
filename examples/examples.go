@@ -24,7 +24,7 @@ func Run() {
 		addButton := func(text string, onClick func(btn *ui.Button)) {
 			btn := ui.NewButton(text)
 			btn.SetOnButtonClick(onClick)
-			form.Panel().AddWidgetOnGrid(btn, 0, form.Panel().NextGridY())
+			form.Panel().AddWidgetOnGrid(btn, form.Panel().NextGridRow(), 0)
 		}
 
 		addButton("Example 01 - Base Form", func(btn *ui.Button) {
@@ -82,7 +82,7 @@ func Run() {
 			ex15dialog.Run(form)
 		})
 
-		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, form.Panel().NextGridY())
+		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
 		form.Exec()
 	}
 }

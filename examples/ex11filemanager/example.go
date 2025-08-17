@@ -38,7 +38,7 @@ func NewMainWidget() *MainWidget {
 	c.AddWidgetOnGrid(c.topPanel, 0, 0)
 
 	c.contentPanel = ui.NewPanel()
-	c.AddWidgetOnGrid(c.contentPanel, 0, 1)
+	c.AddWidgetOnGrid(c.contentPanel, 1, 0)
 	c.filePanels = make([]*FilePanel, 0)
 	panel1 := NewFilePanel()
 	panel1.SetName("Panel 1")
@@ -51,7 +51,7 @@ func NewMainWidget() *MainWidget {
 	panel2.SetOnColumnResize(c.onPanel2ColumnResize)
 	c.filePanels = append(c.filePanels, panel2)
 	c.contentPanel.AddWidgetOnGrid(panel1, 0, 0)
-	c.contentPanel.AddWidgetOnGrid(panel2, 1, 0)
+	c.contentPanel.AddWidgetOnGrid(panel2, 0, 1)
 
 	c.bottomPanel = ui.NewPanel()
 	c.cmdLine = ui.NewTextBox()
@@ -66,7 +66,7 @@ func NewMainWidget() *MainWidget {
 		return false
 	})
 	c.bottomPanel.AddWidgetOnGrid(c.cmdLine, 0, 0)
-	c.AddWidgetOnGrid(c.bottomPanel, 0, 2)
+	c.AddWidgetOnGrid(c.bottomPanel, 2, 0)
 
 	ui.MainForm.SetOnGlobalKeyDown(c.onKeyDown)
 

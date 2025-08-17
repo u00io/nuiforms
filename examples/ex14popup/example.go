@@ -18,19 +18,19 @@ func Run(form *ui.Form) {
 		form.Panel().AppendPopupWidget(lbl)
 	})
 	form.Panel().AddWidgetOnGrid(btn, 0, 0)
-	form.Panel().AddWidgetOnGrid(ui.NewHSpacer(), 1, 0)
+	form.Panel().AddWidgetOnGrid(ui.NewHSpacer(), 0, 1)
 
 	lbl := ui.NewLabel("Right-click for context menu")
-	form.Panel().AddWidgetOnGrid(lbl, 0, 1)
+	form.Panel().AddWidgetOnGrid(lbl, 1, 0)
 
 	cmb := ui.NewComboBox()
 	cmb.AddItem("Option 1", nil)
 	cmb.AddItem("Option 2", nil)
 	cmb.AddItem("Option 3", nil)
 	cmb.SetSelectedIndex(0)
-	form.Panel().AddWidgetOnGrid(cmb, 0, 2)
+	form.Panel().AddWidgetOnGrid(cmb, 2, 0)
 
-	form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, 10)
+	form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 10, 0)
 
 	contextMenu := ui.NewContextMenu(nil)
 	contextMenu.AddItem("Item 1", func() {

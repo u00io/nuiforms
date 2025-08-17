@@ -67,7 +67,7 @@ func NewMasterWidget() *MasterWidget {
 			}
 		}
 	})
-	panelTableButtons.AddWidgetOnGrid(btnDelete, 1, 0)
+	panelTableButtons.AddWidgetOnGrid(btnDelete, 0, 1)
 
 	//panelTableButtons.SetMinSize(100, 50)
 	//panelTableButtons.SetAllowScroll(false, false)
@@ -84,15 +84,15 @@ func NewMasterWidget() *MasterWidget {
 	c.table.SetColumnWidth(2, 100)
 	c.table.SetRowCount(10)
 	c.table.SetOnSelectionChanged(c.onTableSelectionChanged)
-	c.panelLeft.AddWidgetOnGrid(c.table, 0, 1)
+	c.panelLeft.AddWidgetOnGrid(c.table, 1, 0)
 
 	c.panelRight = ui.NewPanel()
 	c.panelRight.SetName("panelRight")
-	c.AddWidgetOnGrid(c.panelRight, 1, 0)
+	c.AddWidgetOnGrid(c.panelRight, 0, 1)
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("ID:"), 0, 0)
 	c.txtCol1 = ui.NewTextBox()
-	c.panelRight.AddWidgetOnGrid(c.txtCol1, 1, 0)
+	c.panelRight.AddWidgetOnGrid(c.txtCol1, 0, 1)
 	c.txtCol1.SetOnTextChanged(func(txt *ui.TextBox) {
 		if c.loadingDetails {
 			return
@@ -100,7 +100,7 @@ func NewMasterWidget() *MasterWidget {
 		c.table.SetCellText(0, c.table.CurrentRow(), txt.Text())
 	})
 
-	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Name:"), 0, 1)
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Name:"), 1, 0)
 	c.txtCol2 = ui.NewTextBox()
 	c.panelRight.AddWidgetOnGrid(c.txtCol2, 1, 1)
 	c.txtCol2.SetOnTextChanged(func(txt *ui.TextBox) {
@@ -110,9 +110,9 @@ func NewMasterWidget() *MasterWidget {
 		c.table.SetCellText(1, c.table.CurrentRow(), txt.Text())
 	})
 
-	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Description:"), 0, 2)
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Description:"), 2, 0)
 	c.txtCol3 = ui.NewTextBox()
-	c.panelRight.AddWidgetOnGrid(c.txtCol3, 1, 2)
+	c.panelRight.AddWidgetOnGrid(c.txtCol3, 2, 1)
 	c.txtCol3.SetOnTextChanged(func(txt *ui.TextBox) {
 		if c.loadingDetails {
 			return
@@ -120,8 +120,8 @@ func NewMasterWidget() *MasterWidget {
 		c.table.SetCellText(2, c.table.CurrentRow(), txt.Text())
 	})
 
-	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Main Field:"), 0, 3)
-	c.panelRight.AddWidgetOnGrid(ui.NewVSpacer(), 0, 4)
+	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Main Field:"), 3, 0)
+	c.panelRight.AddWidgetOnGrid(ui.NewVSpacer(), 4, 0)
 
 	return &c
 }

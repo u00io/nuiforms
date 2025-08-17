@@ -20,7 +20,7 @@ func Run(form *ui.Form) {
 	{
 		panelMiddle := ui.NewPanel()
 		panelMiddle.SetPanelPadding(0)
-		panel.AddWidgetOnGrid(panelMiddle, 0, 1)
+		panel.AddWidgetOnGrid(panelMiddle, 1, 0)
 
 		panelMiddleLeft := ui.NewPanel()
 		panelMiddleLeft.SetPanelPadding(0)
@@ -31,13 +31,13 @@ func Run(form *ui.Form) {
 
 		panelMiddleCenter := ui.NewPanel()
 		panelMiddleCenter.SetPanelPadding(0)
-		panelMiddle.AddWidgetOnGrid(panelMiddleCenter, 1, 0)
+		panelMiddle.AddWidgetOnGrid(panelMiddleCenter, 0, 1)
 		centerWidget := NewMyWidget("CENTER")
 		panelMiddleCenter.AddWidgetOnGrid(centerWidget, 0, 0)
 
 		panelMiddleRight := ui.NewPanel()
 		panelMiddleRight.SetPanelPadding(0)
-		panelMiddle.AddWidgetOnGrid(panelMiddleRight, 2, 0)
+		panelMiddle.AddWidgetOnGrid(panelMiddleRight, 0, 2)
 		panelMiddleRight.SetMaxWidth(100)
 		rightWidget := NewMyWidget("RIGHT")
 		panelMiddleRight.AddWidgetOnGrid(rightWidget, 0, 0)
@@ -45,7 +45,7 @@ func Run(form *ui.Form) {
 
 	{
 		panelBottom := ui.NewPanel()
-		panel.AddWidgetOnGrid(panelBottom, 0, 2)
+		panel.AddWidgetOnGrid(panelBottom, 2, 0)
 		panelBottom.SetPanelPadding(0)
 		panelBottom.SetMaxHeight(50)
 		myWidget := NewMyWidget("BOTTOM")

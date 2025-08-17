@@ -72,7 +72,7 @@ type Widgeter interface {
 
 	GridX() int
 	GridY() int
-	SetGridPosition(x, y int)
+	SetGridPosition(row, column int)
 
 	XExpandable() bool
 	YExpandable() bool

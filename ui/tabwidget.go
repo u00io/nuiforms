@@ -31,7 +31,7 @@ func NewTabWidget() *TabWidget {
 	c.AddWidgetOnGrid(c.panelTop, 0, 0)
 
 	c.panelContent = NewPanel()
-	c.AddWidgetOnGrid(c.panelContent, 0, 1)
+	c.AddWidgetOnGrid(c.panelContent, 1, 0)
 
 	return &c
 }
@@ -63,10 +63,10 @@ func (c *TabWidget) rebuildInterface() {
 		} else {
 			btn.SetBackgroundColor(color.RGBA{R: 0, G: 0, B: 0, A: 255}) // Default color
 		}
-		c.panelTop.AddWidgetOnGrid(btn, i, 0)
+		c.panelTop.AddWidgetOnGrid(btn, 0, i)
 	}
 
-	c.panelTop.AddWidgetOnGrid(NewHSpacer(), len(c.pages), 0)
+	c.panelTop.AddWidgetOnGrid(NewHSpacer(), 0, len(c.pages))
 
 	// Build content
 	c.panelContent.RemoveAllWidgets()

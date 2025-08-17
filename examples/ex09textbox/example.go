@@ -8,7 +8,7 @@ func Run(form *ui.Form) {
 	btn1 := ui.NewButton("Click Me")
 	panel.AddWidgetOnGrid(btn1, 0, 0)
 	btn2 := ui.NewButton("Click Me Too")
-	panel.AddWidgetOnGrid(btn2, 0, 1)
+	panel.AddWidgetOnGrid(btn2, 1, 0)
 	txt1 := ui.NewTextBox()
-	panel.AddWidgetOnGrid(txt1, 0, 2)
+	panel.AddWidgetOnGrid(txt1, 2, 0)
 }

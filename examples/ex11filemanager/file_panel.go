@@ -36,7 +36,7 @@ func NewFilePanel() *FilePanel {
 	c.AddWidgetOnGrid(c.topPanel, 0, 0)
 
 	c.contentPanel = ui.NewPanel()
-	c.AddWidgetOnGrid(c.contentPanel, 0, 1)
+	c.AddWidgetOnGrid(c.contentPanel, 1, 0)
 	c.fileList = ui.NewTable()
 	c.fileList.SetName("FileList")
 	c.fileList.SetColumnCount(3)
@@ -51,7 +51,7 @@ func NewFilePanel() *FilePanel {
 
 	c.bottomPanel = ui.NewPanel()
 	c.bottomPanel.AddWidgetOnGrid(ui.NewLabel("File panel bottom"), 0, 0)
-	c.AddWidgetOnGrid(c.bottomPanel, 0, 2)
+	c.AddWidgetOnGrid(c.bottomPanel, 2, 0)
 
 	rootEntries := readRootEntries()
 

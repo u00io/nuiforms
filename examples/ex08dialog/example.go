@@ -18,7 +18,7 @@ func Run() {
 	txtBox.SetText("1394 23094 23p4 284328 09138 4082401 2384032c09iwepdokcf;ld fljfsdlk;fj lkfjasdkl fadslfjasdkjh ")
 
 	panel2 := ui.NewPanel()
-	panel.AddWidgetOnGrid(panel2, 0, 1)
+	panel.AddWidgetOnGrid(panel2, 1, 0)
 
 	//panel2.AddWidgetOnGrid(ui.NewVSpacer(), 0, 0)
 	table := ui.NewTable()
@@ -43,16 +43,16 @@ func Run() {
 	panel2.AddWidgetOnGrid(table, 0, 0)
 
 	panel3 := ui.NewPanel()
-	panel.AddWidgetOnGrid(panel3, 0, 2)
+	panel.AddWidgetOnGrid(panel3, 2, 0)
 	panel3.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
 	//panel3.AddWidgetOnGrid(ui.NewTextBox(), 0, 0)
 	btnOK := ui.NewButton("OK")
-	panel3.AddWidgetOnGrid(btnOK, 1, 0)
+	panel3.AddWidgetOnGrid(btnOK, 0, 1)
 	btnCancel := ui.NewButton("Cancel")
 	btnCancel.SetOnButtonClick(func(btn *ui.Button) {
 		ui.MainForm.Close()
 	})
-	panel3.AddWidgetOnGrid(btnCancel, 2, 0)
+	panel3.AddWidgetOnGrid(btnCancel, 0, 2)
 
 	form.Exec()
 }

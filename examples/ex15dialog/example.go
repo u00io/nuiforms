@@ -19,18 +19,18 @@ func NewDialogEnterName() *DialogEnterName {
 	c.panelContent = ui.NewPanel()
 	c.txtName = ui.NewTextBox()
 	c.panelContent.AddWidgetOnGrid(ui.NewLabel("Name:"), 0, 0)
-	c.panelContent.AddWidgetOnGrid(c.txtName, 1, 0)
-	c.panelContent.AddWidgetOnGrid(ui.NewVSpacer(), 0, 1)
+	c.panelContent.AddWidgetOnGrid(c.txtName, 0, 1)
+	c.panelContent.AddWidgetOnGrid(ui.NewVSpacer(), 1, 0)
 	c.dialog.ContentPanel().AddWidgetOnGrid(c.panelContent, 0, 0)
 
 	c.btnOk = ui.NewButton("OK")
 	c.btnCancel = ui.NewButton("Cancel")
 	c.panelButtons = ui.NewPanel()
 	c.panelButtons.AddWidgetOnGrid(ui.NewHSpacer(), 0, 0)
-	c.panelButtons.AddWidgetOnGrid(c.btnOk, 1, 0)
-	c.panelButtons.AddWidgetOnGrid(c.btnCancel, 2, 0)
+	c.panelButtons.AddWidgetOnGrid(c.btnOk, 0, 1)
+	c.panelButtons.AddWidgetOnGrid(c.btnCancel, 0, 2)
 	//c.panelButtons.SetBackgroundColor(color.RGBA{R: 200, G: 20, B: 200, A: 255})
-	c.dialog.ContentPanel().AddWidgetOnGrid(c.panelButtons, 0, 1)
+	c.dialog.ContentPanel().AddWidgetOnGrid(c.panelButtons, 1, 0)
 
 	c.dialog.SetAcceptButton(c.btnOk)
 	c.dialog.SetRejectButton(c.btnCancel)
@@ -52,6 +52,6 @@ func Run(form *ui.Form) {
 		}
 	})
 	form.Panel().AddWidgetOnGrid(btn, 0, 0)
-	form.Panel().AddWidgetOnGrid(ui.NewHSpacer(), 1, 0)
-	form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 0, 10)
+	form.Panel().AddWidgetOnGrid(ui.NewHSpacer(), 0, 1)
+	form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), 10, 0)
 }
