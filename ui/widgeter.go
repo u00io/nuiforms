@@ -21,6 +21,11 @@ type Widgeter interface {
 
 	Widgets() []Widgeter
 
+	Enabled() bool
+	SetEnabled(enabled bool)
+
+	AddTimer(duration int, callback func())
+
 	SetName(name string)
 	SetPosition(x, y int)
 	SetSize(width, height int)
