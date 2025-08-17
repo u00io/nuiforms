@@ -90,7 +90,7 @@ func (c *FilePanel) fileListKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bo
 		if currentRowIndex < 0 || currentRowIndex >= c.fileList.RowCount() {
 			return false
 		}
-		entry, ok := c.fileList.GetCellData(0, currentRowIndex).(*Entry)
+		entry, ok := c.fileList.GetCellData2(currentRowIndex, 0).(*Entry)
 		if !ok {
 			return false
 		}
@@ -147,21 +147,21 @@ func (c *FilePanel) loadDirectory(entry *Entry) {
 	entries, err := ReadEntry(entry)
 	if err != nil {
 		c.fileList.SetRowCount(0)
-		c.fileList.SetCellText(0, 0, fmt.Sprintf("Error: %v", err))
+		c.fileList.SetCellText2(0, 0, fmt.Sprintf("Error: %v", err))
 		return
 	}
 
 	c.fileList.SetRowCount(len(entries))
 	for i, en := range entries {
-		c.fileList.SetCellText(0, i, en.DisplayName())
-		c.fileList.SetCellData(0, i, en)
+		c.fileList.SetCellText2(i, 0, en.DisplayName())
+		c.fileList.SetCellData2(i, 0, en)
 		if en.IsDir {
-			c.fileList.SetCellText(1, i, "<DIR>")
+			c.fileList.SetCellText2(i, 2, "<DIR>")
 		} else {
-			c.fileList.SetCellText(1, i, fmt.Sprint(en.Size))
+			c.fileList.SetCellText2(i, 1, fmt.Sprint(en.Size))
 		}
-		c.fileList.SetCellText(2, i, en.Modified.Format("2006-01-02 15:04:05"))
+		c.fileList.SetCellText2(i, 2, en.Modified.Format("2006-01-02 15:04:05"))
 	}
 
-	c.fileList.SetCurrentCell(0, entry.selectedChildIndex)
+	c.fileList.SetCurrentCell2(entry.selectedChildIndex, 0)
 }

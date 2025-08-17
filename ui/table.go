@@ -55,8 +55,8 @@ type Table struct {
 
 type innerWidget struct {
 	widget        Widgeter
-	posCellX      int
-	posCellY      int
+	posCellCol    int
+	posCellRow    int
 	widthInCells  int
 	heightInCells int
 }
@@ -70,23 +70,23 @@ type tableHeaderRow struct {
 }
 
 type tableHeaderCell struct {
-	name  string
-	spanX int
-	spanY int
+	name    string
+	spanCol int
+	spanRow int
 }
 
-func (c tableHeaderCell) SpanX() int {
-	if c.spanX <= 0 {
+func (c tableHeaderCell) SpanCol() int {
+	if c.spanCol <= 0 {
 		return 1
 	}
-	return c.spanX
+	return c.spanCol
 }
 
-func (c tableHeaderCell) SpanY() int {
-	if c.spanY <= 0 {
+func (c tableHeaderCell) SpanRow() int {
+	if c.spanRow <= 0 {
 		return 1
 	}
-	return c.spanY
+	return c.spanRow
 }
 
 type tableCell struct {
@@ -183,18 +183,18 @@ func (c *Table) SetOnSelectionChanged(callback func(x int, y int)) {
 	c.onSelectionChanged = callback
 }
 
-func (c *Table) AddWidgetOnTable(widget Widgeter, posCellX int, posCellY int, widthInCells int, heightInCells int) {
-	if posCellX < 0 || posCellY < 0 || posCellX >= c.columnCount || posCellY >= c.rowCount {
+func (c *Table) AddWidgetOnTable(widget Widgeter, posCellRow int, posCellCol int, widthInCells int, heightInCells int) {
+	if posCellCol < 0 || posCellRow < 0 || posCellCol >= c.columnCount || posCellRow >= c.rowCount {
 		return
 	}
-	if posCellX+widthInCells > c.columnCount || posCellY+heightInCells > c.rowCount {
+	if posCellCol+widthInCells > c.columnCount || posCellRow+heightInCells > c.rowCount {
 		return
 	}
 
 	var inWidget innerWidget
 	inWidget.widget = widget
-	inWidget.posCellX = posCellX
-	inWidget.posCellY = posCellY
+	inWidget.posCellCol = posCellCol
+	inWidget.posCellRow = posCellRow
 	inWidget.widthInCells = widthInCells
 	inWidget.heightInCells = heightInCells
 	c.innerWidgets = append(c.innerWidgets, &inWidget)
@@ -209,7 +209,7 @@ func (c *Table) rowOffset(row int) int {
 	return c.headerHeight() + row*c.rowHeight1
 }
 
-func (c *Table) headerCell(colIndex int, rowIndex int) *tableHeaderCell {
+func (c *Table) headerCell2(rowIndex int, colIndex int) *tableHeaderCell {
 	if colIndex < 0 || colIndex >= c.columnCount {
 		return &tableHeaderCell{name: ""}
 	}
@@ -233,7 +233,7 @@ func (c *Table) headerCell(colIndex int, rowIndex int) *tableHeaderCell {
 	return cell
 }
 
-func (c *Table) headerCellShadowed(colIndex int, rowIndex int) bool {
+func (c *Table) headerCellShadowed2(rowIndex int, colIndex int) bool {
 	result := false
 
 	for headerRowIndex := 0; headerRowIndex < c.headerRowsCount; headerRowIndex++ {
@@ -241,9 +241,9 @@ func (c *Table) headerCellShadowed(colIndex int, rowIndex int) bool {
 			if headerRowIndex == rowIndex && headerColIndex == colIndex {
 				continue
 			}
-			headerCell := c.headerCell(headerColIndex, headerRowIndex)
-			spanX := headerCell.SpanX()
-			spanY := headerCell.SpanY()
+			headerCell := c.headerCell2(headerRowIndex, headerColIndex)
+			spanX := headerCell.SpanCol()
+			spanY := headerCell.SpanRow()
 			if spanX > 1 || spanY > 1 {
 				cellSpanX1 := headerColIndex
 				cellSpanX2 := headerColIndex + spanX - 1
@@ -277,11 +277,11 @@ func (c *Table) updateInnerWidgetsLayout() {
 	c.headerWidget.SetSize(c.innerWidth, c.headerHeight())
 
 	for _, inWidget := range c.innerWidgets {
-		widgetPosInPixelsX := c.columnOffset(inWidget.posCellX)
-		widgetPosInPixelsY := c.rowOffset(inWidget.posCellY)
+		widgetPosInPixelsX := c.columnOffset(inWidget.posCellCol)
+		widgetPosInPixelsY := c.rowOffset(inWidget.posCellRow)
 		widgetWidthInPixels := 0
 		for i := 0; i < inWidget.widthInCells; i++ {
-			widgetWidthInPixels += c.columnWidth(inWidget.posCellX + i)
+			widgetWidthInPixels += c.columnWidth(inWidget.posCellCol + i)
 		}
 		widgetHeightInPixels := inWidget.heightInCells * c.rowHeight1
 		inWidget.widget.SetPosition(widgetPosInPixelsX, widgetPosInPixelsY)
@@ -326,11 +326,11 @@ func (c *Table) SetColumnWidth(col int, width int) {
 	}
 }
 
-func (c *Table) SetColumnCellName(col int, row int, name string) {
+func (c *Table) SetColumnCellName2(row int, col int, name string) {
 	if col < 0 || col >= c.columnCount {
 		return
 	}
-	headerCell := c.headerCell(col, row)
+	headerCell := c.headerCell2(row, col)
 	headerCell.name = name
 	c.updateInnerSize()
 }
@@ -339,12 +339,12 @@ func (c *Table) SetColumnName(col int, name string) {
 	if col < 0 || col >= c.columnCount {
 		return
 	}
-	headerCell := c.headerCell(col, 0)
+	headerCell := c.headerCell2(0, col)
 	headerCell.name = name
 	c.updateInnerSize()
 }
 
-func (c *Table) SetCellText(col int, row int, text string) {
+func (c *Table) SetCellText2(row int, col int, text string) {
 	rowObj, exists := c.rows[row]
 	if !exists {
 		rowObj = &tableRow{cells: make(map[int]*tableCell)}
@@ -359,7 +359,7 @@ func (c *Table) SetCellText(col int, row int, text string) {
 	UpdateMainForm()
 }
 
-func (c *Table) SetCellData(col int, row int, data interface{}) {
+func (c *Table) SetCellData2(row int, col int, data interface{}) {
 	rowObj, exists := c.rows[row]
 	if !exists {
 		rowObj = &tableRow{cells: make(map[int]*tableCell)}
@@ -374,7 +374,7 @@ func (c *Table) SetCellData(col int, row int, data interface{}) {
 	UpdateMainForm()
 }
 
-func (c *Table) SetCurrentCell(col int, row int) {
+func (c *Table) SetCurrentCell2(row int, col int) {
 	fmt.Println("SetCurrentCell:", col, row)
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
@@ -386,7 +386,7 @@ func (c *Table) SetCurrentCell(col int, row int) {
 	}
 	c.currentCellY = row
 
-	c.ScrollToCell(c.currentCellY, c.currentCellX)
+	c.ScrollToCell2(c.currentCellY, c.currentCellX)
 
 	UpdateMainForm()
 	if c.onSelectionChanged != nil {
@@ -400,13 +400,13 @@ func (c *Table) SetHeaderRowCount(count int) {
 	c.updateInnerWidgetsLayout()
 }
 
-func (c *Table) SetHeaderCellSpan(col int, row int, spanX int, spanY int) {
+func (c *Table) SetHeaderCellSpan2(row int, col int, spanRow int, spanCol int) {
 	if col < 0 || col >= c.columnCount || row < 0 || row >= c.headerRowsCount {
 		return
 	}
-	headerCell := c.headerCell(col, row)
-	headerCell.spanX = spanX
-	headerCell.spanY = spanY
+	headerCell := c.headerCell2(row, col)
+	headerCell.spanCol = spanCol
+	headerCell.spanRow = spanRow
 	c.updateInnerSize()
 	c.updateInnerWidgetsLayout()
 }
@@ -425,7 +425,7 @@ func (c *Table) CurrentColumn() int {
 	return c.currentCellX
 }
 
-func (c *Table) GetCellText(col int, row int) string {
+func (c *Table) GetCellText2(row int, col int) string {
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return ""
 	}
@@ -440,7 +440,7 @@ func (c *Table) GetCellText(col int, row int) string {
 	return cellObj.text
 }
 
-func (c *Table) GetCellData(col int, row int) interface{} {
+func (c *Table) GetCellData2(row int, col int) interface{} {
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return nil
 	}
@@ -455,7 +455,7 @@ func (c *Table) GetCellData(col int, row int) interface{} {
 	return cellObj.data
 }
 
-func (c *Table) ScrollToCell(row, col int) {
+func (c *Table) ScrollToCell2(row, col int) {
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
@@ -486,7 +486,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 
 	col, row := c.cellByPosition(x, y)
 	if row >= 0 && col >= 0 {
-		c.SetCurrentCell(col, row)
+		c.SetCurrentCell2(row, col)
 		//fmt.Println("Cell clicked:", col, row, " at ", x, y)
 	}
 	return true
@@ -501,7 +501,7 @@ func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods 
 	col, row := c.cellByPosition(x, y)
 	fmt.Println("Cell double clicked:", col, row, " at ", x, y)
 	if row >= 0 && col >= 0 {
-		c.SetCurrentCell(col, row)
+		c.SetCurrentCell2(row, col)
 		if c.editTriggerDoubleClick {
 			c.EditCurrentCell("")
 		}
@@ -526,7 +526,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 	if key == nuikey.KeyArrowLeft {
 		if c.currentCellX > 0 {
-			c.SetCurrentCell(c.currentCellX-1, c.currentCellY)
+			c.SetCurrentCell2(c.currentCellY, c.currentCellX-1)
 			UpdateMainForm()
 			processed = true
 		}
@@ -534,7 +534,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 	if key == nuikey.KeyArrowRight {
 		if c.currentCellX < c.columnCount-1 {
-			c.SetCurrentCell(c.currentCellX+1, c.currentCellY)
+			c.SetCurrentCell2(c.currentCellY, c.currentCellX+1)
 			UpdateMainForm()
 			processed = true
 		}
@@ -546,7 +546,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			if selectRowIndex >= c.rowCount {
 				selectRowIndex = c.rowCount - 1
 			}
-			c.SetCurrentCell(c.currentCellX, selectRowIndex)
+			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
 			UpdateMainForm()
 			processed = true
 		}
@@ -558,20 +558,20 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			if selectRowIndex >= c.rowCount {
 				selectRowIndex = c.rowCount - 1
 			}
-			c.SetCurrentCell(c.currentCellX, selectRowIndex)
+			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
 			UpdateMainForm()
 			processed = true
 		}
 	}
 
 	if key == nuikey.KeyHome {
-		c.SetCurrentCell(c.currentCellX, 0)
+		c.SetCurrentCell2(0, c.currentCellX)
 		UpdateMainForm()
 		processed = true
 	}
 
 	if key == nuikey.KeyEnd {
-		c.SetCurrentCell(c.currentCellX, c.rowCount-1)
+		c.SetCurrentCell2(c.rowCount-1, c.currentCellX)
 		UpdateMainForm()
 		processed = true
 	}
@@ -599,7 +599,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			targetRow = 0
 		}
 		if targetRow != c.currentCellY {
-			c.SetCurrentCell(c.currentCellX, targetRow)
+			c.SetCurrentCell2(targetRow, c.currentCellX)
 			UpdateMainForm()
 		}
 		processed = true
@@ -612,7 +612,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			targetRow = c.rowCount - 1
 		}
 		if targetRow != c.currentCellY {
-			c.SetCurrentCell(c.currentCellX, targetRow)
+			c.SetCurrentCell2(targetRow, c.currentCellX)
 			UpdateMainForm()
 		}
 		processed = true
@@ -775,7 +775,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 	for headerRowIndex := 0; headerRowIndex < c.headerRowsCount; headerRowIndex++ {
 		for colIndex := 0; colIndex < c.columnCount; colIndex++ {
 			needToDisplay := true
-			if c.headerCellShadowed(colIndex, headerRowIndex) {
+			if c.headerCellShadowed2(headerRowIndex, colIndex) {
 				needToDisplay = false
 			}
 
@@ -783,10 +783,10 @@ func (c *Table) drawPost(cnv *Canvas) {
 				continue
 			}
 
-			headerCell := c.headerCell(colIndex, headerRowIndex)
+			headerCell := c.headerCell2(headerRowIndex, colIndex)
 
-			cellSpanX := headerCell.SpanX()
-			cellSpanY := headerCell.SpanY()
+			cellSpanX := headerCell.SpanCol()
+			cellSpanY := headerCell.SpanRow()
 
 			headerRowOffset := c.headerRowOffset(headerRowIndex)
 			//headerRowHeight := c.headerRowHeight(headerRowIndex)
@@ -935,7 +935,7 @@ func (c *Table) headerColumnByPosition(x int, y int) int {
 	return -1
 }
 
-func (c *Table) cellByPosition(x, y int) (col int, row int) {
+func (c *Table) cellByPosition(x, y int) (row int, col int) {
 	col = 0
 	for col < c.columnCount {
 		colOffset := c.columnOffset(col)
@@ -990,7 +990,7 @@ func (c *Table) EditCurrentCell(enteredText string) {
 	c.editorTextBox = NewTextBox()
 
 	if len(enteredText) == 0 {
-		enteredText = c.GetCellText(c.currentCellX, c.currentCellY)
+		enteredText = c.GetCellText2(c.currentCellY, c.currentCellX)
 	}
 
 	c.editorTextBox.SetText(enteredText)
@@ -999,7 +999,7 @@ func (c *Table) EditCurrentCell(enteredText string) {
 	c.editorTextBox.SetOnTextBoxKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		if key == nuikey.KeyEnter {
 			if c.editorTextBox != nil {
-				c.SetCellText(c.currentCellX, c.currentCellY, c.editorTextBox.Text())
+				c.SetCellText2(c.currentCellY, c.currentCellX, c.editorTextBox.Text())
 				c.RemoveWidget(c.editorTextBox)
 				c.editorTextBox = nil
 				UpdateMainForm()

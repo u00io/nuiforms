@@ -38,10 +38,10 @@ func NewMasterWidget() *MasterWidget {
 	btnAdd.SetOnButtonClick(func(btn *ui.Button) {
 		row := c.table.RowCount()
 		c.table.SetRowCount(row + 1)
-		c.table.SetCellText(0, row, "ID"+fmt.Sprint(row))
-		c.table.SetCellText(1, row, "Name"+fmt.Sprint(row))
-		c.table.SetCellText(2, row, "Description"+fmt.Sprint(row))
-		c.table.SetCurrentCell(0, row)
+		c.table.SetCellText2(row, 0, "ID"+fmt.Sprint(row))
+		c.table.SetCellText2(row, 1, "Name"+fmt.Sprint(row))
+		c.table.SetCellText2(row, 2, "Description"+fmt.Sprint(row))
+		c.table.SetCurrentCell2(row, 0)
 	})
 	panelTableButtons.AddWidgetOnGrid(btnAdd, 0, 0)
 
@@ -53,17 +53,17 @@ func NewMasterWidget() *MasterWidget {
 		}
 		// copy the next rows up
 		for i := selectedRow; i < c.table.RowCount()-1; i++ {
-			c.table.SetCellText(0, i, c.table.GetCellText(0, i+1))
-			c.table.SetCellText(1, i, c.table.GetCellText(1, i+1))
-			c.table.SetCellText(2, i, c.table.GetCellText(2, i+1))
+			c.table.SetCellText2(i, 0, c.table.GetCellText2(i+1, 0))
+			c.table.SetCellText2(i, 1, c.table.GetCellText2(i+1, 1))
+			c.table.SetCellText2(i, 2, c.table.GetCellText2(i+1, 2))
 		}
 		// remove the last row
 		c.table.SetRowCount(c.table.RowCount() - 1)
 		if c.table.RowCount() > 0 {
 			if selectedRow >= c.table.RowCount() {
-				c.table.SetCurrentCell(0, c.table.RowCount()-1)
+				c.table.SetCurrentCell2(c.table.RowCount()-1, 0)
 			} else {
-				c.table.SetCurrentCell(0, selectedRow)
+				c.table.SetCurrentCell2(selectedRow, 0)
 			}
 		}
 	})
@@ -97,7 +97,7 @@ func NewMasterWidget() *MasterWidget {
 		if c.loadingDetails {
 			return
 		}
-		c.table.SetCellText(0, c.table.CurrentRow(), txt.Text())
+		c.table.SetCellText2(c.table.CurrentRow(), 0, txt.Text())
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Name:"), 1, 0)
@@ -107,7 +107,7 @@ func NewMasterWidget() *MasterWidget {
 		if c.loadingDetails {
 			return
 		}
-		c.table.SetCellText(1, c.table.CurrentRow(), txt.Text())
+		c.table.SetCellText2(c.table.CurrentRow(), 1, txt.Text())
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Description:"), 2, 0)
@@ -117,7 +117,7 @@ func NewMasterWidget() *MasterWidget {
 		if c.loadingDetails {
 			return
 		}
-		c.table.SetCellText(2, c.table.CurrentRow(), txt.Text())
+		c.table.SetCellText2(c.table.CurrentRow(), 2, txt.Text())
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Main Field:"), 3, 0)
@@ -128,8 +128,8 @@ func NewMasterWidget() *MasterWidget {
 
 func (c *MasterWidget) onTableSelectionChanged(x, y int) {
 	c.loadingDetails = true
-	c.txtCol1.SetText(c.table.GetCellText(0, y))
-	c.txtCol2.SetText(c.table.GetCellText(1, y))
-	c.txtCol3.SetText(c.table.GetCellText(2, y))
+	c.txtCol1.SetText(c.table.GetCellText2(y, 0))
+	c.txtCol2.SetText(c.table.GetCellText2(y, 1))
+	c.txtCol3.SetText(c.table.GetCellText2(y, 2))
 	c.loadingDetails = false
 }

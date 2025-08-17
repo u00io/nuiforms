@@ -17,6 +17,6 @@ func NewTab2Widget(name string) *Tab2Widget {
 	table.SetRowCount(10)
 	c.AddWidgetOnGrid(table, 0, 0)
 
-	table.SetCellText(1, 1, "Column 1")
+	table.SetCellText2(1, 1, "Column 1")
 	return &c
 }

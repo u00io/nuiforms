@@ -39,20 +39,20 @@ func NewTableWidget() *TableWidget {
 	c.lvItem.SetEditTriggerEnter(true)
 	c.lvItem.SetEditTriggerF2(true)
 
-	c.lvItem.SetColumnCellName(0, 1, "Col1 Header")
+	c.lvItem.SetColumnCellName2(1, 0, "Col1 Header")
 	c.lvItem.SetRowCount(10)
 	for i := 0; i < 10; i++ {
-		c.lvItem.SetCellText(0, i, "row "+fmt.Sprint(i))
-		c.lvItem.SetCellText(1, i, "col2 text")
-		c.lvItem.SetCellText(2, i, "col2 text")
+		c.lvItem.SetCellText2(i, 0, "row "+fmt.Sprint(i))
+		c.lvItem.SetCellText2(i, 1, "col2 text")
+		c.lvItem.SetCellText2(i, 2, "col2 text")
 	}
 
-	c.lvItem.SetHeaderCellSpan(0, 0, 1, 2)
-	c.lvItem.SetHeaderCellSpan(1, 0, 2, 1)
+	c.lvItem.SetHeaderCellSpan2(0, 0, 2, 1)
+	c.lvItem.SetHeaderCellSpan2(0, 1, 1, 2)
 
-	c.lvItem.SetColumnCellName(1, 0, "SPANNED COLUMN")
-	c.lvItem.SetColumnCellName(1, 1, "COL1 HEADER")
-	c.lvItem.SetColumnCellName(2, 1, "COL2 HEADER")
+	c.lvItem.SetColumnCellName2(0, 1, "SPANNED COLUMN")
+	c.lvItem.SetColumnCellName2(1, 1, "COL1 HEADER")
+	c.lvItem.SetColumnCellName2(1, 2, "COL2 HEADER")
 
 	c.AddWidgetOnGrid(c.lvItem, 0, 0)
 	c.SetYExpandable(false)

@@ -36,7 +36,7 @@ func Run() {
 
 	for r := 0; r < rowCount; r++ {
 		for column := 0; column < colCount; column++ {
-			table.SetCellText(column, r, fmt.Sprintf("%dx%d", r+1, column+1))
+			table.SetCellText2(r, column, fmt.Sprintf("%dx%d", r+1, column+1))
 		}
 	}
 
