@@ -39,7 +39,8 @@ type Form struct {
 
 	lastUpdateTime time.Time
 
-	updateBlockStack int
+	updateBlockStack    int
+	layoutingBlockStack int
 }
 
 var MainForm *Form
@@ -88,6 +89,11 @@ func NewId() string {
 
 func NewForm() *Form {
 	var c Form
+	if MainForm != nil {
+		panic("MainForm already exists, cannot create a new one")
+	}
+	MainForm = &c
+
 	c.title = "Form"
 	c.width = 800
 	c.height = 600
@@ -96,12 +102,9 @@ func NewForm() *Form {
 	topWidget.SetPosition(0, 0)
 	topWidget.SetSize(c.width, c.height)
 	topWidget.SetAnchors(true, true, true, true)
+	topWidget.SetAutoFillBackground(true)
 	c.topWidget = topWidget
 	allwidgets[topWidget.Id()] = topWidget
-	if MainForm != nil {
-		panic("MainForm already exists, cannot create a new one")
-	}
-	MainForm = &c
 	return &c
 }
 
@@ -187,12 +190,16 @@ func (c *Form) forceUpdate() {
 }
 
 func (c *Form) processPaint(rgba *image.RGBA) {
+	dt := time.Now()
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	c.topWidget.ProcessPaint(cnv)
 	if c.hoverWidget != nil {
 		// c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
 	}
+
+	duration := time.Since(dt)
+	fmt.Println("FORM - Process Paint Duration:", duration)
 }
 
 func (c *Form) DrawWidgetDebugInfo(w Widgeter, cnv *Canvas) {
@@ -439,5 +446,19 @@ func (c *Form) UpdateBlockPop() {
 	c.updateBlockStack--
 	if c.updateBlockStack == 0 {
 		c.Update()
+	}
+}
+
+func (c *Form) LayoutingBlockPush() {
+	c.layoutingBlockStack++
+}
+
+func (c *Form) LayoutingBlockPop() {
+	if c.layoutingBlockStack <= 0 {
+		return
+	}
+	c.layoutingBlockStack--
+	if c.layoutingBlockStack == 0 {
+		c.Panel().updateLayout(0, 0, 0, 0)
 	}
 }
