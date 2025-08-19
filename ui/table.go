@@ -1026,6 +1026,6 @@ func (c *Table) EditCurrentCell(enteredText string) {
 			c.Focus()
 		}
 	})
-	c.AddWidgetOnTable(c.editorTextBox, c.currentCellX, c.currentCellY, 1, 1)
+	c.AddWidgetOnTable(c.editorTextBox, c.currentCellY, c.currentCellX, 1, 1)
 	c.editorTextBox.Focus()
 }

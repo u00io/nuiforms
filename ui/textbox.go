@@ -61,6 +61,7 @@ func NewTextBox() *TextBox {
 	c.SetTypeName("TextBox")
 
 	c.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
+	c.SetAutoFillBackground(true)
 	//txtBox := newTextBox(&c.widget)
 
 	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {

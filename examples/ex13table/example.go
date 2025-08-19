@@ -59,6 +59,7 @@ func NewTableWidget() *TableWidget {
 
 	c.lblInnerWidget = ui.NewLabel("This is an inner widget")
 	c.lblInnerWidget.SetBackgroundColor(color.RGBA{R: 90, G: 90, B: 90, A: 255})
+	c.lblInnerWidget.SetAutoFillBackground(true)
 	c.lvItem.AddWidgetOnTable(c.lblInnerWidget, 1, 1, 2, 2)
 
 	c.txtBoxInnerWidget = ui.NewTextBox()
