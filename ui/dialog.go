@@ -78,15 +78,18 @@ func NewDialog(title string, width, height int) *Dialog {
 	c.InitWidget()
 	c.SetTypeName("Dialog")
 	c.SetName("Dialog")
+	c.SetBackgroundColor(color.RGBA{R: 40, G: 40, B: 40, A: 255})
+	c.SetAutoFillBackground(true)
 
 	c.headerPanel = NewDialogHeader()
 	c.headerPanel.dialog = &c
 	c.headerPanel.SetName("DialogHeaderPanel")
+	c.headerPanel.SetBackgroundColor(color.RGBA{R: 50, G: 50, B: 50, A: 255})
+	c.headerPanel.SetAutoFillBackground(true)
 	c.AddWidgetOnGrid(c.headerPanel, 0, 0)
 
 	c.contentPanel = NewPanel()
 	c.contentPanel.SetName("DialogContentPanel")
-	c.contentPanel.SetBackgroundColor(color.RGBA{R: 40, G: 40, B: 40, A: 255})
 	c.AddWidgetOnGrid(c.contentPanel, 1, 0)
 
 	c.SetOnKeyDown(c.onKeyDown)

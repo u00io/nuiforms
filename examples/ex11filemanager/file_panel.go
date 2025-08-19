@@ -1,6 +1,7 @@
 package ex11filemanager
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/u00io/nui/nuikey"
@@ -73,7 +74,11 @@ func (c *FilePanel) gotoFolder(entry *Entry) {
 		currentEntry.selectedChildIndex = c.fileList.CurrentRow()
 	}
 	c.folderStack = append(c.folderStack, entry)
-	c.loadDirectory(entry)
+	err := c.loadDirectory(entry)
+	if err != nil {
+		c.folderStack = c.folderStack[:len(c.folderStack)-1]
+	}
+	c.loadDirectory(c.folderStack[len(c.folderStack)-1])
 }
 
 func (c *FilePanel) gotoParentFolder() {
@@ -139,16 +144,15 @@ func (c *FilePanel) SetOnFocused(onFocused func()) {
 	c.fileList.SetOnFocused(onFocused)
 }
 
-func (c *FilePanel) loadDirectory(entry *Entry) {
+func (c *FilePanel) loadDirectory(entry *Entry) error {
 	if entry == nil {
-		return
+		return errors.New("Empty entry")
 	}
 
 	entries, err := ReadEntry(entry)
 	if err != nil {
-		c.fileList.SetRowCount(0)
-		c.fileList.SetCellText2(0, 0, fmt.Sprintf("Error: %v", err))
-		return
+		ui.ShowMessageBox("Error", "Cannot read directory: "+entry.FullPath())
+		return err
 	}
 
 	c.fileList.SetRowCount(len(entries))
@@ -164,4 +168,5 @@ func (c *FilePanel) loadDirectory(entry *Entry) {
 	}
 
 	c.fileList.SetCurrentCell2(entry.selectedChildIndex, 0)
+	return nil
 }

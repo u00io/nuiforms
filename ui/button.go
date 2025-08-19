@@ -26,6 +26,7 @@ func NewButton(text string) *Button {
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
 	c.SetOnMouseUp(c.buttonProcessMouseUp)
+	c.SetOnKeyDown(c.onKeyDown)
 
 	c.SetText(text)
 
@@ -49,6 +50,13 @@ func (c *Button) Press() {
 	if c.onButtonClick != nil {
 		c.onButtonClick(c)
 	}
+}
+
+func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	if key == nuikey.KeyEnter || key == nuikey.KeySpace {
+		c.Press()
+	}
+	return true
 }
 
 func (c *Button) draw(cnv *Canvas) {
