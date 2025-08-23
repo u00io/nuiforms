@@ -129,14 +129,17 @@ func (c *FilePanel) columnResized(col int, newWidth int) {
 	}
 }
 
+func (c *FilePanel) updateCurrentDirectoryInfo() {
+	currentDirPath := c.folderStack[len(c.folderStack)-1].FullPath()
+	c.topPanelLabel.SetText(currentDirPath)
+}
+
 func (c *FilePanel) Select() {
-	c.topPanelLabel.SetText("Selected")
 	c.fileList.SetShowSelection(true)
 	c.fileList.Focus()
 }
 
 func (c *FilePanel) Unselect() {
-	c.topPanelLabel.SetText("Unselected")
 	c.fileList.SetShowSelection(false)
 }
 
@@ -146,7 +149,7 @@ func (c *FilePanel) SetOnFocused(onFocused func()) {
 
 func (c *FilePanel) loadDirectory(entry *Entry) error {
 	if entry == nil {
-		return errors.New("Empty entry")
+		return errors.New("empty entry")
 	}
 
 	entries, err := ReadEntry(entry)
@@ -157,16 +160,20 @@ func (c *FilePanel) loadDirectory(entry *Entry) error {
 
 	c.fileList.SetRowCount(len(entries))
 	for i, en := range entries {
-		c.fileList.SetCellText2(i, 0, en.DisplayName())
-		c.fileList.SetCellData2(i, 0, en)
 		if en.IsDir {
-			c.fileList.SetCellText2(i, 2, "<DIR>")
+			c.fileList.SetCellText2(i, 0, "["+en.DisplayName()+"]")
+			c.fileList.SetCellText2(i, 1, "<DIR>")
 		} else {
+			c.fileList.SetCellText2(i, 0, en.DisplayName())
 			c.fileList.SetCellText2(i, 1, fmt.Sprint(en.Size))
 		}
 		c.fileList.SetCellText2(i, 2, en.Modified.Format("2006-01-02 15:04:05"))
+
+		c.fileList.SetCellData2(i, 0, en)
 	}
 
 	c.fileList.SetCurrentCell2(entry.selectedChildIndex, 0)
+
+	c.updateCurrentDirectoryInfo()
 	return nil
 }
