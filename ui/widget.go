@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image/color"
 	"math"
-	"time"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -1354,7 +1353,7 @@ var updateLayoutStack int
 
 func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 	//fmt.Println("Begin Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
-	dt := time.Now()
+	//dt := time.Now()
 	updateLayoutStack++
 	defer func() {
 		updateLayoutStack--
@@ -1501,12 +1500,12 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 	}
 
-	duration := time.Since(dt)
+	/*duration := time.Since(dt)
 	prefix := ""
 	for i := 0; i < updateLayoutStack; i++ {
 		prefix += "."
 	}
-	fmt.Println(prefix+"Widget", c.name, "layout updated:", "type", c.typeName, "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight, "Duration:", duration)
+	fmt.Println(prefix+"Widget", c.name, "layout updated:", "type", c.typeName, "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight, "Duration:", duration)*/
 }
 
 func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInfo, int, int, int) {
