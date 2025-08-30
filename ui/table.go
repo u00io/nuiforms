@@ -90,8 +90,9 @@ func (c tableHeaderCell) SpanRow() int {
 }
 
 type tableCell struct {
-	text string
-	data interface{}
+	text  string
+	color color.Color
+	data  interface{}
 }
 
 func NewTable() *Table {
@@ -371,6 +372,21 @@ func (c *Table) SetCellData2(row int, col int, data interface{}) {
 		rowObj.cells[col] = cellObj
 	}
 	cellObj.data = data
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellColor(row int, col int, color color.Color) {
+	rowObj, exists := c.rows[row]
+	if !exists {
+		rowObj = &tableRow{cells: make(map[int]*tableCell)}
+		c.rows[row] = rowObj
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		cellObj = &tableCell{}
+		rowObj.cells[col] = cellObj
+	}
+	cellObj.color = color
 	UpdateMainForm()
 }
 
@@ -739,7 +755,13 @@ func (c *Table) draw(cnv *Canvas) {
 					cnv.SetVAlign(VAlignCenter)
 					cnv.SetFontFamily(c.FontFamily())
 					cnv.SetFontSize(c.FontSize())
-					cnv.SetColor(c.Color())
+					col := c.Color()
+					if cellObj != nil {
+						if cellObj.color != nil {
+							col = cellObj.color
+						}
+					}
+					cnv.SetColor(col)
 					cnv.DrawText(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight1-c.cellPadding*2, cellText)
 				}
 			}
