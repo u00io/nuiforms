@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/u00io/nui v0.0.4
+	github.com/u00io/nui v0.0.5
 	golang.design/x/clipboard v0.7.1
 	golang.org/x/image v0.28.0
 )
