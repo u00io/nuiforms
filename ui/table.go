@@ -39,7 +39,7 @@ type Table struct {
 	currentCellX int
 	currentCellY int
 
-	onSelectionChanged func(x int, y int)
+	onSelectionChanged func(row int, col int)
 
 	headerWidget  *tableHeader
 	editorTextBox *TextBox
@@ -51,6 +51,9 @@ type Table struct {
 	editTriggerKeyDown     bool
 
 	onColumnResize func(col int, newWidth int)
+
+	modeLoading     bool
+	modeLoadingText string
 }
 
 type innerWidget struct {
@@ -90,9 +93,11 @@ func (c tableHeaderCell) SpanRow() int {
 }
 
 type tableCell struct {
-	text  string
-	color color.Color
-	data  interface{}
+	text   string
+	color  color.Color
+	hAlign HAlign
+	vAlign VAlign
+	data   interface{}
 }
 
 func NewTable() *Table {
@@ -158,6 +163,12 @@ func NewTable() *Table {
 	c.updateInnerWidgetsLayout()
 
 	return &c
+}
+
+func (c *Table) SetModeLoading(loading bool, text string) {
+	c.modeLoading = loading
+	c.modeLoadingText = text
+	UpdateMainForm()
 }
 
 func (c *Table) SetOnColumnResize(callback func(col int, newWidth int)) {
@@ -345,6 +356,16 @@ func (c *Table) SetColumnName(col int, name string) {
 	c.updateInnerSize()
 }
 
+func (c *Table) newTableCell() *tableCell {
+	return &tableCell{
+		text:   "",
+		color:  nil,
+		data:   nil,
+		hAlign: HAlignLeft,
+		vAlign: VAlignCenter,
+	}
+}
+
 func (c *Table) SetCellText2(row int, col int, text string) {
 	rowObj, exists := c.rows[row]
 	if !exists {
@@ -353,7 +374,7 @@ func (c *Table) SetCellText2(row int, col int, text string) {
 	}
 	cellObj, exists := rowObj.cells[col]
 	if !exists {
-		cellObj = &tableCell{}
+		cellObj = c.newTableCell()
 		rowObj.cells[col] = cellObj
 	}
 	cellObj.text = text
@@ -368,7 +389,7 @@ func (c *Table) SetCellData2(row int, col int, data interface{}) {
 	}
 	cellObj, exists := rowObj.cells[col]
 	if !exists {
-		cellObj = &tableCell{}
+		cellObj = c.newTableCell()
 		rowObj.cells[col] = cellObj
 	}
 	cellObj.data = data
@@ -383,10 +404,40 @@ func (c *Table) SetCellColor(row int, col int, color color.Color) {
 	}
 	cellObj, exists := rowObj.cells[col]
 	if !exists {
-		cellObj = &tableCell{}
+		cellObj = c.newTableCell()
 		rowObj.cells[col] = cellObj
 	}
 	cellObj.color = color
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellHAlign(row int, col int, align HAlign) {
+	rowObj, exists := c.rows[row]
+	if !exists {
+		rowObj = &tableRow{cells: make(map[int]*tableCell)}
+		c.rows[row] = rowObj
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		cellObj = c.newTableCell()
+		rowObj.cells[col] = cellObj
+	}
+	cellObj.hAlign = align
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellVAlign(row int, col int, align VAlign) {
+	rowObj, exists := c.rows[row]
+	if !exists {
+		rowObj = &tableRow{cells: make(map[int]*tableCell)}
+		c.rows[row] = rowObj
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		cellObj = c.newTableCell()
+		rowObj.cells[col] = cellObj
+	}
+	cellObj.vAlign = align
 	UpdateMainForm()
 }
 
@@ -406,7 +457,7 @@ func (c *Table) SetCurrentCell2(row int, col int) {
 
 	UpdateMainForm()
 	if c.onSelectionChanged != nil {
-		c.onSelectionChanged(c.currentCellX, c.currentCellY)
+		c.onSelectionChanged(c.currentCellY, c.currentCellX)
 	}
 }
 
@@ -694,8 +745,17 @@ func (c *Table) SetSelectingCell(selecting bool) {
 }
 
 func (c *Table) draw(cnv *Canvas) {
-	yOffset := 0
+	if c.modeLoading {
+		cnv.SetFontFamily(c.FontFamily())
+		cnv.SetFontSize(c.FontSize())
+		cnv.SetColor(c.Color())
+		cnv.SetHAlign(HAlignCenter)
+		cnv.SetVAlign(VAlignCenter)
+		cnv.DrawText(0, 0, c.Width(), c.Height(), c.modeLoadingText)
+		return
+	}
 
+	yOffset := 0
 	yOffset += c.headerHeight()
 
 	visibleRow1, visibleRow2 := c.visibleRows()
@@ -746,13 +806,18 @@ func (c *Table) draw(cnv *Canvas) {
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight1, backColor)
 
+					hAlign := HAlignLeft
+					vAlign := VAlignCenter
+
 					cellText := ""
 					if cellObj != nil {
 						cellText = cellObj.text
+						hAlign = cellObj.hAlign
+						vAlign = cellObj.vAlign
 					}
 
-					cnv.SetHAlign(HAlignLeft)
-					cnv.SetVAlign(VAlignCenter)
+					cnv.SetHAlign(hAlign)
+					cnv.SetVAlign(vAlign)
 					cnv.SetFontFamily(c.FontFamily())
 					cnv.SetFontSize(c.FontSize())
 					col := c.Color()
@@ -783,9 +848,9 @@ func (c *Table) draw(cnv *Canvas) {
 
 	for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
 		x1 := c.columnOffset(colIndex)
-		y1 := visibleRow1 * c.rowHeight1
+		y1 := visibleRow1*c.rowHeight1 - c.scrollY
 		x2 := x1
-		y2 := visibleRow2 * c.rowHeight1
+		y2 := visibleRow2*c.rowHeight1 - c.scrollY
 		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
 	}
 
@@ -1050,4 +1115,16 @@ func (c *Table) EditCurrentCell(enteredText string) {
 	})
 	c.AddWidgetOnTable(c.editorTextBox, c.currentCellY, c.currentCellX, 1, 1)
 	c.editorTextBox.Focus()
+}
+
+func (c *Table) CopySelectionToClipboard() {
+	if c.currentCellY < 0 || c.currentCellY >= c.rowCount || c.currentCellX < 0 || c.currentCellX >= c.columnCount {
+		return
+	}
+
+	text := c.GetCellText2(c.currentCellY, c.currentCellX)
+	if len(text) == 0 {
+		return
+	}
+	ClipboardSetText(text)
 }
