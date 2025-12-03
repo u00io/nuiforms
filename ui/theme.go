@@ -10,8 +10,8 @@ var DefaultForeground = color.RGBA{255, 255, 255, 255}
 func init() {
 	Theme = make(map[string]interface{})
 	Theme["background"] = color.RGBA{10, 10, 10, 255}
-	Theme["background.accent1"] = color.RGBA{30, 30, 30, 255}
-	Theme["background.accent2"] = color.RGBA{50, 50, 50, 255}
+	Theme["background.accent1"] = color.RGBA{50, 50, 50, 255}
+	Theme["background.accent2"] = color.RGBA{70, 70, 70, 255}
 	Theme["background.selection"] = color.RGBA{38, 79, 120, 255}
 	Theme["foreground"] = color.RGBA{255, 255, 255, 255}
 	Theme["fontFamily"] = "robotomono"

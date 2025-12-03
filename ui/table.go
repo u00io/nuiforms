@@ -139,7 +139,7 @@ func NewTable() *Table {
 	c.columnResizingIndex = -1
 
 	c.cellBorderWidth = 1
-	c.cellBorderColor = color.RGBA{R: 100, G: 100, B: 100, A: 255}
+	c.cellBorderColor = ThemeBackgroundColorAccent1()
 	c.cellPadding = 3
 
 	c.showSelection = true
@@ -163,6 +163,22 @@ func NewTable() *Table {
 	c.updateInnerWidgetsLayout()
 
 	return &c
+}
+
+func (c *Table) SetCellBorderColor(col color.RGBA) {
+	c.cellBorderColor = col
+}
+
+func (c *Table) CellBorderColor() color.RGBA {
+	return c.cellBorderColor
+}
+
+func (c *Table) SetCellBorderWidth(width int) {
+	c.cellBorderWidth = width
+}
+
+func (c *Table) CellBorderWidth() int {
+	return c.cellBorderWidth
 }
 
 func (c *Table) SetModeLoading(loading bool, text string) {
@@ -692,7 +708,7 @@ func (c *Table) onKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	return true
 }
 
-func (c *Table) onMouseMoveHeader(x int, y int, mods nuikey.KeyModifiers) nuimouse.MouseCursor {
+func (c *Table) onMouseMoveHeader(x int, y int, _ nuikey.KeyModifiers) nuimouse.MouseCursor {
 	if c.columnResizingIndex >= 0 {
 		if c.columnResizingIndex < 0 || c.columnResizingIndex >= c.columnCount {
 			return nuimouse.MouseCursorResizeHor
@@ -836,25 +852,26 @@ func (c *Table) draw(cnv *Canvas) {
 	}
 
 	// Draw cell borders
-	cnv.Save()
-	cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.scrollX, cnv.state.translateY+c.scrollY+c.headerHeight(), c.Width(), c.Height()-c.headerHeight())
-	for rowIndex := visibleRow1; rowIndex < visibleRow2+1; rowIndex++ {
-		x1 := 0
-		y1 := rowIndex*c.rowHeight1 - c.scrollY
-		x2 := c.innerWidth
-		y2 := y1
-		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
-	}
+	if c.cellBorderWidth > 0 {
+		cnv.Save()
+		cnv.SetDirectTranslateAndClip(cnv.state.translateX+c.scrollX, cnv.state.translateY+c.scrollY+c.headerHeight(), c.Width(), c.Height()-c.headerHeight())
+		for rowIndex := visibleRow1; rowIndex < visibleRow2+1; rowIndex++ {
+			x1 := 0
+			y1 := rowIndex*c.rowHeight1 - c.scrollY
+			x2 := c.innerWidth
+			y2 := y1
+			cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+		}
 
-	for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
-		x1 := c.columnOffset(colIndex)
-		y1 := visibleRow1*c.rowHeight1 - c.scrollY
-		x2 := x1
-		y2 := visibleRow2*c.rowHeight1 - c.scrollY
-		cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+		for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
+			x1 := c.columnOffset(colIndex) - c.scrollX
+			y1 := visibleRow1*c.rowHeight1 - c.scrollY
+			x2 := x1
+			y2 := visibleRow2*c.rowHeight1 - c.scrollY
+			cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+		}
+		cnv.Restore()
 	}
-
-	cnv.Restore()
 }
 
 func (c *Table) drawPost(cnv *Canvas) {
