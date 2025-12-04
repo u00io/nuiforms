@@ -92,7 +92,7 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetFontSize(c.buttonFontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 
-	cnv.SetColor(c.BackgroundColorAccent2())
+	//cnv.SetColor(c.BackgroundColorAccent2())
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 

@@ -9,6 +9,8 @@ type Label struct {
 	Widget
 	text string
 
+	underline bool
+
 	textAlign HAlign
 }
 
@@ -29,6 +31,13 @@ func NewLabel(text string) *Label {
 		cnv.SetFontSize(c.FontSize())
 		cnv.SetColor(c.Color())
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
+
+		if c.underline {
+			cnv.SetColor(c.Color())
+			widgetWidth := c.Width()
+			textHeight := c.innerHeight
+			cnv.DrawLine(0, textHeight-2, widgetWidth, textHeight-2, 1, c.Color())
+		}
 	})
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 		// Labels do not handle mouse down events by default
@@ -65,6 +74,18 @@ func (c *Label) TextAlign() HAlign {
 func (c *Label) SetTextAlign(align HAlign) {
 	c.textAlign = align
 	c.updateInnerSize()
+	if MainForm != nil {
+		MainForm.Update()
+	}
+	UpdateMainFormLayout()
+}
+
+func (c *Label) IsUnderline() bool {
+	return c.underline
+}
+
+func (c *Label) SetUnderline(underline bool) {
+	c.underline = underline
 	if MainForm != nil {
 		MainForm.Update()
 	}

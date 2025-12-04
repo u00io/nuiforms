@@ -15,7 +15,7 @@ func init() {
 	Theme["background.selection"] = color.RGBA{38, 79, 120, 255}
 	Theme["foreground"] = color.RGBA{255, 255, 255, 255}
 	Theme["fontFamily"] = "robotomono"
-	Theme["fontSize"] = 16
+	Theme["fontSize"] = 18
 }
 
 func ThemeBackgroundColor() color.RGBA {
@@ -78,7 +78,7 @@ func ThemeFontSize() float64 {
 			return fontSize
 		}
 	}
-	return 16.0 // Default font size
+	return 18.0 // Default font size
 }
 
 func GetThemeColor(name string, defaultColor color.RGBA) color.RGBA {
