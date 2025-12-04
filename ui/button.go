@@ -8,6 +8,8 @@ import (
 type Button struct {
 	Widget
 
+	fontSize float64
+
 	pressed       bool
 	text          string
 	onButtonClick func(btn *Button)
@@ -30,7 +32,21 @@ func NewButton(text string) *Button {
 
 	c.SetText(text)
 
+	c.fontSize = -1
+
 	return &c
+}
+
+func (c *Button) buttonFontSize() float64 {
+	if c.fontSize > 0 {
+		return c.fontSize
+	}
+	return c.FontSize()
+}
+
+func (c *Button) SetFontSize(size float64) {
+	c.fontSize = size
+	UpdateMainForm()
 }
 
 func (c *Button) Text() string {
@@ -61,7 +77,7 @@ func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 func (c *Button) draw(cnv *Canvas) {
 	backColor := c.BackgroundColor()
-	if c.IsHovered() {
+	if c.IsHovered() && c.enabled {
 		backColor = c.BackgroundColorAccent1()
 	}
 	if c.pressed {
@@ -73,7 +89,7 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(c.Color())
 	cnv.SetFontFamily(c.FontFamily())
-	cnv.SetFontSize(c.FontSize())
+	cnv.SetFontSize(c.buttonFontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 
 	cnv.SetColor(c.BackgroundColorAccent2())
@@ -81,11 +97,17 @@ func (c *Button) draw(cnv *Canvas) {
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+	if c.enabled == false {
+		return false
+	}
 	c.pressed = true
 	return true
 }
 
 func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+	if c.enabled == false {
+		return false
+	}
 	c.pressed = false
 
 	if x < 0 || x >= c.Width() || y < 0 || y >= c.Height() {
