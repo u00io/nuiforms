@@ -12,7 +12,7 @@ type Label struct {
 	textAlign HAlign
 }
 
-const labelMaxWidth = 200
+const labelMaxWidth = 1500
 
 ////////////////////////////////////////////////////////////////////////////////////
 // NewLabel creates a new Label widget with the specified text.
