@@ -90,7 +90,9 @@ func DrawText(rgba *image.RGBA, text string, textColor color.Color, fontFamily s
 }
 
 func GetCharPositions(fontFamily string, fontSize float64, text string) ([]int, error) {
-	positions := make([]int, len(text)+1) // на 1 больше, чтобы последняя позиция = ширине всей строки
+	stringLenInRunes := len([]rune(text))
+
+	positions := make([]int, stringLenInRunes+1) // на 1 больше, чтобы последняя позиция = ширине всей строки
 	var advance fixed.Int26_6
 
 	face, err := getFace(fontFamily, fontSize)
@@ -99,16 +101,16 @@ func GetCharPositions(fontFamily string, fontSize float64, text string) ([]int, 
 	}
 	defer face.Close()
 
-	for i, r := range text {
-		positions[i] = advance.Round()
-
+	runeIndex := 0
+	for _, r := range text {
+		positions[runeIndex] = advance.Round()
 		a, ok := face.GlyphAdvance(r)
-		if !ok {
-			continue
+		if ok {
+			advance += a
 		}
-		advance += a
+		runeIndex++
 	}
-	positions[len(text)] = advance.Round()
+	positions[runeIndex] = advance.Round()
 	return positions, nil
 }
 
