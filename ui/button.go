@@ -76,9 +76,9 @@ func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Button) draw(cnv *Canvas) {
-	backColor := c.BackgroundColor()
+	backColor := c.BackgroundColorAccent1()
 	if c.IsHovered() && c.enabled {
-		backColor = c.BackgroundColorAccent1()
+		backColor = c.BackgroundColorAccent2()
 	}
 	if c.pressed {
 		backColor = c.BackgroundColorAccent2()
@@ -93,7 +93,7 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 
 	//cnv.SetColor(c.BackgroundColorAccent2())
-	cnv.DrawRect(0, 0, c.Width(), c.Height())
+	//cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

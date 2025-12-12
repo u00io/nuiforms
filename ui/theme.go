@@ -1,19 +1,41 @@
 package ui
 
-import "image/color"
+import (
+	"fmt"
+	"image/color"
+)
 
 var Theme map[string]interface{}
 
 var DefaultBackground = color.RGBA{0, 0, 0, 255}
 var DefaultForeground = color.RGBA{255, 255, 255, 255}
 
+func colorFromHex(hexStr string) color.RGBA {
+	var r, g, b, a uint8
+	a = 255
+	if len(hexStr) == 7 {
+		_, err := fmt.Sscanf(hexStr, "#%02x%02x%02x", &r, &g, &b)
+		if err != nil {
+			return color.RGBA{0, 0, 0, 255}
+		}
+	} else if len(hexStr) == 9 {
+		_, err := fmt.Sscanf(hexStr, "#%02x%02x%02x%02x", &r, &g, &b, &a)
+		if err != nil {
+			return color.RGBA{0, 0, 0, 255}
+		}
+	} else {
+		return color.RGBA{0, 0, 0, 255}
+	}
+	return color.RGBA{r, g, b, a}
+}
+
 func init() {
 	Theme = make(map[string]interface{})
-	Theme["background"] = color.RGBA{10, 10, 10, 255}
-	Theme["background.accent1"] = color.RGBA{50, 50, 50, 255}
-	Theme["background.accent2"] = color.RGBA{70, 70, 70, 255}
-	Theme["background.selection"] = color.RGBA{38, 79, 120, 255}
-	Theme["foreground"] = color.RGBA{255, 255, 255, 255}
+	Theme["background"] = colorFromHex("#121212")
+	Theme["background.accent1"] = colorFromHex("#0d668aff")
+	Theme["background.accent2"] = colorFromHex("#2D2D2D")
+	Theme["background.selection"] = colorFromHex("#264F78")
+	Theme["foreground"] = colorFromHex("#FFFFFF")
 	Theme["fontFamily"] = "robotomono"
 	Theme["fontSize"] = 18
 }
