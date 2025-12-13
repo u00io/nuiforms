@@ -288,6 +288,26 @@ func (c *Widget) Elevation() int {
 	return c.GetPropInt("elevation", 0)
 }
 
+func (c *Widget) SetRole(role string) {
+	c.SetProp("role", role)
+}
+
+func (c *Widget) Role() string {
+	return c.GetPropString("role", "")
+}
+
+func (c *Widget) IsRoleSurface() bool {
+	return c.Role() != "primary" && c.Role() != "secondary"
+}
+
+func (c *Widget) IsRolePrimary() bool {
+	return c.Role() == "primary"
+}
+
+func (c *Widget) IsRoleSecondary() bool {
+	return c.Role() == "secondary"
+}
+
 func (c *Widget) IsCanBeFocused() bool {
 	return c.canBeFocused
 }
@@ -2149,7 +2169,18 @@ func (c *Widget) ForegroundColor() color.Color {
 	if c.foregroundColor != nil {
 		return c.foregroundColor
 	}
-	return ThemePrimaryColor()
+	return ThemeForegroundColor(c.Role())
+}
+
+func (c *Widget) CurrentElevation() int {
+	summedElevation := 0
+	for _, wId := range c.FullPath() {
+		wId := WidgetById(wId)
+		if wId != nil {
+			summedElevation += wId.Elevation()
+		}
+	}
+	return summedElevation
 }
 
 func (c *Widget) BackgroundColorWithAddElevation(elevation int) color.Color {
@@ -2163,7 +2194,7 @@ func (c *Widget) BackgroundColorWithAddElevation(elevation int) color.Color {
 			summedElevation += wId.Elevation()
 		}
 	}
-	return ThemeBackgroundColor(summedElevation)
+	return ThemeBackgroundColor(summedElevation, c.Role())
 }
 
 func (c *Widget) BackgroundColor() color.Color {
@@ -2177,19 +2208,7 @@ func (c *Widget) BackgroundColor() color.Color {
 			summedElevation += wId.Elevation()
 		}
 	}
-	return ThemeBackgroundColor(summedElevation)
-}
-
-func (c *Widget) BackgroundColorAccent1() color.Color {
-	return ThemeBackgroundColorAccent1()
-}
-
-func (c *Widget) BackgroundColorAccent2() color.Color {
-	return ThemeBackgroundColorAccent2()
-}
-
-func (c *Widget) BackgroundColorSelection() color.Color {
-	return ThemeBackgroundColorSelection()
+	return ThemeBackgroundColor(summedElevation, c.Role())
 }
 
 func (c *Widget) SetContextMenu(menu *ContextMenu) {

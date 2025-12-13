@@ -85,7 +85,7 @@ func (c *RadioButton) draw(cnv *Canvas) {
 
 	padding := 5
 
-	cnv.SetColor(c.BackgroundColorAccent1())
+	cnv.SetColor(c.BackgroundColorWithAddElevation(-1))
 	cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
 	if c.checked {
 		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.ForegroundColor())

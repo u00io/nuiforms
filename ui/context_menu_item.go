@@ -48,9 +48,9 @@ func (c *ContextMenuItem) ControlType() string {
 }
 
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
-	backColor := c.BackgroundColorAccent1()
+	backColor := c.BackgroundColor()
 	if c.IsHovered() {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorWithAddElevation(2)
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)

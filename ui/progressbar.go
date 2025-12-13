@@ -73,8 +73,8 @@ func (c *ProgressBar) draw(cnv *Canvas) {
 	effectiveWidth := c.Width() - padding*2
 	effectiveHeight := c.Height() - padding*2
 
-	cnv.SetColor(c.BackgroundColorAccent1())
-	cnv.FillRect(padding, padding, int(float64(effectiveWidth)*percents), effectiveHeight, c.BackgroundColorSelection())
+	cnv.SetColor(c.ForegroundColor())
+	cnv.FillRect(padding, padding, int(float64(effectiveWidth)*percents), effectiveHeight, c.ForegroundColor())
 
 	if len(c.text) > 0 {
 		cnv.SetHAlign(HAlignCenter)
@@ -85,6 +85,6 @@ func (c *ProgressBar) draw(cnv *Canvas) {
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 	}
 
-	cnv.SetColor(c.BackgroundColorAccent2())
+	cnv.SetColor(c.ForegroundColor())
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }

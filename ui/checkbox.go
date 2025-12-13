@@ -85,7 +85,7 @@ func (c *Checkbox) draw(cnv *Canvas) {
 
 	cnv.FillRect(padding, padding, 30-padding*2, 30-padding*2, c.BackgroundColorWithAddElevation(-1))
 
-	cnv.SetColor(c.BackgroundColorAccent1())
+	cnv.SetColor(c.BackgroundColorWithAddElevation(5))
 	cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
 	if c.Checked() {
 		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.ForegroundColor())

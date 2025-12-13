@@ -27,7 +27,8 @@ type Table struct {
 	columnResizingIndex int
 
 	cellBorderWidth int
-	cellBorderColor color.RGBA
+
+	cellBorderColorOverrided *color.RGBA
 
 	cellPadding int
 
@@ -108,7 +109,9 @@ func NewTable() *Table {
 	c.SetXExpandable(true)
 	c.SetYExpandable(true)
 	c.SetAllowScroll(true, true)
-	c.SetBackgroundColor(c.BackgroundColor())
+
+	c.SetAutoFillBackground(true)
+	c.SetElevation(-3)
 
 	// Events
 	c.SetOnPaint(c.draw)
@@ -139,7 +142,7 @@ func NewTable() *Table {
 	c.columnResizingIndex = -1
 
 	c.cellBorderWidth = 1
-	c.cellBorderColor = ThemeBackgroundColorAccent1()
+	//c.cellBorderColor = c.
 	c.cellPadding = 3
 
 	c.showSelection = true
@@ -166,11 +169,14 @@ func NewTable() *Table {
 }
 
 func (c *Table) SetCellBorderColor(col color.RGBA) {
-	c.cellBorderColor = col
+	c.cellBorderColorOverrided = &col
 }
 
-func (c *Table) CellBorderColor() color.RGBA {
-	return c.cellBorderColor
+func (c *Table) CellBorderColor() color.Color {
+	if c.cellBorderColorOverrided != nil {
+		return *c.cellBorderColorOverrided
+	}
+	return c.BackgroundColorWithAddElevation(4)
 }
 
 func (c *Table) SetCellBorderWidth(width int) {
@@ -814,10 +820,10 @@ func (c *Table) draw(cnv *Canvas) {
 					backColor := c.BackgroundColor()
 					if c.showSelection {
 						if rowIsSelected {
-							backColor = c.BackgroundColorAccent1()
+							backColor = c.BackgroundColorWithAddElevation(1)
 						}
 						if cellIsSelected {
-							backColor = c.BackgroundColorAccent2()
+							backColor = c.BackgroundColorWithAddElevation(3)
 						}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight1, backColor)
@@ -860,7 +866,7 @@ func (c *Table) draw(cnv *Canvas) {
 			y1 := rowIndex*c.rowHeight1 - c.scrollY
 			x2 := c.innerWidth
 			y2 := y1
-			cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+			cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.CellBorderColor())
 		}
 
 		for colIndex := 0; colIndex < c.columnCount+1; colIndex++ {
@@ -868,7 +874,7 @@ func (c *Table) draw(cnv *Canvas) {
 			y1 := visibleRow1*c.rowHeight1 - c.scrollY
 			x2 := x1
 			y2 := visibleRow2*c.rowHeight1 - c.scrollY
-			cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.cellBorderColor)
+			cnv.DrawLine(x1, y1, x2, y2, c.cellBorderWidth, c.CellBorderColor())
 		}
 		cnv.Restore()
 	}
@@ -910,7 +916,8 @@ func (c *Table) drawPost(cnv *Canvas) {
 			x := c.columnOffset(colIndex)
 			y := headerRowOffset + c.scrollY
 
-			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColor())
+			// Header Background
+			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColorWithAddElevation(2))
 			cnv.SetHAlign(HAlignLeft)
 			cnv.SetVAlign(VAlignCenter)
 			cnv.SetColor(c.ForegroundColor())
@@ -918,7 +925,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 			cnv.SetFontSize(c.FontSize())
 			cnv.DrawText(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, headerCell.name)
 
-			cnv.SetColor(c.cellBorderColor)
+			cnv.SetColor(c.CellBorderColor())
 			cnv.DrawRect(x, y, cellWidth+1, cellHeight+1)
 		}
 	}
@@ -942,7 +949,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 	}*/
 
 	// Draw table border
-	cnv.SetColor(c.BackgroundColorAccent2())
+	cnv.SetColor(c.BackgroundColorWithAddElevation(2))
 	cnv.DrawRect(c.scrollX, c.scrollY, c.Width(), c.Height())
 }
 

@@ -7,14 +7,13 @@ import (
 
 var Theme map[string]interface{}
 
-var DefaultBackground = colorFromHex("#121212")
+var DefaultSurfaceBackground = colorFromHex("#121212")
+var DefaultPrimaryBackground = colorFromHex("#42A5F5")
+var DefaultSecondaryBackground = colorFromHex("#26C6DA")
 
-var DefaultPrimary = colorFromHex("#42A5F5")
-var DefaultSecondary = colorFromHex("#26C6DA")
-
-var DefaultOnSurface = colorFromHex("#FFFFFF")
-var DefaultOnPrimary = colorFromHex("#000000")
-var DefaultOnSecondary = colorFromHex("#000000")
+var DefaultSurface = colorFromHex("#FFFFFF")
+var DefaultPrimary = colorFromHex("#000000")
+var DefaultSecondary = colorFromHex("#000000")
 
 func colorFromHex(hexStr string) color.RGBA {
 	var r, g, b, a uint8
@@ -37,21 +36,29 @@ func colorFromHex(hexStr string) color.RGBA {
 
 func init() {
 	Theme = make(map[string]interface{})
-	Theme["background"] = colorFromHex("#121212")
-	Theme["background.accent1"] = colorFromHex("#0d668aff")
-	Theme["background.accent2"] = colorFromHex("#2D2D2D")
-	Theme["background.selection"] = colorFromHex("#264F78")
-	Theme["foreground"] = colorFromHex("#FFFFFF")
+
+	Theme["background.surface"] = DefaultSurfaceBackground
+	Theme["background.primary"] = DefaultPrimaryBackground
+	Theme["background.secondary"] = DefaultSecondaryBackground
+
+	Theme["foreground.surface"] = DefaultSurface
+	Theme["foreground.primary"] = DefaultPrimary
+	Theme["foreground.secondary"] = DefaultSecondary
+
 	Theme["fontFamily"] = "robotomono"
 	Theme["fontSize"] = 18
 }
 
-func ThemeBackgroundColor(elevation int) color.RGBA {
-	if v, ok := Theme["background"]; ok {
+func ThemeBackgroundColor(elevation int, role string) color.RGBA {
+	if role == "" {
+		role = "surface"
+	}
+	if v, ok := Theme["background."+role]; ok {
 		if bgColor, ok := v.(color.RGBA); ok {
 			gray := 0x12
-			if elevation > 0 {
-				gray = gray + 16 + elevation*6
+			gray = gray + 16 + elevation*6
+			if gray < 0 {
+				gray = 0
 			}
 			if gray > 255 {
 				gray = 255
@@ -75,38 +82,14 @@ func ThemeBackgroundColor(elevation int) color.RGBA {
 			return color.RGBA{uint8(r), uint8(g), uint8(b), bgColor.A}
 		}
 	}
-	return DefaultBackground
+	return DefaultSurfaceBackground
 }
 
-func ThemeBackgroundColorAccent1() color.RGBA {
-	if v, ok := Theme["background.accent1"]; ok {
-		if bgHoverColor, ok := v.(color.RGBA); ok {
-			return bgHoverColor
-		}
+func ThemeForegroundColor(role string) color.RGBA {
+	if role == "" {
+		role = "surface"
 	}
-	return color.RGBA{50, 50, 50, 255} // Default accent1 background color
-}
-
-func ThemeBackgroundColorAccent2() color.RGBA {
-	if v, ok := Theme["background.accent2"]; ok {
-		if bgAccent2Color, ok := v.(color.RGBA); ok {
-			return bgAccent2Color
-		}
-	}
-	return color.RGBA{50, 50, 50, 255} // Default accent2 background color
-}
-
-func ThemeBackgroundColorSelection() color.RGBA {
-	if v, ok := Theme["background.selection"]; ok {
-		if bgSelectionColor, ok := v.(color.RGBA); ok {
-			return bgSelectionColor
-		}
-	}
-	return color.RGBA{38, 79, 120, 255} // Default selection background color
-}
-
-func ThemePrimaryColor() color.RGBA {
-	if v, ok := Theme["primary"]; ok {
+	if v, ok := Theme["foreground."+role]; ok {
 		if fgColor, ok := v.(color.RGBA); ok {
 			return fgColor
 		}

@@ -54,10 +54,10 @@ func (c *ButtonImage) Press() {
 func (c *ButtonImage) draw(cnv *Canvas) {
 	backColor := c.BackgroundColor()
 	if c.IsHovered() {
-		backColor = c.BackgroundColorAccent1()
+		backColor = c.BackgroundColorWithAddElevation(-1)
 	}
 	if c.pressed {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorWithAddElevation(2)
 	}
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 
@@ -68,7 +68,7 @@ func (c *ButtonImage) draw(cnv *Canvas) {
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawImage(0, 0, c.img)
 
-	cnv.SetColor(c.BackgroundColorAccent2())
+	cnv.SetColor(c.BackgroundColorWithAddElevation(2))
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 

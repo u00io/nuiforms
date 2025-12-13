@@ -78,9 +78,9 @@ func (c *ComboBox) OpenPopup() {
 }
 
 func (c *ComboBox) draw(cnv *Canvas) {
-	backColor := c.BackgroundColorAccent1()
+	backColor := c.BackgroundColorWithAddElevation(-1)
 	if c.IsHovered() {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorWithAddElevation(2)
 	}
 	foreColor := c.ForegroundColor()
 
@@ -156,9 +156,9 @@ func newComboBoxPopupItem(index int, text string) *comboBoxPopupItem {
 }
 
 func (c *comboBoxPopupItem) Draw(ctx *Canvas) {
-	backColor := c.BackgroundColorAccent1()
+	backColor := c.BackgroundColorWithAddElevation(-1)
 	if c.IsHovered() {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorWithAddElevation(2)
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)

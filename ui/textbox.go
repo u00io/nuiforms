@@ -55,9 +55,8 @@ func NewTextBox() *TextBox {
 	c.InitWidget()
 	c.SetTypeName("TextBox")
 
-	c.SetBackgroundColor(color.RGBA{0x33, 0x33, 0x33, 0xFF})
 	c.SetAutoFillBackground(true)
-	//txtBox := newTextBox(&c.widget)
+	c.SetElevation(-3)
 
 	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		c.KeyDown(key, mods)
@@ -308,7 +307,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 				rectY = yStaticOffset
 			}
 
-			ctx.FillRect(selXBegin, rectY, selXWidth, oneLineHeight, c.BackgroundColorSelection())
+			ctx.FillRect(selXBegin, rectY, selXWidth, oneLineHeight, c.BackgroundColorWithAddElevation(10))
 		}
 	}
 
