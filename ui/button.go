@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -76,7 +74,7 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetColor(c.ForegroundColor())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
-	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text()+fmt.Sprint(c.Elevation()))
+	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
 
 	//cnv.SetColor(c.BackgroundColorAccent2())
 	//cnv.DrawRect(0, 0, c.Width(), c.Height())

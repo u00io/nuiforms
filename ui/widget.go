@@ -2307,6 +2307,8 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		w = NewTable()
 	case "tabwidget":
 		w = NewTabWidget()
+	case "scrollarea":
+		w = NewScrollArea()
 	case "widget":
 		{
 			// <widget id="InnerWidget" />

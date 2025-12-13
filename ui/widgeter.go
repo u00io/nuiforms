@@ -31,6 +31,9 @@ type Widgeter interface {
 
 	Elevation() int
 
+	SetRole(role string)
+	Role() string
+
 	FindWidgetByName(name string) Widgeter
 
 	Enabled() bool
