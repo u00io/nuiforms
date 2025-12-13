@@ -18,7 +18,7 @@ func ShowEnterStringDialog(title string, messageText string, initialValue string
 	panelButtons := NewPanel()
 	panelButtons.AddWidgetOnGrid(NewHSpacer(), 0, 0)
 	btnOK := NewButton("OK")
-	btnOK.SetOnButtonClick(func(btn *Button) {
+	btnOK.SetOnButtonClick(func() {
 		if onSubmit != nil {
 			onSubmit(txtValue.Text())
 		}
@@ -28,7 +28,7 @@ func ShowEnterStringDialog(title string, messageText string, initialValue string
 	panelButtons.AddWidgetOnGrid(btnOK, 0, 1)
 
 	btnCancel := NewButton("Cancel")
-	btnCancel.SetOnButtonClick(func(btn *Button) {
+	btnCancel.SetOnButtonClick(func() {
 		dialog.Close()
 		widgetToFocusAfterClose.Focus()
 	})

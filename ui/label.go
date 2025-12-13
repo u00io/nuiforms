@@ -7,11 +7,9 @@ import (
 
 type Label struct {
 	Widget
-	text string
-
-	underline bool
-
-	textAlign HAlign
+	//text string
+	//underline bool
+	//textAlign HAlign
 }
 
 const labelMaxWidth = 1500
@@ -23,16 +21,15 @@ func NewLabel(text string) *Label {
 	var c Label
 	c.InitWidget()
 	c.SetTypeName("Label")
-	//c.SetMaxWidth(labelMaxWidth)
 	c.SetOnPaint(func(cnv *Canvas) {
-		cnv.SetHAlign(c.textAlign)
+		cnv.SetHAlign(c.GetHAlign("textAlign", HAlignLeft))
 		cnv.SetVAlign(VAlignCenter)
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
 		cnv.SetColor(c.Color())
-		cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
+		cnv.DrawText(0, 0, c.Width(), c.Height(), c.GetPropString("text", ""))
 
-		if c.underline {
+		if c.GetPropBool("underline", false) {
 			cnv.SetColor(c.Color())
 			widgetWidth := c.Width()
 			textHeight := c.innerHeight
@@ -55,11 +52,11 @@ func NewLabel(text string) *Label {
 // Label methods
 
 func (c *Label) Text() string {
-	return c.text
+	return c.GetPropString("text", "")
 }
 
 func (c *Label) SetText(text string) {
-	c.text = text
+	c.SetProp("text", text)
 	c.updateInnerSize()
 	if MainForm != nil {
 		MainForm.Update()
@@ -68,11 +65,11 @@ func (c *Label) SetText(text string) {
 }
 
 func (c *Label) TextAlign() HAlign {
-	return c.textAlign
+	return c.GetHAlign("textAlign", HAlignLeft)
 }
 
 func (c *Label) SetTextAlign(align HAlign) {
-	c.textAlign = align
+	c.SetProp("textAlign", align.String())
 	c.updateInnerSize()
 	if MainForm != nil {
 		MainForm.Update()
@@ -81,11 +78,11 @@ func (c *Label) SetTextAlign(align HAlign) {
 }
 
 func (c *Label) IsUnderline() bool {
-	return c.underline
+	return c.GetPropBool("underline", false)
 }
 
 func (c *Label) SetUnderline(underline bool) {
-	c.underline = underline
+	c.SetProp("underline", underline)
 	if MainForm != nil {
 		MainForm.Update()
 	}
@@ -96,7 +93,7 @@ func (c *Label) SetUnderline(underline bool) {
 // Label private methods
 
 func (c *Label) updateInnerSize() {
-	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.text)
+	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
 		return
 	}

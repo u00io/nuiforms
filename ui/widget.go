@@ -1,9 +1,13 @@
 package ui
 
 import (
+	"encoding/xml"
 	"fmt"
 	"image/color"
 	"math"
+	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -379,6 +383,7 @@ func (c *Widget) AddWidgetOnGrid(w Widgeter, gridRow int, gridColumn int) {
 	allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
 	MainForm.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
+	UpdateMainFormLayout()
 }
 
 func (c *Widget) RemoveWidget(w Widgeter) {
@@ -402,6 +407,23 @@ func (c *Widget) RemoveAllWidgets() {
 	c.widgets = make([]Widgeter, 0)
 	c.updateLayout(0, 0, 0, 0)
 	UpdateMainForm()
+}
+
+func (c *Widget) FindWidgetByName(name string) Widgeter {
+	for _, w := range c.widgets {
+		if w.Name() == name {
+			return w
+		}
+	}
+
+	// recursive search in child widgets
+	for _, w := range c.widgets {
+		childWidget := w.FindWidgetByName(name)
+		if childWidget != nil {
+			return childWidget
+		}
+	}
+	return nil
 }
 
 func (c *Widget) NextGridColumn() int {
@@ -488,6 +510,10 @@ func (c *Widget) SetInnerSize(width, height int) {
 	c.innerHeight = height
 }
 
+///////////////////////////////////////////////////////////
+// Properties
+///////////////////////////////////////////////////////////
+
 func (c *Widget) SetProp(key string, value any) {
 	c.props[key] = value
 }
@@ -500,31 +526,155 @@ func (c *Widget) GetProp(key string) any {
 }
 
 func (c *Widget) GetPropString(key string, defaultValue string) string {
-	if value, ok := c.props[key]; ok {
-		if strValue, ok := value.(string); ok {
-			return strValue
-		}
+	v := c.GetProp(key)
+	if v != nil {
+		return fmt.Sprint(v)
 	}
 	return defaultValue
 }
 
 func (c *Widget) GetPropInt(key string, defaultValue int) int {
-	if value, ok := c.props[key]; ok {
-		if intValue, ok := value.(int); ok {
-			return intValue
+	v := c.GetProp(key)
+	if v != nil {
+		rv := reflect.ValueOf(v)
+		switch rv.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return int(rv.Int())
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return int(rv.Uint())
+		case reflect.Float32, reflect.Float64:
+			return int(math.Round(rv.Float()))
+		case reflect.String:
+			i, err := strconv.Atoi(rv.String())
+			if err == nil {
+				return i
+			}
+		}
+	}
+	return defaultValue
+}
+
+func (c *Widget) GetPropFloat64(key string, defaultValue float64) float64 {
+	v := c.GetProp(key)
+	if v != nil {
+		rv := reflect.ValueOf(v)
+		switch rv.Kind() {
+		case reflect.Float32, reflect.Float64:
+			return rv.Float()
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return float64(rv.Int())
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return float64(rv.Uint())
+		case reflect.String:
+			var f float64
+			f, err := strconv.ParseFloat(rv.String(), 64)
+			if err == nil {
+				return f
+			}
 		}
 	}
 	return defaultValue
 }
 
 func (c *Widget) GetPropBool(key string, defaultValue bool) bool {
-	if value, ok := c.props[key]; ok {
-		if boolValue, ok := value.(bool); ok {
-			return boolValue
+	v := c.GetProp(key)
+	if v != nil {
+		rv := reflect.ValueOf(v)
+		switch rv.Kind() {
+		case reflect.Bool:
+			return rv.Bool()
+		case reflect.String:
+			strVal := rv.String()
+			strVal = strings.ToLower(strVal)
+			if strVal == "true" || strVal == "1" {
+				return true
+			} else if strVal == "false" || strVal == "0" {
+				return false
+			}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return rv.Int() != 0
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return rv.Uint() != 0
+		case reflect.Float32, reflect.Float64:
+			return rv.Float() != 0.0
 		}
 	}
 	return defaultValue
 }
+
+func (c *Widget) GetPropColor(key string, defaultValue string) color.Color {
+	v := c.GetProp(key)
+	if v != nil {
+		rv := reflect.ValueOf(v)
+		if rv.Kind() == reflect.String {
+			return colorFromHex(rv.String())
+		}
+		return colorFromHex(defaultValue)
+	}
+	return colorFromHex(defaultValue)
+}
+
+func (c *Widget) GetHAlign(key string, defaultValue HAlign) HAlign {
+	v := c.GetProp(key)
+	if v != nil {
+		rv := reflect.ValueOf(v)
+		switch rv.Kind() {
+		case reflect.String:
+			vStr := strings.ToLower(rv.String())
+			switch vStr {
+			case "left":
+				return HAlignLeft
+			case "center":
+				return HAlignCenter
+			case "right":
+				return HAlignRight
+			}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			intVal := int(rv.Int())
+			if intVal >= int(HAlignLeft) && intVal <= int(HAlignRight) {
+				return HAlign(intVal)
+			}
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			uintVal := int(rv.Uint())
+			if uintVal >= int(HAlignLeft) && uintVal <= int(HAlignRight) {
+				return HAlign(uintVal)
+			}
+		}
+	}
+	return defaultValue
+}
+
+func (c *Widget) GetVAlign(key string, defaultValue VAlign) VAlign {
+	v := c.GetProp(key)
+	if v != nil {
+		rv := reflect.ValueOf(v)
+		switch rv.Kind() {
+		case reflect.String:
+			vStr := strings.ToLower(rv.String())
+			switch vStr {
+			case "top":
+				return VAlignTop
+			case "center":
+				return VAlignCenter
+			case "bottom":
+				return VAlignBottom
+			}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			intVal := int(rv.Int())
+			if intVal >= int(VAlignTop) && intVal <= int(VAlignBottom) {
+				return VAlign(intVal)
+			}
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			uintVal := int(rv.Uint())
+			if uintVal >= int(VAlignTop) && uintVal <= int(VAlignBottom) {
+				return VAlign(uintVal)
+			}
+		}
+	}
+	return defaultValue
+}
+
+////////////////////////////////////////////////////////////
 
 func (c *Widget) SetOnFocused(onFocused func()) {
 	c.onFocused = onFocused
@@ -1349,15 +1499,15 @@ func (c *Widget) CloseTopPopup() {
 func (c *Widget) ProcessClosePopup() {
 }
 
-var updateLayoutStack int
+// var updateLayoutStack int
 
 func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 	//fmt.Println("Begin Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
 	//dt := time.Now()
-	updateLayoutStack++
+	/*updateLayoutStack++
 	defer func() {
 		updateLayoutStack--
-	}()
+	}()*/
 
 	if MainForm.layoutingBlockStack > 0 {
 		return
@@ -2003,5 +2153,84 @@ func (c *Widget) ClearLayoutCache() {
 
 	for _, popupWidget := range c.PopupWidgets {
 		popupWidget.ClearLayoutCache()
+	}
+}
+
+type uiNode struct {
+	XMLName xml.Name
+	Attrs   []xml.Attr `xml:",any,attr"`
+	Nodes   []uiNode   `xml:",any"`
+}
+
+func (c *Widget) SetLayout(layoutAsXml string, eventProcessor interface{}, widgets map[string]Widgeter) error {
+	var n uiNode
+	err := xml.Unmarshal([]byte(layoutAsXml), &n)
+	if err != nil {
+		return fmt.Errorf("failed to parse layout XML: %v", err)
+	}
+	c.buildNode(&n, c, 0, 0, eventProcessor, widgets)
+	return nil
+}
+
+func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventProcessor interface{}, widgets map[string]Widgeter) {
+	var w Widgeter
+	isRow := false
+	switch n.XMLName.Local {
+	case "column":
+		w = NewPanel()
+	case "row":
+		w = NewPanel()
+		isRow = true
+	case "label":
+		w = NewLabel("")
+	case "button":
+		w = NewButton("")
+	case "hspacer":
+		w = NewHSpacer()
+	case "vspacer":
+		w = NewVSpacer()
+	case "widget":
+		{
+			// <widget id="InnerWidget" />
+			var widgetId string
+			for _, attr := range n.Attrs {
+				if attr.Name.Local == "id" {
+					widgetId = attr.Value
+					break
+				}
+			}
+			if widgetId != "" {
+				if existingWidget, ok := widgets[widgetId]; ok {
+					w = existingWidget
+				} else {
+					fmt.Printf("Widget with id %s not found in widgets map\n", widgetId)
+					return
+				}
+			} else {
+				fmt.Println("Widget tag without id attribute")
+				return
+			}
+		}
+	default:
+		return
+	}
+
+	parent.AddWidgetOnGrid(w, row, col)
+
+	// Set attributes - only after adding to parent
+	for _, attr := range n.Attrs {
+		w.SetProp(attr.Name.Local, attr.Value)
+	}
+
+	index := 0
+	// Recursively build child nodes
+	for _, childNode := range n.Nodes {
+		if isRow {
+			c.buildNode(&childNode, w, 0, index, eventProcessor, widgets)
+			index++
+		} else {
+			c.buildNode(&childNode, w, index, 0, eventProcessor, widgets)
+			index++
+		}
 	}
 }

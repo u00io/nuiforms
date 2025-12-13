@@ -9,7 +9,7 @@ func Run(form *ui.Form) {
 	panel.AddWidgetOnGrid(lbl, 0, 0)
 
 	btn := ui.NewButton("Click Me")
-	btn.SetOnButtonClick(func(btn *ui.Button) {
+	btn.SetOnButtonClick(func() {
 		lbl.SetText("Button clicked!")
 		btn.SetText("Clicked")
 	})

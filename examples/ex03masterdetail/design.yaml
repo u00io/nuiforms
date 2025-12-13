@@ -1,0 +1,12 @@
+column:
+  - label:
+      text: "Do you want to continue?"
+  - vspacer: {}
+  - row:
+      - hspacer: {}
+      - button:
+          id: "button1"
+          text: "OK"
+      - button:
+          id: "button2"
+          text: "Cancel"

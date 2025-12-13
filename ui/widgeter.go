@@ -19,7 +19,16 @@ type Widgeter interface {
 	InnerWidth() int
 	InnerHeight() int
 
+	SetProp(key string, value interface{})
+	GetProp(key string) interface{}
+	GetPropString(key string, defaultValue string) string
+	GetPropInt(key string, defaultValue int) int
+	GetPropBool(key string, defaultValue bool) bool
+	GetPropFloat64(key string, defaultValue float64) float64
+
 	Widgets() []Widgeter
+
+	FindWidgetByName(name string) Widgeter
 
 	Enabled() bool
 	SetEnabled(enabled bool)

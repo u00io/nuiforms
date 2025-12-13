@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"github.com/u00io/nuiforms/examples/ex00layout"
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02layouts"
 	"github.com/u00io/nuiforms/examples/ex03masterdetail"
@@ -21,63 +22,68 @@ func Run() {
 		form.SetTitle("Examples")
 		form.SetSize(800, 600)
 
-		addButton := func(text string, onClick func(btn *ui.Button)) {
+		addButton := func(text string, onClick func()) {
 			btn := ui.NewButton(text)
 			btn.SetOnButtonClick(onClick)
 			form.Panel().AddWidgetOnGrid(btn, form.Panel().NextGridRow(), 0)
 		}
 
-		addButton("Example 01 - Base Form", func(btn *ui.Button) {
+		addButton("Example 00 - Layouts", func() {
+			form.Panel().RemoveAllWidgets()
+			ex00layout.Run(form)
+		})
+
+		addButton("Example 01 - Base Form", func() {
 			form.Panel().RemoveAllWidgets()
 			ex01base.Run(form)
 		})
 
-		addButton("Example 02 - Layouts", func(btn *ui.Button) {
+		addButton("Example 02 - Layouts", func() {
 			form.Panel().RemoveAllWidgets()
 			ex02layouts.Run(form)
 		})
 
-		addButton("Example 03 - Master Detail", func(btn *ui.Button) {
+		addButton("Example 03 - Master Detail", func() {
 			form.Panel().RemoveAllWidgets()
 			ex03masterdetail.Run(form)
 		})
 
-		addButton("Example 06 - Font", func(btn *ui.Button) {
+		addButton("Example 06 - Font", func() {
 			form.Panel().RemoveAllWidgets()
 			ex06font.Run(form)
 		})
 
-		addButton("Example 09 - TextBox", func(btn *ui.Button) {
+		addButton("Example 09 - TextBox", func() {
 			form.Panel().RemoveAllWidgets()
 			ex09textbox.Run(form)
 		})
 
-		addButton("Example 10 - Tab Widget", func(btn *ui.Button) {
+		addButton("Example 10 - Tab Widget", func() {
 			form.Panel().RemoveAllWidgets()
 			ex10tabwidget.Run(form)
 		})
 
-		addButton("File Manager Example", func(btn *ui.Button) {
+		addButton("File Manager Example", func() {
 			form.Panel().RemoveAllWidgets()
 			ex11filemanager.Run(form)
 		})
 
-		addButton("Example 12 - Cards", func(btn *ui.Button) {
+		addButton("Example 12 - Cards", func() {
 			form.Panel().RemoveAllWidgets()
 			ex12cards.Run(form)
 		})
 
-		addButton("Example 13 - Table Widget", func(btn *ui.Button) {
+		addButton("Example 13 - Table Widget", func() {
 			form.Panel().RemoveAllWidgets()
 			ex13table.Run(form)
 		})
 
-		addButton("Example 14 - Popup", func(btn *ui.Button) {
+		addButton("Example 14 - Popup", func() {
 			form.Panel().RemoveAllWidgets()
 			ex14popup.Run(form)
 		})
 
-		addButton("Example 15 - Dialog", func(btn *ui.Button) {
+		addButton("Example 15 - Dialog", func() {
 			form.Panel().RemoveAllWidgets()
 			ex15dialog.Run(form)
 		})

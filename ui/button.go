@@ -7,12 +7,8 @@ import (
 
 type Button struct {
 	Widget
-
-	fontSize float64
-
 	pressed       bool
-	text          string
-	onButtonClick func(btn *Button)
+	onButtonClick func()
 }
 
 func NewButton(text string) *Button {
@@ -32,39 +28,25 @@ func NewButton(text string) *Button {
 
 	c.SetText(text)
 
-	c.fontSize = -1
-
 	return &c
 }
 
-func (c *Button) buttonFontSize() float64 {
-	if c.fontSize > 0 {
-		return c.fontSize
-	}
-	return c.FontSize()
-}
-
-func (c *Button) SetFontSize(size float64) {
-	c.fontSize = size
-	UpdateMainForm()
-}
-
 func (c *Button) Text() string {
-	return c.text
+	return c.GetPropString("text", "")
 }
 
 func (c *Button) SetText(text string) {
-	c.text = text
+	c.SetProp("text", text)
 	UpdateMainForm()
 }
 
-func (c *Button) SetOnButtonClick(fn func(btn *Button)) {
+func (c *Button) SetOnButtonClick(fn func()) {
 	c.onButtonClick = fn
 }
 
 func (c *Button) Press() {
 	if c.onButtonClick != nil {
-		c.onButtonClick(c)
+		c.onButtonClick()
 	}
 }
 
@@ -89,15 +71,15 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(c.Color())
 	cnv.SetFontFamily(c.FontFamily())
-	cnv.SetFontSize(c.buttonFontSize())
-	cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
+	cnv.SetFontSize(c.FontSize())
+	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
 
 	//cnv.SetColor(c.BackgroundColorAccent2())
 	//cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
-	if c.enabled == false {
+	if !c.enabled {
 		return false
 	}
 	c.pressed = true
@@ -105,7 +87,7 @@ func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y in
 }
 
 func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
-	if c.enabled == false {
+	if !c.enabled {
 		return false
 	}
 	c.pressed = false
@@ -119,7 +101,7 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
 		if c.onButtonClick != nil {
-			c.onButtonClick(c)
+			c.onButtonClick()
 		}
 	}
 

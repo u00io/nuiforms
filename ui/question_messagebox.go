@@ -14,7 +14,7 @@ func ShowQuestionMessageBox(title string, messageText string, onOk func(), onCan
 	panelButtons := NewPanel()
 
 	btnOK := NewButton("OK")
-	btnOK.SetOnButtonClick(func(btn *Button) {
+	btnOK.SetOnButtonClick(func() {
 		if onOk != nil {
 			onOk()
 		}
@@ -25,7 +25,7 @@ func ShowQuestionMessageBox(title string, messageText string, onOk func(), onCan
 	panelButtons.AddWidgetOnGrid(btnOK, 0, 1)
 
 	btnCancel := NewButton("Cancel")
-	btnCancel.SetOnButtonClick(func(btn *Button) {
+	btnCancel.SetOnButtonClick(func() {
 		if onCancel != nil {
 			onCancel()
 		}

@@ -66,7 +66,7 @@ func NewDialogHeader() *dialogHeader {
 	c.btnClose.SetPosition(170, 0)
 	c.btnClose.SetSize(30, 30)
 	c.btnClose.SetAnchors(false, true, true, true)
-	c.btnClose.SetOnButtonClick(func(btn *Button) {
+	c.btnClose.SetOnButtonClick(func() {
 		c.dialog.Reject()
 	})
 	c.AddWidget(c.btnClose)
@@ -196,14 +196,14 @@ func (c *Dialog) Resize(w, h int) {
 
 func (c *Dialog) SetAcceptButton(acceptButton *Button) {
 	c.acceptButton = acceptButton
-	acceptButton.SetOnButtonClick(func(btn *Button) {
+	acceptButton.SetOnButtonClick(func() {
 		c.Accept()
 	})
 }
 
 func (c *Dialog) SetRejectButton(rejectButton *Button) {
 	c.rejectButton = rejectButton
-	rejectButton.SetOnButtonClick(func(btn *Button) {
+	rejectButton.SetOnButtonClick(func() {
 		c.Reject()
 	})
 }

@@ -10,7 +10,7 @@ import (
 func Run(form *ui.Form) {
 	form.Panel().RemoveAllWidgets()
 	btn := ui.NewButton("Click me")
-	btn.SetOnButtonClick(func(btn *ui.Button) {
+	btn.SetOnButtonClick(func() {
 		lbl := ui.NewLabel("This is a popup message!")
 		lbl.SetPosition(100, 100)
 		lbl.SetSize(300, 300)

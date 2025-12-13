@@ -35,6 +35,32 @@ type Canvas struct {
 type VAlign int
 type HAlign int
 
+func (c *HAlign) String() string {
+	switch *c {
+	case HAlignLeft:
+		return "left"
+	case HAlignCenter:
+		return "center"
+	case HAlignRight:
+		return "right"
+	default:
+		return "left"
+	}
+}
+
+func (c *VAlign) String() string {
+	switch *c {
+	case VAlignTop:
+		return "top"
+	case VAlignCenter:
+		return "center"
+	case VAlignBottom:
+		return "bottom"
+	default:
+		return "top"
+	}
+}
+
 const VAlignTop VAlign = 0
 const VAlignCenter VAlign = 1
 const VAlignBottom VAlign = 2
