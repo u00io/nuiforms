@@ -130,6 +130,30 @@ type Widget struct {
 	onFocusLost func()
 }
 
+type Event struct {
+	Parameter any
+}
+
+var eventsStack []*Event
+
+func PushEvent(event *Event) {
+	eventsStack = append(eventsStack, event)
+}
+
+func PopEvent() {
+	if len(eventsStack) == 0 {
+		return
+	}
+	eventsStack = eventsStack[:len(eventsStack)-1]
+}
+
+func CurrentEvent() *Event {
+	if len(eventsStack) == 0 {
+		return nil
+	}
+	return eventsStack[len(eventsStack)-1]
+}
+
 /*func NewWidget() *Widget {
 	var c Widget
 	c.InitWidget()
@@ -2202,6 +2226,18 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		w = NewHSpacer()
 	case "vspacer":
 		w = NewVSpacer()
+	case "textbox":
+		w = NewTextBox()
+	case "checkbox":
+		w = NewCheckbox("")
+	case "radiobutton":
+		w = NewRadioButton("")
+	case "combobox":
+		w = NewComboBox()
+	case "table":
+		w = NewTable()
+	case "tabwidget":
+		w = NewTabWidget()
 	case "widget":
 		{
 			// <widget id="InnerWidget" />

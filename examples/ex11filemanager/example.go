@@ -57,13 +57,16 @@ func NewMainWidget() *MainWidget {
 	c.cmdLine = ui.NewTextBox()
 	c.cmdLine.SetName("CommandLine")
 	c.cmdLine.SetEmptyText("Enter command here...")
-	c.cmdLine.SetOnTextBoxKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	c.cmdLine.SetOnTextBoxKeyDown(func() {
+		key := ui.CurrentEvent().Parameter.(*ui.EventTextboxKeyDown).Key
+		mods := ui.CurrentEvent().Parameter.(*ui.EventTextboxKeyDown).Mods
 		if key == nuikey.KeyArrowUp || key == nuikey.KeyArrowDown {
 			c.filePanels[c.currentFilePanelIndex].Focus()
 			c.filePanels[c.currentFilePanelIndex].ProcessKeyDown(key, mods)
-			return true
+			ui.CurrentEvent().Parameter.(*ui.EventTextboxKeyDown).Processed = true
+			return
 		}
-		return false
+		return
 	})
 	c.bottomPanel.AddWidgetOnGrid(c.cmdLine, 0, 0)
 	c.AddWidgetOnGrid(c.bottomPanel, 2, 0)

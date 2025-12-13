@@ -4,28 +4,6 @@ import (
 	"github.com/u00io/nuiforms/ui"
 )
 
-type InnerWidget struct {
-	ui.Widget
-}
-
-func NewInnerWidget() *InnerWidget {
-	var c InnerWidget
-	c.InitWidget()
-	c.SetLayout(`
-<column>
-	<label text="This is an inner widget." />
-	<vspacer />
-	<label text="It is placed inside the main layout." />
-	<button text="Inner Button" onclick="ClickInnerButton" />
-</column>
-	`, &c, nil)
-	return &c
-}
-
-func (c *InnerWidget) ClickInnerButton() {
-	println("Inner button clicked!")
-}
-
 type LayoutExample struct {
 	ui.Widget
 }
@@ -33,20 +11,13 @@ type LayoutExample struct {
 func NewLayoutExample() *LayoutExample {
 	var c LayoutExample
 	c.InitWidget()
+
 	c.SetLayout(`
 <column>
-    <label text="Do you want to destroy the system?" />
-	<vspacer />
-	<widget id="InnerWidget" />
-	<row>
-		<hspacer />
-		<button text="Yes" onclick="ClickYes" />
-		<button text="No" />
-    </row>
+    <textbox text="This is an example of a layout with an inner widget." />
 </column>
-	`, &c, map[string]ui.Widgeter{
-		"InnerWidget": NewInnerWidget(),
-	})
+	`, &c, nil)
+
 	return &c
 }
 

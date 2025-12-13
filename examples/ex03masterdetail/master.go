@@ -93,31 +93,31 @@ func NewMasterWidget() *MasterWidget {
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("ID:"), 0, 0)
 	c.txtCol1 = ui.NewTextBox()
 	c.panelRight.AddWidgetOnGrid(c.txtCol1, 0, 1)
-	c.txtCol1.SetOnTextChanged(func(txt *ui.TextBox) {
+	c.txtCol1.SetOnTextChanged(func() {
 		if c.loadingDetails {
 			return
 		}
-		c.table.SetCellText2(c.table.CurrentRow(), 0, txt.Text())
+		c.table.SetCellText2(c.table.CurrentRow(), 0, c.txtCol1.Text())
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Name:"), 1, 0)
 	c.txtCol2 = ui.NewTextBox()
 	c.panelRight.AddWidgetOnGrid(c.txtCol2, 1, 1)
-	c.txtCol2.SetOnTextChanged(func(txt *ui.TextBox) {
+	c.txtCol2.SetOnTextChanged(func() {
 		if c.loadingDetails {
 			return
 		}
-		c.table.SetCellText2(c.table.CurrentRow(), 1, txt.Text())
+		c.table.SetCellText2(c.table.CurrentRow(), 1, c.txtCol2.Text())
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Description:"), 2, 0)
 	c.txtCol3 = ui.NewTextBox()
 	c.panelRight.AddWidgetOnGrid(c.txtCol3, 2, 1)
-	c.txtCol3.SetOnTextChanged(func(txt *ui.TextBox) {
+	c.txtCol3.SetOnTextChanged(func() {
 		if c.loadingDetails {
 			return
 		}
-		c.table.SetCellText2(c.table.CurrentRow(), 2, txt.Text())
+		c.table.SetCellText2(c.table.CurrentRow(), 2, c.txtCol3.Text())
 	})
 
 	c.panelRight.AddWidgetOnGrid(ui.NewLabel("Main Field:"), 3, 0)

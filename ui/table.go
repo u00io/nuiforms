@@ -1100,8 +1100,9 @@ func (c *Table) EditCurrentCell(enteredText string) {
 	c.editorTextBox.SetText(enteredText)
 	c.editorTextBox.MoveCursorToEnd()
 	c.editorTextBox.SelectAllText()
-	c.editorTextBox.SetOnTextBoxKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
-		if key == nuikey.KeyEnter {
+	c.editorTextBox.SetOnTextBoxKeyDown(func() {
+		ev := CurrentEvent().Parameter.(*EventTextboxKeyDown)
+		if ev.Key == nuikey.KeyEnter {
 			if c.editorTextBox != nil {
 				c.SetCellText2(c.currentCellY, c.currentCellX, c.editorTextBox.Text())
 				c.RemoveWidget(c.editorTextBox)
@@ -1109,18 +1110,20 @@ func (c *Table) EditCurrentCell(enteredText string) {
 				UpdateMainForm()
 				c.Focus()
 			}
-			return true
+			ev.Processed = true
+			return
 		}
-		if key == nuikey.KeyEsc {
+		if ev.Key == nuikey.KeyEsc {
 			if c.editorTextBox != nil {
 				c.RemoveWidget(c.editorTextBox)
 				c.editorTextBox = nil
 				UpdateMainForm()
 				c.Focus()
 			}
-			return true
+			ev.Processed = true
+			return
 		}
-		return false
+		return
 	})
 	c.editorTextBox.SetOnFocusLost(func() {
 		if c.editorTextBox != nil {
