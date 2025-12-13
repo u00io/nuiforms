@@ -7,8 +7,7 @@ import (
 
 type Button struct {
 	Widget
-	pressed       bool
-	onButtonClick func()
+	pressed bool
 }
 
 func NewButton(text string) *Button {
@@ -41,12 +40,12 @@ func (c *Button) SetText(text string) {
 }
 
 func (c *Button) SetOnButtonClick(fn func()) {
-	c.onButtonClick = fn
+	c.SetPropFunction("onclick", fn)
 }
 
 func (c *Button) Press() {
-	if c.onButtonClick != nil {
-		c.onButtonClick()
+	if f := c.GetPropFunction("onclick"); f != nil {
+		f()
 	}
 }
 
@@ -100,9 +99,7 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 	hoverWidgeter := MainForm.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
-		if c.onButtonClick != nil {
-			c.onButtonClick()
-		}
+		c.Press()
 	}
 
 	return true

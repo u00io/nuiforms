@@ -20,6 +20,7 @@ type Widgeter interface {
 	InnerHeight() int
 
 	SetProp(key string, value interface{})
+	SetPropFunction(key string, f func())
 	GetProp(key string) interface{}
 	GetPropString(key string, defaultValue string) string
 	GetPropInt(key string, defaultValue int) int

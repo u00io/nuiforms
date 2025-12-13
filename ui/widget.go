@@ -74,7 +74,8 @@ type Widget struct {
 
 	enabled bool
 
-	props map[string]interface{}
+	props          map[string]interface{}
+	propsFunctions map[string]func()
 
 	timers []*timer
 
@@ -165,6 +166,7 @@ func (c *Widget) InitWidget() {
 	c.typeName = "Widget"
 	c.name = "Widget-" + c.id
 	c.props = make(map[string]any)
+	c.propsFunctions = make(map[string]func())
 	c.timers = make([]*timer, 0)
 	c.x = 0
 	c.y = 0
@@ -518,9 +520,20 @@ func (c *Widget) SetProp(key string, value any) {
 	c.props[key] = value
 }
 
+func (c *Widget) SetPropFunction(key string, f func()) {
+	c.propsFunctions[key] = f
+}
+
 func (c *Widget) GetProp(key string) any {
 	if value, ok := c.props[key]; ok {
 		return value
+	}
+	return nil
+}
+
+func (c *Widget) GetPropFunction(key string) func() {
+	if f, ok := c.propsFunctions[key]; ok {
+		return f
 	}
 	return nil
 }
@@ -2219,7 +2232,17 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 
 	// Set attributes - only after adding to parent
 	for _, attr := range n.Attrs {
-		w.SetProp(attr.Name.Local, attr.Value)
+		if strings.HasPrefix(attr.Name.Local, "on") {
+			// Get function by name from eventProcessor
+			method := reflect.ValueOf(eventProcessor).MethodByName(attr.Value)
+			if method.IsValid() {
+				w.SetPropFunction(attr.Name.Local, method.Interface().(func()))
+			} else {
+				fmt.Printf("Event handler %s not found in eventProcessor\n", attr.Value)
+			}
+		} else {
+			w.SetProp(attr.Name.Local, attr.Value)
+		}
 	}
 
 	index := 0
