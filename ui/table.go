@@ -1123,7 +1123,6 @@ func (c *Table) EditCurrentCell(enteredText string) {
 			ev.Processed = true
 			return
 		}
-		return
 	})
 	c.editorTextBox.SetOnFocusLost(func() {
 		if c.editorTextBox != nil {
