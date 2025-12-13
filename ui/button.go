@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -15,10 +17,11 @@ func NewButton(text string) *Button {
 	c.InitWidget()
 	c.SetTypeName("Button")
 	c.SetMinSize(100, 30)
-	c.SetMaxSize(10000, 30)
+	// c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 	c.SetCanBeFocused(true)
+	c.SetElevation(1)
 
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
@@ -57,12 +60,14 @@ func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Button) draw(cnv *Canvas) {
-	backColor := c.BackgroundColorAccent1()
+
+	backColor := c.BackgroundColor()
+
 	if c.IsHovered() && c.enabled {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorWithAddElevation(1)
 	}
 	if c.pressed {
-		backColor = c.BackgroundColorAccent2()
+		backColor = c.BackgroundColorWithAddElevation(2)
 	}
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 
@@ -71,7 +76,7 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetColor(c.Color())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
-	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
+	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text()+fmt.Sprint(c.Elevation()))
 
 	//cnv.SetColor(c.BackgroundColorAccent2())
 	//cnv.DrawRect(0, 0, c.Width(), c.Height())

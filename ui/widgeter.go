@@ -29,6 +29,8 @@ type Widgeter interface {
 
 	Widgets() []Widgeter
 
+	Elevation() int
+
 	FindWidgetByName(name string) Widgeter
 
 	Enabled() bool

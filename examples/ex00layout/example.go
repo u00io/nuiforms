@@ -13,9 +13,11 @@ func NewLayoutExample() *LayoutExample {
 	c.InitWidget()
 
 	c.SetLayout(`
-<column>
-    <textbox text="This is an example of a layout with an inner widget." />
-</column>
+<frame padding="50">
+	<frame padding="50">
+		<button />
+	</frame>
+</frame>
 	`, &c, nil)
 
 	return &c

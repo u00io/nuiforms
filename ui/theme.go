@@ -40,10 +40,17 @@ func init() {
 	Theme["fontSize"] = 18
 }
 
-func ThemeBackgroundColor() color.RGBA {
+func ThemeBackgroundColor(elevation int) color.RGBA {
 	if v, ok := Theme["background"]; ok {
 		if bgColor, ok := v.(color.RGBA); ok {
-			return bgColor
+			gray := 0x12
+			if elevation > 0 {
+				gray = gray + 16 + elevation*6
+			}
+			r := bgColor.R + uint8(gray)
+			g := bgColor.G + uint8(gray)
+			b := bgColor.B + uint8(gray)
+			return color.RGBA{r, g, b, bgColor.A}
 		}
 	}
 	return DefaultBackground

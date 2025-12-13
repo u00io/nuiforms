@@ -37,8 +37,8 @@ type Widget struct {
 	// inner widgets
 	absolutePositioning bool
 	widgets             []Widgeter
-	cellPadding         int // Padding between cells in the grid
-	panelPadding        int // Padding around the panel
+	//cellPadding         int // Padding between cells in the grid
+	//panelPadding        int // Padding around the panel
 
 	gridX int // Grid position
 	gridY int // Grid position
@@ -81,7 +81,7 @@ type Widget struct {
 
 	visible bool
 
-	autoFillBackground bool
+	//autoFillBackground bool
 
 	contextMenu *ContextMenu
 
@@ -201,8 +201,10 @@ func (c *Widget) InitWidget() {
 	c.maxWidth = MAX_WIDTH
 	c.maxHeight = MAX_HEIGHT
 	c.visible = true
-	c.panelPadding = 2
-	c.cellPadding = 6
+	//c.panelPadding = 2
+	//c.cellPadding = 6
+	c.SetProp("padding", 2)
+	c.SetProp("spacing", 6)
 	c.scrollBarXSize = 10
 	c.scrollBarYSize = 10
 	c.scrollBarXColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
@@ -224,7 +226,8 @@ func (c *Widget) Id() string {
 }
 
 func (c *Widget) SetAutoFillBackground(autoFill bool) {
-	c.autoFillBackground = autoFill
+	//c.autoFillBackground = autoFill
+	c.SetProp("autofillbackground", autoFill)
 }
 
 func (c *Widget) Enabled() bool {
@@ -277,6 +280,14 @@ func (c *Widget) SetVisible(visible bool) {
 	}
 }
 
+func (c *Widget) SetElevation(elevation int) {
+	c.SetProp("elevation", elevation)
+}
+
+func (c *Widget) Elevation() int {
+	return c.GetPropInt("elevation", 0)
+}
+
 func (c *Widget) IsCanBeFocused() bool {
 	return c.canBeFocused
 }
@@ -311,6 +322,8 @@ func (c *Widget) SetGridPosition(row, column int) {
 }
 
 func (c *Widget) MinWidth() int {
+	panelPadding := c.GetPropInt("padding", 2)
+
 	if c.layoutCacheMinWidthValid {
 		return c.layoutCacheMinWidth
 	}
@@ -321,11 +334,11 @@ func (c *Widget) MinWidth() int {
 
 	if calcFromChildren {
 		_, _, _, allCellPadding := c.makeColumnsInfo(c.Width())
-		columnsInfo, _, _, _ := c.makeColumnsInfo(c.Width() - (c.panelPadding + allCellPadding + c.panelPadding))
+		columnsInfo, _, _, _ := c.makeColumnsInfo(c.Width() - (panelPadding + allCellPadding + panelPadding))
 		for _, columnInfo := range columnsInfo {
 			result += columnInfo.minWidth
 		}
-		result = result + c.panelPadding + allCellPadding + c.panelPadding
+		result = result + panelPadding + allCellPadding + panelPadding
 	}
 
 	c.layoutCacheMinWidthValid = true
@@ -339,6 +352,8 @@ func (c *Widget) MinWidth() int {
 }
 
 func (c *Widget) MinHeight() int {
+	panelPadding := c.GetPropInt("padding", 2)
+
 	if c.layoutCacheMinHeightValid {
 		return c.layoutCacheMinHeight
 	}
@@ -349,11 +364,11 @@ func (c *Widget) MinHeight() int {
 
 	if calcFromChildren {
 		_, _, _, allCellPadding := c.makeRowsInfo(c.Height())
-		rowsInfo, _, _, _ := c.makeRowsInfo(c.Height() - (c.panelPadding + allCellPadding + c.panelPadding))
+		rowsInfo, _, _, _ := c.makeRowsInfo(c.Height() - (panelPadding + allCellPadding + panelPadding))
 		for _, rowInfo := range rowsInfo {
 			result += rowInfo.minHeight
 		}
-		result += c.panelPadding + allCellPadding + c.panelPadding
+		result += panelPadding + allCellPadding + panelPadding
 	}
 
 	c.layoutCacheMinHeightValid = true
@@ -392,11 +407,13 @@ func (c *Widget) AddWidget(w Widgeter) {
 }
 
 func (c *Widget) SetPanelPadding(padding int) {
-	c.panelPadding = padding
+	//c.panelPadding = padding
+	c.SetProp("padding", padding)
 }
 
 func (c *Widget) SetCellPadding(padding int) {
-	c.cellPadding = padding
+	//c.cellPadding = padding
+	c.SetProp("spacing", padding)
 }
 
 func (c *Widget) AddWidgetOnGrid(w Widgeter, gridRow int, gridColumn int) {
@@ -957,7 +974,8 @@ func (c *Widget) findWidgetAt(x, y int) Widgeter {
 
 func (c *Widget) ProcessPaint(cnv *Canvas) {
 	// Draw the background color if set
-	if c.autoFillBackground {
+	autoFillBackground := c.GetPropBool("autofillbackground", false)
+	if autoFillBackground {
 		backgroundColor := c.BackgroundColor()
 		_, _, _, a := backgroundColor.RGBA()
 		if a > 0 {
@@ -1588,11 +1606,14 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 		fullWidth := c.w
 		fullHeight := c.h
 
+		panelPadding := c.GetPropInt("padding", 2)
+		cellPadding := c.GetPropInt("spacing", 2)
+
 		_, minX, maxX, allCellPaddingX := c.makeColumnsInfo(fullWidth)
-		columnsInfo, _, _, _ := c.makeColumnsInfo(fullWidth - (c.panelPadding + allCellPaddingX + c.panelPadding))
+		columnsInfo, _, _, _ := c.makeColumnsInfo(fullWidth - (panelPadding + allCellPaddingX + panelPadding))
 
 		_, minY, maxY, allCellPaddingY := c.makeRowsInfo(fullHeight)
-		rowsInfo, _, _, _ := c.makeRowsInfo(fullHeight - (c.panelPadding + allCellPaddingY + c.panelPadding))
+		rowsInfo, _, _, _ := c.makeRowsInfo(fullHeight - (panelPadding + allCellPaddingY + panelPadding))
 
 		/*if strings.Contains(c.name, "Top") {
 			fmt.Println("RowsInfo:")
@@ -1604,10 +1625,10 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 			}
 		}*/
 
-		xOffset := c.panelPadding //+ c.LeftBorderWidth()
+		xOffset := panelPadding //+ c.LeftBorderWidth()
 		for x := minX; x <= maxX; x++ {
 			if colInfo, ok := columnsInfo[x]; ok {
-				yOffset := c.panelPadding // + c.TopBorderWidth()
+				yOffset := panelPadding // + c.TopBorderWidth()
 				for y := minY; y <= maxY; y++ {
 					if rowInfo, ok := rowsInfo[y]; ok {
 						w := c.getWidgetInGridCell(x, y)
@@ -1640,14 +1661,14 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 						yOffset += rowInfo.height
 						if rowInfo.height > 0 && y < maxY {
-							yOffset += c.cellPadding
+							yOffset += cellPadding
 						}
 					}
 				}
 
 				xOffset += colInfo.width
 				if colInfo.width > 0 && x < maxX {
-					xOffset += c.cellPadding
+					xOffset += cellPadding
 				}
 			}
 		}
@@ -1697,6 +1718,9 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInfo, int, int, int) {
 	//fmt.Println("makeColumnsInfo", makeColumnsInfoCounter)
+
+	// panelPadding := c.GetPropInt("padding", 2)
+	cellPadding := c.GetPropInt("spacing", 2)
 
 	minX := MaxInt
 	minY := MaxInt
@@ -1862,7 +1886,7 @@ func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInf
 		}
 	}
 	allCellPadding--
-	allCellPadding *= c.cellPadding
+	allCellPadding *= cellPadding
 	if allCellPadding < 0 {
 		allCellPadding = 0
 	}
@@ -1872,6 +1896,7 @@ func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInf
 }
 
 func (c *Widget) makeRowsInfo(fullHeight int) (map[int]*ContainerGridRowInfo, int, int, int) {
+	cellPadding := c.GetPropInt("spacing", 2)
 
 	// Определяем минимальный и максимальный индекс строк
 	minX := MaxInt
@@ -2037,7 +2062,7 @@ func (c *Widget) makeRowsInfo(fullHeight int) (map[int]*ContainerGridRowInfo, in
 		}
 	}
 	allCellPadding--
-	allCellPadding *= c.cellPadding
+	allCellPadding *= cellPadding
 	if allCellPadding < 0 {
 		allCellPadding = 0
 	}
@@ -2127,11 +2152,32 @@ func (c *Widget) Color() color.Color {
 	return ThemeForegroundColor()
 }
 
+func (c *Widget) BackgroundColorWithAddElevation(elevation int) color.Color {
+	if c.backgroundColor != nil {
+		return c.backgroundColor
+	}
+	summedElevation := elevation
+	for _, wId := range c.FullPath() {
+		wId := WidgetById(wId)
+		if wId != nil {
+			summedElevation += wId.Elevation()
+		}
+	}
+	return ThemeBackgroundColor(summedElevation)
+}
+
 func (c *Widget) BackgroundColor() color.Color {
 	if c.backgroundColor != nil {
 		return c.backgroundColor
 	}
-	return ThemeBackgroundColor()
+	summedElevation := 0
+	for _, wId := range c.FullPath() {
+		wId := WidgetById(wId)
+		if wId != nil {
+			summedElevation += wId.Elevation()
+		}
+	}
+	return ThemeBackgroundColor(summedElevation)
 }
 
 func (c *Widget) BackgroundColorAccent1() color.Color {
@@ -2213,6 +2259,10 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 	var w Widgeter
 	isRow := false
 	switch n.XMLName.Local {
+	case "frame":
+		w = NewFrame()
+	case "panel":
+		w = NewPanel()
 	case "column":
 		w = NewPanel()
 	case "row":
