@@ -71,7 +71,7 @@ func (c *Checkbox) Checked() bool {
 }
 
 func (c *Checkbox) draw(cnv *Canvas) {
-	cnv.FillRect(0, 0, c.Width(), c.Height(), c.BackgroundColor())
+	//cnv.FillRect(0, 0, c.Width(), c.Height())
 
 	boxAndTextSpace := 0
 	cnv.SetHAlign(HAlignLeft)
@@ -83,12 +83,15 @@ func (c *Checkbox) draw(cnv *Canvas) {
 
 	padding := 5
 
-	cnv.FillRect(padding, padding, 30-padding*2, 30-padding*2, c.BackgroundColorWithAddElevation(-1))
+	cnv.SetColor(c.BackgroundColorWithAddElevation(-2))
+	cnv.FillRoundedRect(padding, padding, 30-padding*2, 30-padding*2, 3)
 
-	cnv.SetColor(c.BackgroundColorWithAddElevation(5))
-	cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
+	//cnv.SetColor(c.BackgroundColorWithAddElevation(5))
+	//cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
 	if c.Checked() {
-		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.ForegroundColor())
+		cnv.SetColor(c.ForegroundColor())
+		internalPadding := 9
+		cnv.FillRoundedRect(internalPadding, internalPadding, 30-internalPadding*2, 30-internalPadding*2, 3)
 	}
 }
 

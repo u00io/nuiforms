@@ -6,6 +6,8 @@ import (
 	"image/draw"
 	"math"
 	"strings"
+
+	"github.com/fogleman/gg"
 )
 
 type canvasState struct {
@@ -784,6 +786,22 @@ func (c *Canvas) DrawRect(x int, y int, width int, height int) {
 		c.MixPixel(x, yy, c.state.col)
 		c.MixPixel(x+width-1, yy, c.state.col)
 	}
+}
+
+func (c *Canvas) DrawRoundedRect(x int, y int, width int, height int, radius int) {
+	dc := gg.NewContextForRGBA(c.rgba)
+	dc.Translate(float64(c.TranslatedX()), float64(c.TranslatedY()))
+	dc.SetColor(c.state.col)
+	dc.DrawRoundedRectangle(float64(x), float64(y), float64(width), float64(height), float64(radius))
+	dc.Stroke()
+}
+
+func (c *Canvas) FillRoundedRect(x int, y int, width int, height int, radius int) {
+	dc := gg.NewContextForRGBA(c.rgba)
+	dc.Translate(float64(c.TranslatedX()), float64(c.TranslatedY()))
+	dc.SetColor(c.state.col)
+	dc.DrawRoundedRectangle(float64(x), float64(y), float64(width), float64(height), float64(radius))
+	dc.Fill()
 }
 
 func (c *Canvas) DrawImage(x int, y int, img image.Image) {

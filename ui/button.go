@@ -67,7 +67,10 @@ func (c *Button) draw(cnv *Canvas) {
 	if c.pressed {
 		backColor = c.BackgroundColorWithAddElevation(2)
 	}
-	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
+	_ = backColor
+
+	cnv.SetColor(backColor)
+	cnv.FillRoundedRect(0, 0, c.Width(), c.Height(), 5)
 
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
