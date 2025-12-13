@@ -66,7 +66,6 @@ func NewMainWidget() *MainWidget {
 			ui.CurrentEvent().Parameter.(*ui.EventTextboxKeyDown).Processed = true
 			return
 		}
-		return
 	})
 	c.bottomPanel.AddWidgetOnGrid(c.cmdLine, 0, 0)
 	c.AddWidgetOnGrid(c.bottomPanel, 2, 0)
