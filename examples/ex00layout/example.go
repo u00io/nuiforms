@@ -15,7 +15,7 @@ func NewLayoutExample() *LayoutExample {
 	c.SetLayout(`
 <frame padding="50">
 	<frame padding="50">
-		<button />
+		<checkbox text="HELLO" />
 	</frame>
 </frame>
 	`, &c, nil)

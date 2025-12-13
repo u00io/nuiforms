@@ -7,9 +7,9 @@ import (
 
 type Checkbox struct {
 	Widget
-	checked        bool
-	text           string
-	onStateChanged func(btn *Checkbox, checked bool)
+	//checked        bool
+	//text           string
+	//onStateChanged func(btn *Checkbox, checked bool)
 }
 
 func NewCheckbox(text string) *Checkbox {
@@ -32,36 +32,46 @@ func NewCheckbox(text string) *Checkbox {
 }
 
 func (c *Checkbox) Text() string {
-	return c.text
+	return c.GetPropString("text", "")
 }
 
 func (c *Checkbox) SetText(text string) {
-	c.text = text
+	c.SetProp("text", text)
 	UpdateMainForm()
 }
 
-func (c *Checkbox) SetOnStateChanged(fn func(btn *Checkbox, checked bool)) {
-	c.onStateChanged = fn
+func (c *Checkbox) SetOnStateChanged(fn func()) {
+	c.SetPropFunction("onstatechanged", fn)
+}
+
+type EventCheckboxStateChanged struct {
+	Checkbox *Checkbox
+	Checked  bool
 }
 
 func (c *Checkbox) SetChecked(checked bool) {
-	if c.checked == checked {
+	if c.GetPropBool("checked", false) == checked {
 		return
 	}
 
-	c.checked = checked
-	if c.onStateChanged != nil {
-		c.onStateChanged(c, checked)
+	c.SetProp("checked", checked)
+	f := c.GetPropFunction("onstatechanged")
+	if f != nil {
+		var ev EventCheckboxStateChanged
+		ev.Checkbox = c
+		ev.Checked = checked
+		PushEvent(&Event{Parameter: ev})
+		f()
+		PopEvent()
 	}
 }
 
 func (c *Checkbox) Checked() bool {
-	return c.checked
+	return c.GetPropBool("checked", false)
 }
 
 func (c *Checkbox) draw(cnv *Canvas) {
-	backColor := c.BackgroundColor()
-	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
+	cnv.FillRect(0, 0, c.Width(), c.Height(), c.BackgroundColor())
 
 	boxAndTextSpace := 0
 	cnv.SetHAlign(HAlignLeft)
@@ -69,14 +79,16 @@ func (c *Checkbox) draw(cnv *Canvas) {
 	cnv.SetColor(c.Color())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
-	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.text)
+	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.Text())
 
 	padding := 5
 
+	cnv.FillRect(padding, padding, 30-padding*2, 30-padding*2, c.BackgroundColorWithAddElevation(-1))
+
 	cnv.SetColor(c.BackgroundColorAccent1())
 	cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
-	if c.checked {
-		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.Color())
+	if c.Checked() {
+		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.BackgroundColorSelection())
 	}
 }
 
@@ -93,7 +105,7 @@ func (c *Checkbox) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y in
 	hoverWidgeter := MainForm.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
-		c.SetChecked(!c.checked)
+		c.SetChecked(!c.Checked())
 	}
 
 	return true

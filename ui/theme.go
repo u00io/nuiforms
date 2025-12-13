@@ -47,10 +47,26 @@ func ThemeBackgroundColor(elevation int) color.RGBA {
 			if elevation > 0 {
 				gray = gray + 16 + elevation*6
 			}
-			r := bgColor.R + uint8(gray)
-			g := bgColor.G + uint8(gray)
-			b := bgColor.B + uint8(gray)
-			return color.RGBA{r, g, b, bgColor.A}
+			if gray > 255 {
+				gray = 255
+			}
+			r := int(bgColor.R) + gray
+			g := int(bgColor.G) + gray
+			b := int(bgColor.B) + gray
+
+			if r > 255 {
+				r = 255
+			}
+
+			if g > 255 {
+				g = 255
+			}
+
+			if b > 255 {
+				b = 255
+			}
+
+			return color.RGBA{uint8(r), uint8(g), uint8(b), bgColor.A}
 		}
 	}
 	return DefaultBackground
