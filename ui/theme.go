@@ -7,8 +7,14 @@ import (
 
 var Theme map[string]interface{}
 
-var DefaultBackground = color.RGBA{0, 0, 0, 255}
-var DefaultForeground = color.RGBA{255, 255, 255, 255}
+var DefaultBackground = colorFromHex("#121212")
+
+var DefaultPrimary = colorFromHex("#42A5F5")
+var DefaultSecondary = colorFromHex("#26C6DA")
+
+var DefaultOnSurface = colorFromHex("#FFFFFF")
+var DefaultOnPrimary = colorFromHex("#000000")
+var DefaultOnSecondary = colorFromHex("#000000")
 
 func colorFromHex(hexStr string) color.RGBA {
 	var r, g, b, a uint8
@@ -99,13 +105,13 @@ func ThemeBackgroundColorSelection() color.RGBA {
 	return color.RGBA{38, 79, 120, 255} // Default selection background color
 }
 
-func ThemeForegroundColor() color.RGBA {
-	if v, ok := Theme["foreground"]; ok {
+func ThemePrimaryColor() color.RGBA {
+	if v, ok := Theme["primary"]; ok {
 		if fgColor, ok := v.(color.RGBA); ok {
 			return fgColor
 		}
 	}
-	return DefaultForeground
+	return DefaultPrimary
 }
 
 func ThemeFontFamily() string {

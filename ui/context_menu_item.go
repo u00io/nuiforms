@@ -55,7 +55,7 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
-	ctx.SetColor(c.Color())
+	ctx.SetColor(c.ForegroundColor())
 	ctx.SetFontFamily(c.FontFamily())
 	ctx.SetFontSize(c.FontSize())
 	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)
@@ -66,7 +66,7 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 		y := 0
 		ctx.SetHAlign(HAlignLeft)
 		ctx.SetVAlign(VAlignCenter)
-		ctx.SetColor(c.Color())
+		ctx.SetColor(c.ForegroundColor())
 		ctx.SetFontFamily(c.FontFamily())
 		ctx.SetFontSize(c.FontSize())
 		ctx.DrawText(x, y, rectSize, rectSize, "\u00BB")

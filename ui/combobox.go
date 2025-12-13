@@ -82,7 +82,7 @@ func (c *ComboBox) draw(cnv *Canvas) {
 	if c.IsHovered() {
 		backColor = c.BackgroundColorAccent2()
 	}
-	foreColor := c.Color()
+	foreColor := c.ForegroundColor()
 
 	itemText := c.SelectedItemText()
 
@@ -163,7 +163,7 @@ func (c *comboBoxPopupItem) Draw(ctx *Canvas) {
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
-	ctx.SetColor(c.Color())
+	ctx.SetColor(c.ForegroundColor())
 	ctx.SetFontFamily(c.FontFamily())
 	ctx.SetFontSize(c.FontSize())
 	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)

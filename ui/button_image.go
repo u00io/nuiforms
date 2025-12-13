@@ -63,7 +63,7 @@ func (c *ButtonImage) draw(cnv *Canvas) {
 
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(c.Color())
+	cnv.SetColor(c.ForegroundColor())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawImage(0, 0, c.img)

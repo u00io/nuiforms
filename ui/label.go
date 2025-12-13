@@ -26,14 +26,14 @@ func NewLabel(text string) *Label {
 		cnv.SetVAlign(VAlignCenter)
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
-		cnv.SetColor(c.Color())
+		cnv.SetColor(c.ForegroundColor())
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.GetPropString("text", ""))
 
 		if c.GetPropBool("underline", false) {
-			cnv.SetColor(c.Color())
+			cnv.SetColor(c.ForegroundColor())
 			widgetWidth := c.Width()
 			textHeight := c.innerHeight
-			cnv.DrawLine(0, textHeight-2, widgetWidth, textHeight-2, 1, c.Color())
+			cnv.DrawLine(0, textHeight-2, widgetWidth, textHeight-2, 1, c.ForegroundColor())
 		}
 	})
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

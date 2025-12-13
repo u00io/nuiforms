@@ -2145,11 +2145,11 @@ func (c *Widget) FontSize() float64 {
 	return ThemeFontSize()
 }
 
-func (c *Widget) Color() color.Color {
+func (c *Widget) ForegroundColor() color.Color {
 	if c.foregroundColor != nil {
 		return c.foregroundColor
 	}
-	return ThemeForegroundColor()
+	return ThemePrimaryColor()
 }
 
 func (c *Widget) BackgroundColorWithAddElevation(elevation int) color.Color {

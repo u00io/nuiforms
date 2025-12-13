@@ -18,7 +18,7 @@ func NewMyWidget(name string) *MyWidget {
 	c.SetOnPaint(func(cnv *ui.Canvas) {
 		cnv.SetVAlign(ui.VAlignCenter)
 		cnv.SetHAlign(ui.HAlignCenter)
-		cnv.SetColor(c.Color())
+		cnv.SetColor(c.ForegroundColor())
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
 		cnv.DrawText(0, 0, c.Width(), c.Height(), name)

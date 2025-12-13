@@ -764,7 +764,7 @@ func (c *Table) draw(cnv *Canvas) {
 	if c.modeLoading {
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
-		cnv.SetColor(c.Color())
+		cnv.SetColor(c.ForegroundColor())
 		cnv.SetHAlign(HAlignCenter)
 		cnv.SetVAlign(VAlignCenter)
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.modeLoadingText)
@@ -836,7 +836,7 @@ func (c *Table) draw(cnv *Canvas) {
 					cnv.SetVAlign(vAlign)
 					cnv.SetFontFamily(c.FontFamily())
 					cnv.SetFontSize(c.FontSize())
-					col := c.Color()
+					col := c.ForegroundColor()
 					if cellObj != nil {
 						if cellObj.color != nil {
 							col = cellObj.color
@@ -913,7 +913,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColor())
 			cnv.SetHAlign(HAlignLeft)
 			cnv.SetVAlign(VAlignCenter)
-			cnv.SetColor(c.Color())
+			cnv.SetColor(c.ForegroundColor())
 			cnv.SetFontFamily(c.FontFamily())
 			cnv.SetFontSize(c.FontSize())
 			cnv.DrawText(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, headerCell.name)

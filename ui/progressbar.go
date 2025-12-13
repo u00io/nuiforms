@@ -79,7 +79,7 @@ func (c *ProgressBar) draw(cnv *Canvas) {
 	if len(c.text) > 0 {
 		cnv.SetHAlign(HAlignCenter)
 		cnv.SetVAlign(VAlignCenter)
-		cnv.SetColor(c.Color())
+		cnv.SetColor(c.ForegroundColor())
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)

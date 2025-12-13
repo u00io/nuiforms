@@ -76,7 +76,7 @@ func (c *Checkbox) draw(cnv *Canvas) {
 	boxAndTextSpace := 0
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(c.Color())
+	cnv.SetColor(c.ForegroundColor())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.Text())
@@ -88,7 +88,7 @@ func (c *Checkbox) draw(cnv *Canvas) {
 	cnv.SetColor(c.BackgroundColorAccent1())
 	cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
 	if c.Checked() {
-		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.BackgroundColorSelection())
+		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.ForegroundColor())
 	}
 }
 
