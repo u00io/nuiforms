@@ -8,7 +8,7 @@ import (
 var Theme map[string]interface{}
 
 var DefaultSurfaceBackground = colorFromHex("#121212")
-var DefaultPrimaryBackground = colorFromHex("#42A5F5")
+var DefaultPrimaryBackground = colorFromHex("#0D47A1")
 var DefaultSecondaryBackground = colorFromHex("#26C6DA")
 
 var DefaultSurface = colorFromHex("#FFFFFF")

@@ -93,7 +93,7 @@ type Widget struct {
 	lastMouseAbsPosX int // Last mouse position relative to the widget
 	lastMouseAbsPosY int // Last mouse position relative to the widget
 
-	mouseCursor nuimouse.MouseCursor
+	//mouseCursor nuimouse.MouseCursor
 
 	foregroundColor color.Color
 	backgroundColor color.Color
@@ -215,7 +215,7 @@ func (c *Widget) InitWidget() {
 	c.anchorRight = false
 	c.anchorBottom = false
 	c.widgets = make([]Widgeter, 0)
-	c.mouseCursor = nuimouse.MouseCursorArrow
+
 	c.enabled = true
 	// c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0}
 	c.PopupWidgets = make([]Widgeter, 0)
@@ -530,12 +530,46 @@ func (c *Widget) SetAllowScroll(allowX bool, allowY bool) {
 	c.allowScrollY = allowY
 }
 
+func MouseCursorToString(c nuimouse.MouseCursor) string {
+	switch c {
+	case nuimouse.MouseCursorNotDefined:
+		return ""
+	case nuimouse.MouseCursorArrow:
+		return "arrow"
+	case nuimouse.MouseCursorPointer:
+		return "pointer"
+	case nuimouse.MouseCursorResizeHor:
+		return "resize-hor"
+	case nuimouse.MouseCursorResizeVer:
+		return "resize-ver"
+	case nuimouse.MouseCursorIBeam:
+		return "ibeam"
+	}
+	return ""
+}
+
+func MouseCursorFromString(s string) nuimouse.MouseCursor {
+	switch s {
+	case "arrow":
+		return nuimouse.MouseCursorArrow
+	case "pointer":
+		return nuimouse.MouseCursorPointer
+	case "resize-hor":
+		return nuimouse.MouseCursorResizeHor
+	case "resize-ver":
+		return nuimouse.MouseCursorResizeVer
+	case "ibeam":
+		return nuimouse.MouseCursorIBeam
+	}
+	return nuimouse.MouseCursorArrow
+}
+
 func (c *Widget) SetMouseCursor(cursor nuimouse.MouseCursor) {
-	c.mouseCursor = cursor
+	c.SetProp("cursor", MouseCursorToString(cursor))
 }
 
 func (c *Widget) MouseCursor() nuimouse.MouseCursor {
-	return c.mouseCursor
+	return MouseCursorFromString(c.GetPropString("cursor", ""))
 }
 
 func (c *Widget) X() int {
@@ -1212,6 +1246,14 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 
 	if !processed && c.onMouseDown != nil {
 		processed = c.onMouseDown(button, x, y, mods)
+	}
+
+	{
+		f := c.GetPropFunction("onclick")
+		if f != nil {
+			f()
+			processed = true
+		}
 	}
 
 	return processed
@@ -2339,6 +2381,10 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 
 	// Set attributes - only after adding to parent
 	for _, attr := range n.Attrs {
+		if attr.Name.Local == "id" && n.XMLName.Local != "widget" {
+			w.SetName(attr.Value)
+			continue
+		}
 		if strings.HasPrefix(attr.Name.Local, "on") {
 			// Get function by name from eventProcessor
 			method := reflect.ValueOf(eventProcessor).MethodByName(attr.Value)
