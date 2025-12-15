@@ -7,15 +7,15 @@ import (
 
 var Theme map[string]interface{}
 
-var DefaultSurfaceBackground = colorFromHex("#121212")
-var DefaultPrimaryBackground = colorFromHex("#0D47A1")
-var DefaultSecondaryBackground = colorFromHex("#26C6DA")
+var DefaultSurfaceBackground = ColorFromHex("#121212")
+var DefaultPrimaryBackground = ColorFromHex("#0D47A1")
+var DefaultSecondaryBackground = ColorFromHex("#26C6DA")
 
-var DefaultSurface = colorFromHex("#FFFFFF")
-var DefaultPrimary = colorFromHex("#000000")
-var DefaultSecondary = colorFromHex("#000000")
+var DefaultSurface = ColorFromHex("#FFFFFF")
+var DefaultPrimary = ColorFromHex("#FFFFFF")
+var DefaultSecondary = ColorFromHex("#FFFFFF")
 
-func colorFromHex(hexStr string) color.RGBA {
+func ColorFromHex(hexStr string) color.RGBA {
 	var r, g, b, a uint8
 	a = 255
 	if len(hexStr) == 7 {

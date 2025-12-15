@@ -718,11 +718,11 @@ func (c *Widget) GetPropColor(key string, defaultValue string) color.Color {
 	if v != nil {
 		rv := reflect.ValueOf(v)
 		if rv.Kind() == reflect.String {
-			return colorFromHex(rv.String())
+			return ColorFromHex(rv.String())
 		}
-		return colorFromHex(defaultValue)
+		return ColorFromHex(defaultValue)
 	}
-	return colorFromHex(defaultValue)
+	return ColorFromHex(defaultValue)
 }
 
 func (c *Widget) GetHAlign(key string, defaultValue HAlign) HAlign {
