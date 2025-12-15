@@ -52,6 +52,7 @@ type Table struct {
 	editTriggerKeyDown     bool
 
 	onColumnResize func(col int, newWidth int)
+	onColumnClick  func(col int)
 
 	modeLoading     bool
 	modeLoadingText string
@@ -195,6 +196,10 @@ func (c *Table) SetModeLoading(loading bool, text string) {
 
 func (c *Table) SetOnColumnResize(callback func(col int, newWidth int)) {
 	c.onColumnResize = callback
+}
+
+func (c *Table) SetOnColumnClick(callback func(col int)) {
+	c.onColumnClick = callback
 }
 
 func (c *Table) SetEditTriggerDoubleClick(enabled bool) {
@@ -570,6 +575,9 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 	headerColumn := c.headerColumnByPosition(x, y)
 	if headerColumn >= 0 {
 		fmt.Println("Header column clicked:", headerColumn)
+		if c.onColumnClick != nil {
+			c.onColumnClick(headerColumn)
+		}
 		return true
 	}
 
@@ -745,6 +753,9 @@ func (c *Table) onMouseMoveHeader(x int, y int, _ nuikey.KeyModifiers) nuimouse.
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
 		return nuimouse.MouseCursorResizeHor
+	}
+	if c.onColumnClick != nil {
+		return nuimouse.MouseCursorPointer
 	}
 	return nuimouse.MouseCursorArrow
 }
