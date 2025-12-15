@@ -917,7 +917,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 			y := headerRowOffset + c.scrollY
 
 			// Header Background
-			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColorWithAddElevation(2))
+			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColorWithAddElevation(3))
 			cnv.SetHAlign(HAlignLeft)
 			cnv.SetVAlign(VAlignCenter)
 			cnv.SetColor(c.ForegroundColor())

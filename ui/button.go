@@ -28,6 +28,8 @@ func NewButton(text string) *Button {
 
 	c.SetText(text)
 
+	c.Widget.allowCallMouseClickCallback = false
+
 	return &c
 }
 

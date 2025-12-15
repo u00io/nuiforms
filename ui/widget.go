@@ -87,6 +87,8 @@ type Widget struct {
 
 	canBeFocused bool
 
+	allowCallMouseClickCallback bool
+
 	// temp
 	lastMouseX       int // After scrolling
 	lastMouseY       int // After scrolling
@@ -201,6 +203,7 @@ func (c *Widget) InitWidget() {
 	c.maxWidth = MAX_WIDTH
 	c.maxHeight = MAX_HEIGHT
 	c.visible = true
+	c.allowCallMouseClickCallback = true
 	//c.panelPadding = 2
 	//c.cellPadding = 6
 	c.SetProp("padding", 2)
@@ -1248,7 +1251,7 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		processed = c.onMouseDown(button, x, y, mods)
 	}
 
-	{
+	if c.allowCallMouseClickCallback {
 		f := c.GetPropFunction("onclick")
 		if f != nil {
 			f()
