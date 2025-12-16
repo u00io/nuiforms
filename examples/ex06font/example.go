@@ -20,5 +20,7 @@ func Run(form *ui.Form) {
 	imgBox := ui.NewImageBox()
 	imgBox.SetImage(img)
 	panel.AddWidgetOnGrid(imgBox, 0, 0)
+	panel.AddWidgetOnGrid(ui.NewHSpacer(), 1, 0)
+	panel.AddWidgetOnGrid(ui.NewLabel("This is an image box"), 0, 1)
 	form.Panel().AddWidgetOnGrid(panel, 0, 0)
 }

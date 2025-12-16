@@ -316,7 +316,8 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 
 	for _, line := range lines {
 		line = c.lineToPasswordChars(line)
-		ctx.SetColor(color.RGBA{0x88, 0x88, 0x88, 0xff}) // c.foregroundColor.Color()
+		//ctx.SetColor(color.RGBA{0x88, 0x88, 0x88, 0xff}) // c.foregroundColor.Color()
+		ctx.SetColor(c.ForegroundColor())
 		_, textHeightInLine, err := MeasureText(c.FontFamily(), c.FontSize(), line)
 		ctx.SetHAlign(HAlignLeft)
 		ctx.SetVAlign(VAlignCenter)
@@ -919,10 +920,10 @@ func (c *TextBox) AcceptsReturn() bool {
 }
 */
 
-func (c *TextBox) FontFamily() string {
+/*func (c *TextBox) FontFamily() string {
 	return "robotomono"
 }
 
 func (c *TextBox) FontSize() float64 {
 	return 16
-}
+}*/

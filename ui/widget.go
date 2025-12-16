@@ -2340,8 +2340,12 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		w = NewHSpacer()
 	case "vspacer":
 		w = NewVSpacer()
+	case "space":
+		w = NewSpace()
 	case "textbox":
 		w = NewTextBox()
+	case "imagebox":
+		w = NewImageBox()
 	case "checkbox":
 		w = NewCheckbox("")
 	case "radiobutton":

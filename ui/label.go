@@ -104,5 +104,6 @@ func (c *Label) updateInnerSize() {
 		c.innerWidth = labelMaxWidth
 	}
 	c.SetMinSize(c.innerWidth, c.innerHeight)
+	//c.SetMinSize(300, c.innerHeight)
 	c.SetMaxHeight(c.innerHeight)
 }
