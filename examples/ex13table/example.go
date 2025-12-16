@@ -1,8 +1,12 @@
 package ex13table
 
 import (
+	_ "embed"
 	"fmt"
+	"image"
 	"image/color"
+	"image/png"
+	"strings"
 
 	"github.com/u00io/nuiforms/ui"
 )
@@ -11,6 +15,14 @@ func Run(form *ui.Form) {
 	form.Panel().RemoveAllWidgets()
 	mainWidget := NewTableWidget()
 	form.Panel().AddWidgetOnGrid(mainWidget, 0, 0)
+}
+
+//go:embed testImage.png
+var testImage []byte
+
+func TestImage() image.Image {
+	im, _ := png.Decode(strings.NewReader(string(testImage)))
+	return im
 }
 
 type TableWidget struct {
@@ -65,6 +77,8 @@ func NewTableWidget() *TableWidget {
 	c.txtBoxInnerWidget = ui.NewTextBox()
 	c.txtBoxInnerWidget.SetText("This is an inner TextBox")
 	c.lvItem.AddWidgetOnTable(c.txtBoxInnerWidget, 2, 5, 1, 1)
+
+	c.lvItem.SetCellImage(5, 0, TestImage(), 32)
 
 	return &c
 }

@@ -2,8 +2,10 @@ package ui
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 
+	"github.com/nfnt/resize"
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -100,6 +102,9 @@ type tableCell struct {
 	hAlign HAlign
 	vAlign VAlign
 	data   interface{}
+
+	image      image.Image
+	imageWidth int
 }
 
 func NewTable() *Table {
@@ -365,6 +370,21 @@ func (c *Table) SetColumnWidth(col int, width int) {
 	}
 }
 
+func (c *Table) ColumnWidth(col int) int {
+	if col < 0 || col >= c.columnCount {
+		return c.defaultColumnWidth
+	}
+	colWidth, exists := c.columnsWidths[col]
+	if !exists {
+		return c.defaultColumnWidth
+	}
+	return colWidth
+}
+
+func (c *Table) ColumnCount() int {
+	return c.columnCount
+}
+
 func (c *Table) SetColumnCellName2(row int, col int, name string) {
 	if col < 0 || col >= c.columnCount {
 		return
@@ -381,6 +401,14 @@ func (c *Table) SetColumnName(col int, name string) {
 	headerCell := c.headerCell2(0, col)
 	headerCell.name = name
 	c.updateInnerSize()
+}
+
+func (c *Table) ColumnName(col int) string {
+	if col < 0 || col >= c.columnCount {
+		return ""
+	}
+	headerCell := c.headerCell2(0, col)
+	return headerCell.name
 }
 
 func (c *Table) newTableCell() *tableCell {
@@ -405,6 +433,22 @@ func (c *Table) SetCellText2(row int, col int, text string) {
 		rowObj.cells[col] = cellObj
 	}
 	cellObj.text = text
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellImage(row int, col int, img image.Image, imgWidth int) {
+	rowObj, exists := c.rows[row]
+	if !exists {
+		rowObj = &tableRow{cells: make(map[int]*tableCell)}
+		c.rows[row] = rowObj
+	}
+	cellObj, exists := rowObj.cells[col]
+	if !exists {
+		cellObj = c.newTableCell()
+		rowObj.cells[col] = cellObj
+	}
+	cellObj.image = img
+	cellObj.imageWidth = imgWidth
 	UpdateMainForm()
 }
 
@@ -849,6 +893,30 @@ func (c *Table) draw(cnv *Canvas) {
 						vAlign = cellObj.vAlign
 					}
 
+					imgWidth := 0
+					imgHeight := c.rowHeight1 - c.cellPadding*2
+					if cellObj != nil && cellObj.image != nil {
+						imgWidth = cellObj.imageWidth
+						b := cellObj.image.Bounds()
+						aspRatioImg := float64(b.Max.X) / float64(b.Max.Y)
+						aspRationWidget := float64(imgWidth) / float64(imgHeight)
+						if aspRatioImg > aspRationWidget {
+							image := resize.Resize(uint(imgWidth), 0, cellObj.image, resize.Bicubic)
+							b := image.Bounds()
+							offsetX := (imgWidth-b.Max.X)/2 + x
+							offsetY := (imgHeight-b.Max.Y)/2 + y
+							cnv.DrawImage(offsetX+c.cellPadding, offsetY+c.cellPadding, image)
+						} else {
+							image := resize.Resize(0, uint(imgHeight), cellObj.image, resize.Bicubic)
+							b := image.Bounds()
+							offsetX := (imgWidth-b.Max.X)/2 + x
+							offsetY := (imgHeight-b.Max.Y)/2 + y
+							cnv.DrawImage(offsetX+c.cellPadding, offsetY+c.cellPadding, image)
+						}
+
+						imgWidth += c.cellPadding
+					}
+
 					cnv.SetHAlign(hAlign)
 					cnv.SetVAlign(vAlign)
 					cnv.SetFontFamily(c.FontFamily())
@@ -860,7 +928,8 @@ func (c *Table) draw(cnv *Canvas) {
 						}
 					}
 					cnv.SetColor(col)
-					cnv.DrawText(x+c.cellPadding, y+c.cellPadding, columnWidth-c.cellPadding*2, c.rowHeight1-c.cellPadding*2, cellText)
+					_ = cellText
+					cnv.DrawText(x+c.cellPadding+imgWidth, y+c.cellPadding, columnWidth-c.cellPadding*2-imgWidth, c.rowHeight1-c.cellPadding*2, cellText)
 				}
 			}
 		}
