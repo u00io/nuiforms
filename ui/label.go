@@ -7,16 +7,12 @@ import (
 
 type Label struct {
 	Widget
-	//text string
-	//underline bool
-	//textAlign HAlign
 }
 
 const labelMaxWidth = 1500
 
-////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////
 // NewLabel creates a new Label widget with the specified text.
-
 func NewLabel(text string) *Label {
 	var c Label
 	c.InitWidget()
@@ -51,10 +47,12 @@ func NewLabel(text string) *Label {
 /////////////////////////////////////////////////////////////////////////////////
 // Label methods
 
+// Text returns the text of the Label.
 func (c *Label) Text() string {
 	return c.GetPropString("text", "")
 }
 
+// SetText sets the text of the Label.
 func (c *Label) SetText(text string) {
 	c.SetProp("text", text)
 	c.updateInnerSize()
@@ -64,10 +62,12 @@ func (c *Label) SetText(text string) {
 	UpdateMainFormLayout()
 }
 
+// TextAlign returns the horizontal alignment of the Label's text.
 func (c *Label) TextAlign() HAlign {
 	return c.GetHAlign("textAlign", HAlignLeft)
 }
 
+// SetTextAlign sets the horizontal alignment of the Label's text.
 func (c *Label) SetTextAlign(align HAlign) {
 	c.SetProp("textAlign", align.String())
 	c.updateInnerSize()
@@ -77,10 +77,12 @@ func (c *Label) SetTextAlign(align HAlign) {
 	UpdateMainFormLayout()
 }
 
+// IsUnderline returns whether the Label's text is underlined.
 func (c *Label) IsUnderline() bool {
 	return c.GetPropBool("underline", false)
 }
 
+// SetUnderline sets whether the Label's text is underlined.
 func (c *Label) SetUnderline(underline bool) {
 	c.SetProp("underline", underline)
 	if MainForm != nil {
@@ -92,6 +94,7 @@ func (c *Label) SetUnderline(underline bool) {
 /////////////////////////////////////////////////////////////////////////////////
 // Label private methods
 
+// updateInnerSize updates the inner size of the Label based on its text.
 func (c *Label) updateInnerSize() {
 	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
