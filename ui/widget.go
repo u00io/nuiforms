@@ -132,6 +132,10 @@ type Widget struct {
 	onFocusLost func()
 }
 
+const (
+	DefaultUiLineHeight = 30
+)
+
 type Event struct {
 	Parameter any
 }
@@ -616,6 +620,14 @@ func (c *Widget) SetInnerSize(width, height int) {
 
 func (c *Widget) SetProp(key string, value any) {
 	c.props[key] = value
+	w := WidgetById(c.Id())
+	if w != nil {
+		w.ProcessPropChange(key, value)
+	}
+}
+
+func (c *Widget) ProcessPropChange(key string, value interface{}) {
+	// Default implementation does nothing
 }
 
 func (c *Widget) SetPropFunction(key string, f func()) {
@@ -2393,6 +2405,14 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 			continue
 		}
 		if strings.HasPrefix(attr.Name.Local, "on") {
+			// If event processor is map[string]func(), then get function from map
+			if eventProcessorMap, ok := eventProcessor.(map[string]func()); ok {
+				if eventHandler, ok := eventProcessorMap[attr.Value]; ok {
+					w.SetPropFunction(attr.Name.Local, eventHandler)
+					continue
+				}
+			}
+
 			// Get function by name from eventProcessor
 			method := reflect.ValueOf(eventProcessor).MethodByName(attr.Value)
 			if method.IsValid() {

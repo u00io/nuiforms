@@ -95,8 +95,8 @@ func NewTextBox() *TextBox {
 	c.multiline = false
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)
-	c.SetMinSize(100, 30)
-	c.SetMaxSize(10000, 30)
+	c.SetMinSize(100, DefaultUiLineHeight)
+	c.SetMaxSize(10000, DefaultUiLineHeight)
 
 	//c.lines = make([]string, 1)
 	c.cursorWidth = 1

@@ -14,7 +14,7 @@ func NewButton(text string) *Button {
 	var c Button
 	c.InitWidget()
 	c.SetTypeName("Button")
-	c.SetMinSize(100, 30)
+	c.SetMinSize(100, DefaultUiLineHeight)
 	// c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
@@ -27,6 +27,7 @@ func NewButton(text string) *Button {
 	c.SetOnKeyDown(c.onKeyDown)
 
 	c.SetText(text)
+	c.SetProp("padding", 6)
 
 	c.Widget.allowCallMouseClickCallback = false
 
@@ -83,6 +84,23 @@ func (c *Button) draw(cnv *Canvas) {
 
 	//cnv.SetColor(c.BackgroundColorAccent2())
 	//cnv.DrawRect(0, 0, c.Width(), c.Height())
+}
+
+func (c *Button) ProcessPropChange(key string, value interface{}) {
+	padding := c.GetPropInt("padding", 6)
+	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
+	if err != nil {
+		return
+	}
+	if textHeight < DefaultUiLineHeight {
+		textHeight = DefaultUiLineHeight
+	}
+	_ = textHeight
+	_ = textWidth
+	_ = padding
+	c.SetMinSize(textWidth+padding*2, textHeight)
+	c.SetMaxSize(textWidth+padding*2, textHeight)
+	UpdateMainFormLayout()
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

@@ -1,14 +1,37 @@
 package ex09textbox
 
-import "github.com/u00io/nuiforms/ui"
+import (
+	"encoding/base64"
+
+	"github.com/u00io/nuiforms/ui"
+)
 
 func Run(form *ui.Form) {
-	form.SetTitle("Example 01 - Base Form")
-	panel := form.Panel()
-	panel1 := form.Panel()
-	lbl := ui.NewLabel("This is a label")
-	panel1.AddWidgetOnGrid(lbl, 0, 0)
-	txt1 := ui.NewTextBox()
-	panel1.AddWidgetOnGrid(txt1, 0, 1)
-	panel.AddWidgetOnGrid(panel1, 0, 0)
+	OnButtonClick := func() {
+		tb := form.Panel().FindWidgetByName("tb2").(*ui.TextBox)
+		lbl := form.Panel().FindWidgetByName("lblBase64").(*ui.Label)
+		text := tb.Text()
+		encoded := base64.StdEncoding.EncodeToString([]byte(text))
+		lbl.SetText(encoded)
+	}
+
+	fns := map[string]func(){
+		"OnButtonClick": OnButtonClick,
+	}
+
+	_ = fns
+
+	form.Panel().SetLayout(
+		`
+<column>
+	<row>
+		<label text="Enter Text:"/>
+		<textbox id="tb2" text="" emptyText="Type here..."/>
+		<button text="Convert To Base64" onclick="OnButtonClick"/>
+	</row>
+	<label id="lblBase64" text="Base64 Encoded Text Will Appear Here"/>
+	<vspacer />
+</column>
+		`, fns, nil)
+
 }

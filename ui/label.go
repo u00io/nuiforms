@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -42,6 +44,13 @@ func NewLabel(text string) *Label {
 	})
 	c.SetText(text)
 	return &c
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Props
+func (c *Label) ProcessPropChange(key string, value interface{}) {
+	c.updateInnerSize()
+	UpdateMainFormLayout()
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -101,12 +110,18 @@ func (c *Label) updateInnerSize() {
 		return
 	}
 
+	// Ensure a minimum height for the label
+	if textHeight < DefaultUiLineHeight {
+		textHeight = DefaultUiLineHeight
+	}
+
 	c.innerHeight = textHeight
 	c.innerWidth = textWidth
 	if c.innerWidth > labelMaxWidth {
 		c.innerWidth = labelMaxWidth
 	}
 	c.SetMinSize(c.innerWidth, c.innerHeight)
+	fmt.Println("Label Min Width:", c.innerWidth, c.innerHeight)
 	//c.SetMinSize(300, c.innerHeight)
 	c.SetMaxHeight(c.innerHeight)
 }

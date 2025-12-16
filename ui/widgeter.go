@@ -64,6 +64,7 @@ type Widgeter interface {
 	ProcessTimer()
 	ProcessFocused()
 	ProcessFocusLost()
+	ProcessPropChange(key string, value interface{})
 
 	ProcessClosePopup()
 
