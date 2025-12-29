@@ -79,6 +79,14 @@ func NewCanvas(rgba *image.RGBA) *Canvas {
 	return &c
 }
 
+func (c *Canvas) Width() int {
+	return c.rgba.Rect.Max.X
+}
+
+func (c *Canvas) Height() int {
+	return c.rgba.Rect.Max.Y
+}
+
 func (c *Canvas) RGBA() *image.RGBA {
 	return c.rgba
 }
