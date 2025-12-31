@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -121,7 +119,7 @@ func (c *Label) updateInnerSize() {
 		c.innerWidth = labelMaxWidth
 	}
 	c.SetMinSize(c.innerWidth, c.innerHeight)
-	fmt.Println("Label Min Width:", c.innerWidth, c.innerHeight)
+	//fmt.Println("Label Min Width:", c.innerWidth, c.innerHeight)
 	//c.SetMinSize(300, c.innerHeight)
 	c.SetMaxHeight(c.innerHeight)
 }

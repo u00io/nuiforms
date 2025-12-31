@@ -25,6 +25,8 @@ func Run() {
 		addButton := func(text string, onClick func()) {
 			btn := ui.NewButton(text)
 			btn.SetOnButtonClick(onClick)
+
+			btn.SetRole("primary")
 			form.Panel().AddWidgetOnGrid(btn, form.Panel().NextGridRow(), 0)
 		}
 
@@ -86,6 +88,10 @@ func Run() {
 		addButton("Example 15 - Dialog", func() {
 			form.Panel().RemoveAllWidgets()
 			ex15dialog.Run(form)
+		})
+
+		addButton("Example 16 - Light Theme", func() {
+			ui.ApplyLightTheme()
 		})
 
 		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)

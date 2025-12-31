@@ -59,6 +59,12 @@ func UpdateMainForm() {
 	}
 }
 
+func MaximizeMainForm() {
+	if MainForm != nil && MainForm.wnd != nil {
+		MainForm.wnd.MaximizeWindow()
+	}
+}
+
 func UpdateMainFormLayout() {
 	if MainForm != nil && MainForm.Panel() != nil {
 		MainForm.Panel().ClearLayoutCache()
@@ -139,7 +145,7 @@ func (c *Form) Panel() *Panel {
 	return c.topWidget
 }
 
-func (c *Form) Exec() {
+func (c *Form) exec(maximazed bool) {
 	if mainFormExecuted {
 		panic("MainForm already executed, cannot execute again")
 	}
@@ -163,7 +169,18 @@ func (c *Form) Exec() {
 	c.wnd.OnMove(c.processWindowMove)
 
 	c.wnd.Show()
+	if maximazed {
+		c.wnd.MaximizeWindow()
+	}
 	c.wnd.EventLoop()
+}
+
+func (c *Form) Exec() {
+	c.exec(false)
+}
+
+func (c *Form) ExecMaximized() {
+	c.exec(true)
 }
 
 func (c *Form) realUpdate() {
@@ -349,6 +366,10 @@ func (c *Form) processMouseLeave() {
 
 func (c *Form) processMouseEnter() {
 	c.topWidget.ProcessMouseEnter()
+}
+
+func (c *Form) FocusedWidget() Widgeter {
+	return c.focusedWidget
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {

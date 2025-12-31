@@ -2,7 +2,7 @@ package ui
 
 func ShowMessageBox(title string, messageText string) {
 	widgetToFocusAfterClose := MainForm.focusedWidget
-	width := 400
+	width := 500
 	dialog := NewDialog(title, width, 200)
 	txtMessage := NewLabel(messageText)
 	txtMessage.SetTextAlign(HAlignCenter)

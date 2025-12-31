@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"image/color"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -50,7 +49,6 @@ func NewDialogHeader() *dialogHeader {
 	c.SetMaxSize(1000000, 30)
 	c.SetPanelPadding(0)
 	c.SetCellPadding(0)
-	c.SetBackgroundColor(color.RGBA{R: 50, G: 50, B: 50, A: 255})
 
 	c.headerText = NewLabel("Header")
 	c.headerText.SetPosition(0, 0)
@@ -78,13 +76,13 @@ func NewDialog(title string, width, height int) *Dialog {
 	c.InitWidget()
 	c.SetTypeName("Dialog")
 	c.SetName("Dialog")
-	c.SetBackgroundColor(color.RGBA{R: 40, G: 40, B: 40, A: 255})
+	c.SetElevation(3)
 	c.SetAutoFillBackground(true)
 
 	c.headerPanel = NewDialogHeader()
 	c.headerPanel.dialog = &c
 	c.headerPanel.SetName("DialogHeaderPanel")
-	c.headerPanel.SetBackgroundColor(color.RGBA{R: 50, G: 50, B: 50, A: 255})
+	c.headerPanel.SetElevation(2)
 	c.headerPanel.SetAutoFillBackground(true)
 	c.AddWidgetOnGrid(c.headerPanel, 0, 0)
 

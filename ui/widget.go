@@ -1111,15 +1111,14 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		cnv.Restore()
 	}
 
-	if !c.Enabled() {
+	/*if !c.Enabled() {
 		backgroundColor := color.RGBA{R: 55, G: 55, B: 55, A: 55}
 		_, _, _, a := backgroundColor.RGBA()
 		if a > 0 {
 			cnv.SetColor(backgroundColor)
 			cnv.FillRect(0, 0, c.w, c.h, backgroundColor)
 		}
-
-	}
+	}*/
 }
 
 func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
@@ -2266,6 +2265,10 @@ func (c *Widget) BackgroundColor() color.Color {
 		}
 	}
 	return ThemeBackgroundColor(summedElevation, c.Role())
+}
+
+func (c *Widget) BackgroundColorForRole(role string) color.Color {
+	return ThemeBackgroundColor(c.CurrentElevation(), role)
 }
 
 func (c *Widget) SetContextMenu(menu *ContextMenu) {

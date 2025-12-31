@@ -806,7 +806,10 @@ func (c *Canvas) DrawRoundedRect(x int, y int, width int, height int, radius int
 
 func (c *Canvas) FillRoundedRect(x int, y int, width int, height int, radius int) {
 	dc := gg.NewContextForRGBA(c.rgba)
+	dc.DrawRectangle(float64(c.state.clipX), float64(c.state.clipY), float64(c.state.clipW), float64(c.state.clipH))
+	dc.Clip()
 	dc.Translate(float64(c.TranslatedX()), float64(c.TranslatedY()))
+
 	dc.SetColor(c.state.col)
 	dc.DrawRoundedRectangle(float64(x), float64(y), float64(width), float64(height), float64(radius))
 	dc.Fill()

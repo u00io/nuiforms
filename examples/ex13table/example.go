@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"strings"
 
+	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -79,6 +80,10 @@ func NewTableWidget() *TableWidget {
 	c.lvItem.AddWidgetOnTable(c.txtBoxInnerWidget, 2, 5, 1, 1)
 
 	c.lvItem.SetCellImage(5, 0, TestImage(), 32)
+
+	c.lvItem.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+		return false
+	})
 
 	return &c
 }

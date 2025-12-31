@@ -43,6 +43,7 @@ type Table struct {
 	currentCellY int
 
 	onSelectionChanged func(row int, col int)
+	onCellChanged      func(row int, col int, text string, data interface{}) bool
 
 	headerWidget  *tableHeader
 	editorTextBox *TextBox
@@ -103,8 +104,18 @@ type tableCell struct {
 	vAlign VAlign
 	data   interface{}
 
+	displayTextExists bool
+	displayText       string
+
 	image      image.Image
 	imageWidth int
+
+	editTriggerDoubleClick bool
+	editTriggerEnter       bool
+	editTriggerF2          bool
+	editTriggerKeyDown     bool
+
+	selectionDisabled bool
 }
 
 func NewTable() *Table {
@@ -174,6 +185,13 @@ func NewTable() *Table {
 	return &c
 }
 
+func (c *Table) SetRowHeight(height int) {
+	c.rowHeight1 = height
+	c.updateInnerSize()
+	UpdateMainFormLayout()
+	UpdateMainForm()
+}
+
 func (c *Table) SetCellBorderColor(col color.RGBA) {
 	c.cellBorderColorOverrided = &col
 }
@@ -205,6 +223,10 @@ func (c *Table) SetOnColumnResize(callback func(col int, newWidth int)) {
 
 func (c *Table) SetOnColumnClick(callback func(col int)) {
 	c.onColumnClick = callback
+}
+
+func (c *Table) SetOnCellChanged(callback func(row int, col int, text string, data interface{}) bool) {
+	c.onCellChanged = callback
 }
 
 func (c *Table) SetEditTriggerDoubleClick(enabled bool) {
@@ -421,7 +443,7 @@ func (c *Table) newTableCell() *tableCell {
 	}
 }
 
-func (c *Table) SetCellText2(row int, col int, text string) {
+func (c *Table) getCellObj(row int, col int) *tableCell {
 	rowObj, exists := c.rows[row]
 	if !exists {
 		rowObj = &tableRow{cells: make(map[int]*tableCell)}
@@ -432,88 +454,102 @@ func (c *Table) SetCellText2(row int, col int, text string) {
 		cellObj = c.newTableCell()
 		rowObj.cells[col] = cellObj
 	}
+	return cellObj
+}
+
+func (c *Table) SetCellText2(row int, col int, text string) {
+	cellObj := c.getCellObj(row, col)
+
+	originalText := cellObj.text
 	cellObj.text = text
+	cellObj.displayTextExists = false
+
+	if c.onCellChanged != nil {
+		b := c.onCellChanged(row, col, cellObj.text, cellObj.data)
+		if !b {
+			cellObj.text = originalText
+		}
+	}
+
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellDisplayText(row int, col int, text string) {
+	cellObj := c.getCellObj(row, col)
+
+	cellObj.displayText = text
+	cellObj.displayTextExists = true
+
 	UpdateMainForm()
 }
 
 func (c *Table) SetCellImage(row int, col int, img image.Image, imgWidth int) {
-	rowObj, exists := c.rows[row]
-	if !exists {
-		rowObj = &tableRow{cells: make(map[int]*tableCell)}
-		c.rows[row] = rowObj
-	}
-	cellObj, exists := rowObj.cells[col]
-	if !exists {
-		cellObj = c.newTableCell()
-		rowObj.cells[col] = cellObj
-	}
+	cellObj := c.getCellObj(row, col)
 	cellObj.image = img
 	cellObj.imageWidth = imgWidth
 	UpdateMainForm()
 }
 
 func (c *Table) SetCellData2(row int, col int, data interface{}) {
-	rowObj, exists := c.rows[row]
-	if !exists {
-		rowObj = &tableRow{cells: make(map[int]*tableCell)}
-		c.rows[row] = rowObj
-	}
-	cellObj, exists := rowObj.cells[col]
-	if !exists {
-		cellObj = c.newTableCell()
-		rowObj.cells[col] = cellObj
-	}
+	cellObj := c.getCellObj(row, col)
 	cellObj.data = data
 	UpdateMainForm()
 }
 
 func (c *Table) SetCellColor(row int, col int, color color.Color) {
-	rowObj, exists := c.rows[row]
-	if !exists {
-		rowObj = &tableRow{cells: make(map[int]*tableCell)}
-		c.rows[row] = rowObj
-	}
-	cellObj, exists := rowObj.cells[col]
-	if !exists {
-		cellObj = c.newTableCell()
-		rowObj.cells[col] = cellObj
-	}
+	cellObj := c.getCellObj(row, col)
 	cellObj.color = color
 	UpdateMainForm()
 }
 
 func (c *Table) SetCellHAlign(row int, col int, align HAlign) {
-	rowObj, exists := c.rows[row]
-	if !exists {
-		rowObj = &tableRow{cells: make(map[int]*tableCell)}
-		c.rows[row] = rowObj
-	}
-	cellObj, exists := rowObj.cells[col]
-	if !exists {
-		cellObj = c.newTableCell()
-		rowObj.cells[col] = cellObj
-	}
+	cellObj := c.getCellObj(row, col)
 	cellObj.hAlign = align
 	UpdateMainForm()
 }
 
 func (c *Table) SetCellVAlign(row int, col int, align VAlign) {
-	rowObj, exists := c.rows[row]
-	if !exists {
-		rowObj = &tableRow{cells: make(map[int]*tableCell)}
-		c.rows[row] = rowObj
-	}
-	cellObj, exists := rowObj.cells[col]
-	if !exists {
-		cellObj = c.newTableCell()
-		rowObj.cells[col] = cellObj
-	}
+	cellObj := c.getCellObj(row, col)
 	cellObj.vAlign = align
 	UpdateMainForm()
 }
 
+func (c *Table) SetCellEditTriggerDoubleClick(row int, col int, enabled bool) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.editTriggerDoubleClick = enabled
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellEditTriggerEnter(row int, col int, enabled bool) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.editTriggerEnter = enabled
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellEditTriggerF2(row int, col int, enabled bool) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.editTriggerF2 = enabled
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellEditTriggerKeyDown(row int, col int, enabled bool) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.editTriggerKeyDown = enabled
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellSelectionDisabled(row int, col int, disabled bool) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.selectionDisabled = disabled
+	UpdateMainForm()
+}
+
 func (c *Table) SetCurrentCell2(row int, col int) {
-	fmt.Println("SetCurrentCell:", col, row)
+	cellObj := c.getCellObj(row, col)
+	if cellObj.selectionDisabled {
+		return
+	}
+
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
@@ -600,7 +636,7 @@ func (c *Table) ScrollToCell2(row, col int) {
 
 	leftTopX := c.columnOffset(col)
 	leftTopY := c.rowOffset(row)
-	c.ScrollEnsureVisible(leftTopX, leftTopY-c.rowHeight1)
+	c.ScrollEnsureVisible(leftTopX, leftTopY-c.headerHeight())
 
 	rightBottomX := leftTopX + c.columnWidth(col)
 	rightBottomY := leftTopY + c.rowHeight1
@@ -718,7 +754,18 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	}
 
 	if key == nuikey.KeyEnter {
+		allowEdit := false
 		if c.editTriggerEnter {
+			allowEdit = true
+		} else {
+			cellObj := c.getCellObj(c.currentCellY, c.currentCellX)
+			if cellObj != nil {
+				if cellObj.editTriggerEnter {
+					allowEdit = true
+				}
+			}
+		}
+		if allowEdit {
 			c.EditCurrentCell("")
 			UpdateMainForm()
 			processed = true
@@ -726,7 +773,18 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	}
 
 	if key == nuikey.KeyF2 {
+		allowEdit := false
 		if c.editTriggerF2 {
+			allowEdit = true
+		} else {
+			cellObj := c.getCellObj(c.currentCellY, c.currentCellX)
+			if cellObj != nil {
+				if cellObj.editTriggerF2 {
+					allowEdit = true
+				}
+			}
+		}
+		if allowEdit {
 			c.EditCurrentCell("")
 			UpdateMainForm()
 			processed = true
@@ -876,9 +934,12 @@ func (c *Table) draw(cnv *Canvas) {
 					if c.showSelection {
 						if rowIsSelected {
 							backColor = c.BackgroundColorWithAddElevation(1)
+							if !c.selectingCell {
+								backColor = c.GetPropColor("background_selected_cell", ColorToHex(c.BackgroundColorForRole("primary")))
+							}
 						}
 						if cellIsSelected {
-							backColor = c.BackgroundColorWithAddElevation(3)
+							backColor = c.GetPropColor("background_selected_cell", ColorToHex(c.BackgroundColorForRole("primary")))
 						}
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight1, backColor)
@@ -889,6 +950,9 @@ func (c *Table) draw(cnv *Canvas) {
 					cellText := ""
 					if cellObj != nil {
 						cellText = cellObj.text
+						if cellObj.displayTextExists {
+							cellText = cellObj.displayText
+						}
 						hAlign = cellObj.hAlign
 						vAlign = cellObj.vAlign
 					}
