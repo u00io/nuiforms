@@ -25,7 +25,7 @@ type TextBox struct {
 
 	dragingCursor bool
 	// readonly      bool
-	isPassword bool
+	//isPassword bool
 
 	blockUpdate bool
 	emptyText   string
@@ -251,7 +251,7 @@ func (c *TextBox) updateInnerSize() {
 }
 
 func (c *TextBox) lineToPasswordChars(line string) string {
-	if c.isPassword {
+	if c.GetPropBool("isPassword", false) {
 		lenOfLine := utf8.RuneCountInString(line)
 		line = ""
 		for i := 0; i < lenOfLine; i++ {

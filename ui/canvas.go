@@ -862,6 +862,22 @@ func (c *Canvas) TranslatedY() int {
 	return c.state.translateY
 }
 
+func (c *Canvas) ClipX() int {
+	return c.state.clipX
+}
+
+func (c *Canvas) ClipY() int {
+	return c.state.clipY
+}
+
+func (c *Canvas) ClipW() int {
+	return c.state.clipW
+}
+
+func (c *Canvas) ClipH() int {
+	return c.state.clipH
+}
+
 func (c *Canvas) DrawText(x int, y int, width int, height int, text string) {
 	lines := strings.Split(text, "\r\n")
 

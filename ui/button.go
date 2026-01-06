@@ -10,11 +10,15 @@ type Button struct {
 	pressed bool
 }
 
+const (
+	DefaultButtonMinWidth = 100
+)
+
 func NewButton(text string) *Button {
 	var c Button
 	c.InitWidget()
 	c.SetTypeName("Button")
-	c.SetMinSize(100, DefaultUiLineHeight)
+	c.SetMinSize(DefaultButtonMinWidth, DefaultUiLineHeight)
 	// c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
@@ -98,8 +102,15 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 	_ = textHeight
 	_ = textWidth
 	_ = padding
-	c.SetMinSize(textWidth+padding*2, textHeight)
-	c.SetMaxSize(textWidth+padding*2, textHeight)
+
+	c.SetMinHeight(textHeight)
+
+	if textWidth+padding*2 > c.MinWidth() {
+		c.SetMinWidth(textWidth + padding*2)
+	}
+
+	//c.SetMinSize(textWidth+padding*2, textHeight)
+	//c.SetMaxSize(textWidth+padding*2, textHeight)
 	UpdateMainFormLayout()
 }
 
