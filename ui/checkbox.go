@@ -60,7 +60,7 @@ func (c *Checkbox) SetChecked(checked bool) {
 		var ev EventCheckboxStateChanged
 		ev.Checkbox = c
 		ev.Checked = checked
-		PushEvent(&Event{Parameter: ev})
+		PushEvent(&ev)
 		f()
 		PopEvent()
 	}

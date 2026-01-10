@@ -142,8 +142,10 @@ type Event struct {
 
 var eventsStack []*Event
 
-func PushEvent(event *Event) {
-	eventsStack = append(eventsStack, event)
+func PushEvent(p any) {
+	var ev Event
+	ev.Parameter = p
+	eventsStack = append(eventsStack, &ev)
 }
 
 func PopEvent() {

@@ -419,7 +419,7 @@ func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		ev.Key = key
 		ev.Mods = mods
 		ev.Processed = false
-		PushEvent(&Event{Parameter: &ev})
+		PushEvent(&ev)
 		keyDownFunc()
 		PopEvent()
 		if ev.Processed {
@@ -872,7 +872,7 @@ func (c *TextBox) modifyText(cmd textboxModifyCommand, modifiers nuikey.KeyModif
 
 			f := c.GetPropFunction("ontextchanged")
 			if f != nil {
-				PushEvent(&Event{})
+				PushEvent(nil)
 				f()
 				PopEvent()
 			}

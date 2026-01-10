@@ -42,8 +42,9 @@ type Table struct {
 	currentCellX int
 	currentCellY int
 
-	onSelectionChanged func(row int, col int)
-	onCellChanged      func(row int, col int, text string, data interface{}) bool
+	onSelectionChanged  func(row int, col int)
+	onCellChanged       func(row int, col int, text string, data interface{}) bool
+	onCellMouseDblClick func()
 
 	headerWidget  *tableHeader
 	editorTextBox *TextBox
@@ -686,14 +687,40 @@ func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey
 	return true
 }
 
+type EventTableCellMouseDblClick struct {
+	Table     *Table
+	Row       int
+	Col       int
+	Processed bool
+}
+
+func (c *Table) SetOnCellMouseDblClick(callback func()) {
+	c.onCellMouseDblClick = callback
+}
+
 func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	col, row := c.cellByPosition(x, y)
 	fmt.Println("Cell double clicked:", col, row, " at ", x, y)
 	if row >= 0 && col >= 0 {
 		c.SetCurrentCell2(row, col)
+
+		if c.onCellMouseDblClick != nil {
+			var event EventTableCellMouseDblClick
+			event.Row = row
+			event.Col = col
+			event.Table = c
+			PushEvent(&event)
+			c.onCellMouseDblClick()
+			PopEvent()
+			if event.Processed {
+				return true
+			}
+		}
+
 		if c.editTriggerDoubleClick {
 			c.EditCurrentCell("")
 		}
+
 		return true
 	}
 	return false
