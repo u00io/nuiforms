@@ -115,6 +115,8 @@ type tableCell struct {
 	editTriggerF2          bool
 	editTriggerKeyDown     bool
 
+	onDraw func(cnv *Canvas)
+
 	selectionDisabled bool
 }
 
@@ -189,6 +191,12 @@ func (c *Table) SetRowHeight(height int) {
 	c.rowHeight1 = height
 	c.updateInnerSize()
 	UpdateMainFormLayout()
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellOnDraw(row int, col int, onDraw func(cnv *Canvas)) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.onDraw = onDraw
 	UpdateMainForm()
 }
 
@@ -401,6 +409,10 @@ func (c *Table) ColumnWidth(col int) int {
 		return c.defaultColumnWidth
 	}
 	return colWidth
+}
+
+func (c *Table) RowHeight() int {
+	return c.rowHeight1
 }
 
 func (c *Table) ColumnCount() int {
@@ -946,6 +958,22 @@ func (c *Table) draw(cnv *Canvas) {
 
 					hAlign := HAlignLeft
 					vAlign := VAlignCenter
+
+					var customCellDrawFunc func(cnv *Canvas)
+
+					if cellObj != nil {
+						if cellObj.onDraw != nil {
+							customCellDrawFunc = cellObj.onDraw
+						}
+					}
+
+					if customCellDrawFunc != nil {
+						cnv.Save()
+						cnv.TranslateAndClip(x, y, columnWidth, c.rowHeight1)
+						customCellDrawFunc(cnv)
+						cnv.Restore()
+						continue
+					}
 
 					cellText := ""
 					if cellObj != nil {

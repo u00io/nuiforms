@@ -172,6 +172,9 @@ func (c *Form) exec(maximazed bool) {
 	if maximazed {
 		c.wnd.MaximizeWindow()
 	}
+
+	c.processResize(c.width, c.height)
+
 	c.wnd.EventLoop()
 }
 
