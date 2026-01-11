@@ -22,6 +22,7 @@ func NewDialogEnterName() *DialogEnterName {
 	c.panelContent.AddWidgetOnGrid(c.txtName, 0, 1)
 	c.panelContent.AddWidgetOnGrid(ui.NewVSpacer(), 1, 0)
 	c.dialog.ContentPanel().AddWidgetOnGrid(c.panelContent, 0, 0)
+	c.dialog.SetCloseByClickOutside(false)
 
 	c.btnOk = ui.NewButton("OK")
 	c.btnCancel = ui.NewButton("Cancel")

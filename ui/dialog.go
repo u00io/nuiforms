@@ -50,6 +50,8 @@ func NewDialogHeader() *dialogHeader {
 	c.SetPanelPadding(0)
 	c.SetCellPadding(0)
 
+	c.SetCloseByClickOutside(false)
+
 	c.headerText = NewLabel("Header")
 	c.headerText.SetPosition(0, 0)
 	c.headerText.SetSize(170, 30)

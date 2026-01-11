@@ -112,6 +112,8 @@ type Widget struct {
 	layoutCacheMinWidth    int
 	layoutCacheMinHeight   int
 
+	closeByClickOutside bool
+
 	// callbacks
 	onCustomPaint   func(cnv *Canvas)
 	onPostPaint     func(cnv *Canvas)
@@ -224,6 +226,7 @@ func (c *Widget) InitWidget() {
 	c.anchorRight = false
 	c.anchorBottom = false
 	c.widgets = make([]Widgeter, 0)
+	c.closeByClickOutside = true
 
 	c.enabled = true
 	// c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0}
@@ -275,6 +278,14 @@ func (c *Widget) SetParentWidgetId(id string) {
 
 func (c *Widget) SetName(name string) {
 	c.name = name
+}
+
+func (c *Widget) CloseByClickOutside() bool {
+	return c.closeByClickOutside
+}
+
+func (c *Widget) SetCloseByClickOutside(close bool) {
+	c.closeByClickOutside = close
 }
 
 func (c *Widget) Widgets() []Widgeter {
@@ -1133,6 +1144,9 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 			topWidget.ProcessMouseDown(button, x-topWidget.X(), y-topWidget.Y(), mods)
 			return true
 		} else {
+			if !topWidget.CloseByClickOutside() {
+				return true
+			}
 			c.CloseTopPopup()
 			return true
 		}
@@ -1624,7 +1638,9 @@ func (c *Widget) CloseTopPopup() {
 	if len(c.PopupWidgets) == 0 {
 		return
 	}
+
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
+
 	delete(allwidgets, c.PopupWidgets[len(c.PopupWidgets)-1].Id())
 	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
 }

@@ -27,6 +27,9 @@ type Widgeter interface {
 	GetPropBool(key string, defaultValue bool) bool
 	GetPropFloat64(key string, defaultValue float64) float64
 
+	SetCloseByClickOutside(close bool)
+	CloseByClickOutside() bool
+
 	Widgets() []Widgeter
 
 	Elevation() int
