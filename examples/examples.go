@@ -3,7 +3,7 @@ package examples
 import (
 	"github.com/u00io/nuiforms/examples/ex00layout"
 	"github.com/u00io/nuiforms/examples/ex01base"
-	"github.com/u00io/nuiforms/examples/ex02layouts"
+	"github.com/u00io/nuiforms/examples/ex02label"
 	"github.com/u00io/nuiforms/examples/ex03masterdetail"
 	"github.com/u00io/nuiforms/examples/ex06font"
 	"github.com/u00io/nuiforms/examples/ex09textbox"
@@ -26,7 +26,6 @@ func Run() {
 			btn := ui.NewButton(text)
 			btn.SetOnButtonClick(onClick)
 
-			btn.SetRole("primary")
 			form.Panel().AddWidgetOnGrid(btn, form.Panel().NextGridRow(), 0)
 		}
 
@@ -40,9 +39,9 @@ func Run() {
 			ex01base.Run(form)
 		})
 
-		addButton("Example 02 - Layouts", func() {
+		addButton("Example 02 - Label", func() {
 			form.Panel().RemoveAllWidgets()
-			ex02layouts.Run(form)
+			ex02label.Run(form)
 		})
 
 		addButton("Example 03 - Master Detail", func() {

@@ -1564,14 +1564,17 @@ func (c *Widget) Anchors() (left, top, right, bottom bool) {
 
 func (c *Widget) SetAbsolutePositioning(absolute bool) {
 	c.absolutePositioning = absolute
+	c.SetProp("absolutepositioning", absolute)
 }
 
 func (c *Widget) SetXExpandable(expandable bool) {
 	c.xExpandable = expandable
+	c.SetProp("xexpandable", expandable)
 }
 
 func (c *Widget) SetYExpandable(expandable bool) {
 	c.yExpandable = expandable
+	c.SetProp("yexpandable", expandable)
 }
 
 func (c *Widget) SetMinWidth(minWidth int) {

@@ -19,7 +19,6 @@ func NewButton(text string) *Button {
 	c.InitWidget()
 	c.SetTypeName("Button")
 	c.SetMinSize(DefaultButtonMinWidth, DefaultUiLineHeight)
-	// c.SetMaxSize(10000, 30)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 	c.SetCanBeFocused(true)
@@ -85,9 +84,6 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
-
-	//cnv.SetColor(c.BackgroundColorAccent2())
-	//cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 
 func (c *Button) ProcessPropChange(key string, value interface{}) {
@@ -109,8 +105,6 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 		c.SetMinWidth(textWidth + padding*2)
 	}
 
-	//c.SetMinSize(textWidth+padding*2, textHeight)
-	//c.SetMaxSize(textWidth+padding*2, textHeight)
 	UpdateMainFormLayout()
 }
 

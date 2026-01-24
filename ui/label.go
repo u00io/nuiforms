@@ -41,6 +41,7 @@ func NewLabel(text string) *Label {
 		return true
 	})
 	c.SetText(text)
+
 	return &c
 }
 
@@ -103,23 +104,30 @@ func (c *Label) SetUnderline(underline bool) {
 
 // updateInnerSize updates the inner size of the Label based on its text.
 func (c *Label) updateInnerSize() {
-	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
+	textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
 		return
 	}
+	_ = textWidth
 
-	// Ensure a minimum height for the label
-	if textHeight < DefaultUiLineHeight {
-		textHeight = DefaultUiLineHeight
-	}
+	// Min height is DefaultUiLineHeight
+	c.innerHeight = DefaultUiLineHeight
+	c.SetMinHeight(c.innerHeight)
 
-	c.innerHeight = textHeight
-	c.innerWidth = textWidth
-	if c.innerWidth > labelMaxWidth {
+	if !c.xExpandable {
+		// if not expandable, set inner width to text width
+		// for example if in one row we have label + textbox
+		// we want the label to be just wide enough for the text
+		// so that the textbox gets the rest of the space
+		c.innerWidth = textWidth
+		if c.innerWidth > labelMaxWidth {
+			c.innerWidth = labelMaxWidth
+		}
+		c.SetMinWidth(c.innerWidth)
+	} else {
+		// label can expand - if text is wider than real width - it will be clipped
+		// it is useful when label is in a column and where are no other widgets in the same row
 		c.innerWidth = labelMaxWidth
+		c.SetMinWidth(10)
 	}
-	c.SetMinSize(c.innerWidth, c.innerHeight)
-	//fmt.Println("Label Min Width:", c.innerWidth, c.innerHeight)
-	//c.SetMinSize(300, c.innerHeight)
-	c.SetMaxHeight(c.innerHeight)
 }
