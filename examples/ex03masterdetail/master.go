@@ -35,7 +35,7 @@ func NewMasterWidget() *MasterWidget {
 	panelTableButtons.SetBackgroundColor(color.RGBA{R: 50, G: 50, B: 70, A: 255})
 
 	btnAdd := ui.NewButton("Add")
-	btnAdd.SetOnButtonClick(func() {
+	btnAdd.SetOnClick(func() {
 		row := c.table.RowCount()
 		c.table.SetRowCount(row + 1)
 		c.table.SetCellText2(row, 0, "ID"+fmt.Sprint(row))
@@ -46,7 +46,7 @@ func NewMasterWidget() *MasterWidget {
 	panelTableButtons.AddWidgetOnGrid(btnAdd, 0, 0)
 
 	btnDelete := ui.NewButton("Delete")
-	btnDelete.SetOnButtonClick(func() {
+	btnDelete.SetOnClick(func() {
 		selectedRow := c.table.CurrentRow()
 		if selectedRow < 0 || selectedRow >= c.table.RowCount() {
 			return

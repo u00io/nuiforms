@@ -43,8 +43,8 @@ type Widget struct {
 	gridX int // Grid position
 	gridY int // Grid position
 
-	xExpandable bool // If the widget can expand in X direction
-	yExpandable bool // If the widget can expand in Y direction
+	//xExpandable bool // If the widget can expand in X direction
+	//yExpandable bool // If the widget can expand in Y direction
 
 	minWidth  int // Minimum width
 	maxWidth  int // Maximum width
@@ -127,12 +127,26 @@ type Widget struct {
 	onKeyUp         func(key nuikey.Key, mods nuikey.KeyModifiers) bool
 	onChar          func(char rune, mods nuikey.KeyModifiers) bool
 	onMouseWheel    func(deltaX, deltaY int) bool
-	onClick         func(button nuimouse.MouseButton, x int, y int) bool
+	//onClick         func()
 	onScrollChanged func(scrollX, scrollY int)
 
 	onFocused   func()
 	onFocusLost func()
 }
+
+/*
+	Properties:
+	- elevation: int - The elevation level of the widget.
+	- role: string - The role of the widget ["primary", "secondary", "surface"].
+	- autofillbackground: bool - Whether the widget should automatically fill its background.
+	- padding: int - The padding around the widget's content.
+	- spacing: int - The spacing between child widgets.
+	- cursor: string - The mouse cursor to use when hovering over the widget ["arrow", "pointer", "resize-hor", "resize-ver", "ibeam"].
+	- xexpandable: bool - Whether the widget can expand in the horizontal direction.
+	- yexpandable: bool - Whether the widget can expand in the vertical direction.
+
+	- onclick: function - Callback function for mouse click events.
+*/
 
 const (
 	DefaultUiLineHeight = 30
@@ -633,6 +647,7 @@ func (c *Widget) SetInnerSize(width, height int) {
 
 func (c *Widget) SetProp(key string, value any) {
 	c.props[key] = value
+
 	w := WidgetById(c.Id())
 	if w != nil {
 		w.ProcessPropChange(key, value)
@@ -905,8 +920,8 @@ func (c *Widget) SetAnchors(left, top, right, bottom bool) {
 	c.anchorBottom = bottom
 }
 
-func (c *Widget) SetOnClick(f func(button nuimouse.MouseButton, x int, y int) bool) {
-	c.onClick = f
+func (c *Widget) SetOnClick(f func()) {
+	c.SetPropFunction("onclick", f)
 }
 
 func (c *Widget) SetOnScrollChanged(f func(scrollX, scrollY int)) {
@@ -1278,12 +1293,10 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		processed = c.onMouseDown(button, x, y, mods)
 	}
 
-	if c.allowCallMouseClickCallback {
-		f := c.GetPropFunction("onclick")
-		if f != nil {
-			f()
-			processed = true
-		}
+	f := c.GetPropFunction("onclick")
+	if f != nil {
+		f()
+		processed = true
 	}
 
 	return processed
@@ -1568,12 +1581,12 @@ func (c *Widget) SetAbsolutePositioning(absolute bool) {
 }
 
 func (c *Widget) SetXExpandable(expandable bool) {
-	c.xExpandable = expandable
+	//c.xExpandable = expandable
 	c.SetProp("xexpandable", expandable)
 }
 
 func (c *Widget) SetYExpandable(expandable bool) {
-	c.yExpandable = expandable
+	//c.yExpandable = expandable
 	c.SetProp("yexpandable", expandable)
 }
 
@@ -2179,12 +2192,12 @@ func (c *Widget) getWidgetInGridCell(x, y int) Widgeter {
 }
 
 func (c *Widget) XExpandable() bool {
-	if c.xExpandable {
+	if c.GetPropBool("xexpandable", false) {
 		return true
 	}
 
 	if len(c.widgets) == 0 {
-		return c.xExpandable
+		return c.GetPropBool("xexpandable", false)
 	}
 
 	if c.layoutCacheXExpandableValid {
@@ -2207,12 +2220,12 @@ func (c *Widget) XExpandable() bool {
 }
 
 func (c *Widget) YExpandable() bool {
-	if c.yExpandable {
+	if c.GetPropBool("yexpandable", false) {
 		return true
 	}
 
 	if len(c.widgets) == 0 {
-		return c.yExpandable
+		return c.GetPropBool("yexpandable", false)
 	}
 
 	if c.layoutCacheYExpandableValid {

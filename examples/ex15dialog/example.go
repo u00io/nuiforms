@@ -41,7 +41,7 @@ func NewDialogEnterName() *DialogEnterName {
 func Run(form *ui.Form) {
 	form.Panel().RemoveAllWidgets()
 	btn := ui.NewButton("Click me")
-	btn.SetOnButtonClick(func() {
+	btn.SetOnClick(func() {
 		dialog := NewDialogEnterName()
 		dialog.dialog.ShowDialog()
 		dialog.dialog.OnAccept = func() {

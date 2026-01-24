@@ -9,6 +9,13 @@ type Label struct {
 	Widget
 }
 
+/*
+Properties:
+- text: string - The text to display in the label.
+- align: string - The horizontal alignment of the text ["left", "center", "right"].
+- underline: bool - Whether the text is underlined.
+*/
+
 const labelMaxWidth = 1500
 
 // //////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +25,7 @@ func NewLabel(text string) *Label {
 	c.InitWidget()
 	c.SetTypeName("Label")
 	c.SetOnPaint(func(cnv *Canvas) {
-		cnv.SetHAlign(c.GetHAlign("textAlign", HAlignLeft))
+		cnv.SetHAlign(c.GetHAlign("align", HAlignLeft))
 		cnv.SetVAlign(VAlignCenter)
 		cnv.SetFontFamily(c.FontFamily())
 		cnv.SetFontSize(c.FontSize())
@@ -26,10 +33,20 @@ func NewLabel(text string) *Label {
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.GetPropString("text", ""))
 
 		if c.GetPropBool("underline", false) {
-			cnv.SetColor(c.ForegroundColor())
-			widgetWidth := c.Width()
-			textHeight := c.innerHeight
-			cnv.DrawLine(0, textHeight-2, widgetWidth, textHeight-2, 1, c.ForegroundColor())
+			textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
+			if err == nil {
+				cnv.SetColor(c.ForegroundColor())
+
+				x := 0
+				if c.TextAlign() == HAlignCenter {
+					x = (c.Width() - textWidth) / 2
+				} else if c.TextAlign() == HAlignRight {
+					x = c.Width() - textWidth
+				}
+
+				textHeight := c.innerHeight
+				cnv.DrawLine(x, textHeight-2, x+textWidth, textHeight-2, 1, c.ForegroundColor())
+			}
 		}
 	})
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
@@ -72,12 +89,12 @@ func (c *Label) SetText(text string) {
 
 // TextAlign returns the horizontal alignment of the Label's text.
 func (c *Label) TextAlign() HAlign {
-	return c.GetHAlign("textAlign", HAlignLeft)
+	return c.GetHAlign("align", HAlignLeft)
 }
 
 // SetTextAlign sets the horizontal alignment of the Label's text.
 func (c *Label) SetTextAlign(align HAlign) {
-	c.SetProp("textAlign", align.String())
+	c.SetProp("align", align.String())
 	c.updateInnerSize()
 	if MainForm != nil {
 		MainForm.Update()
@@ -114,7 +131,7 @@ func (c *Label) updateInnerSize() {
 	c.innerHeight = DefaultUiLineHeight
 	c.SetMinHeight(c.innerHeight)
 
-	if !c.xExpandable {
+	if !c.XExpandable() {
 		// if not expandable, set inner width to text width
 		// for example if in one row we have label + textbox
 		// we want the label to be just wide enough for the text

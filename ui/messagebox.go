@@ -14,7 +14,7 @@ func ShowMessageBox(title string, messageText string) {
 	panelButtons := NewPanel()
 
 	btnOK := NewButton("OK")
-	btnOK.SetOnButtonClick(func() {
+	btnOK.SetOnClick(func() {
 		dialog.Close()
 		widgetToFocusAfterClose.Focus()
 	})

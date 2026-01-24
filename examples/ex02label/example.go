@@ -15,10 +15,23 @@ func NewMainForm() *MainForm {
 		<column>
 			<label id="lblMain" text="This is a label example."/>
 			<vspacer />
+			<label text="Underline" underline="true" xexpandable="false" align="right"/>
+			<vspacer />
 			<row>
 				<button text="Set Empty Text" onclick="BtnSetEmptyText"/>
 				<button text="Set Normal Text" onclick="BtnSetNormalText"/>
 				<button text="Set Big Text" onclick="BtnSetBigText"/>
+			</row>
+			<row>
+				<button text="Set Align Left" onclick="BtnSetAlignLeft"/>
+				<button text="Set Align Center" onclick="BtnSetAlignCenter"/>
+				<button text="Set Align Right" onclick="BtnSetAlignRight"/>
+				<hspacer />
+			</row>
+			<row>
+				<button text="Set Underline" onclick="BtnSetUnderline"/>
+				<button text="Unset Underline" onclick="BtnUnsetUnderline"/>
+				<hspacer />
 			</row>
 			<row>
 				<button text="Set Expandable" onclick="BtnSetExpandable"/>			
@@ -48,6 +61,41 @@ func (c *MainForm) BtnSetBigText() {
 	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
 	if lbl != nil {
 		lbl.SetText("This is a very big text example to show how the label widget can handle larger amounts of text. It should properly wrap and display all the content without any issues.")
+	}
+}
+
+func (c *MainForm) BtnSetAlignLeft() {
+	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
+	if lbl != nil {
+		lbl.SetTextAlign(ui.HAlignLeft)
+	}
+}
+
+func (c *MainForm) BtnSetAlignCenter() {
+	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
+	if lbl != nil {
+		lbl.SetTextAlign(ui.HAlignCenter)
+	}
+}
+
+func (c *MainForm) BtnSetAlignRight() {
+	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
+	if lbl != nil {
+		lbl.SetTextAlign(ui.HAlignRight)
+	}
+}
+
+func (c *MainForm) BtnSetUnderline() {
+	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
+	if lbl != nil {
+		lbl.SetUnderline(true)
+	}
+}
+
+func (c *MainForm) BtnUnsetUnderline() {
+	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
+	if lbl != nil {
+		lbl.SetUnderline(false)
 	}
 }
 

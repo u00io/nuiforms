@@ -32,7 +32,7 @@ func NewButton(text string) *Button {
 	c.SetText(text)
 	c.SetProp("padding", 6)
 
-	c.Widget.allowCallMouseClickCallback = false
+	//c.Widget.allowCallMouseClickCallback = false
 
 	return &c
 }
@@ -46,7 +46,7 @@ func (c *Button) SetText(text string) {
 	UpdateMainForm()
 }
 
-func (c *Button) SetOnButtonClick(fn func()) {
+/*func (c *Button) SetOnButtonClick(fn func()) {
 	c.SetPropFunction("onclick", fn)
 }
 
@@ -54,11 +54,13 @@ func (c *Button) Press() {
 	if f := c.GetPropFunction("onclick"); f != nil {
 		f()
 	}
-}
+}*/
 
 func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyEnter || key == nuikey.KeySpace {
-		c.Press()
+		if f := c.GetPropFunction("onclick"); f != nil {
+			f()
+		}
 	}
 	return true
 }
@@ -130,8 +132,8 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 	hoverWidgeter := MainForm.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
-		c.Press()
+		//c.Press()
 	}
 
-	return true
+	return false
 }

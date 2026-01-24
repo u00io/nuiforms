@@ -64,7 +64,7 @@ func NewDialogHeader() *dialogHeader {
 	c.btnClose.SetPosition(170, 0)
 	c.btnClose.SetSize(30, 30)
 	c.btnClose.SetAnchors(false, true, true, true)
-	c.btnClose.SetOnButtonClick(func() {
+	c.btnClose.SetOnClick(func() {
 		c.dialog.Reject()
 	})
 	c.AddWidget(c.btnClose)
@@ -196,14 +196,14 @@ func (c *Dialog) Resize(w, h int) {
 
 func (c *Dialog) SetAcceptButton(acceptButton *Button) {
 	c.acceptButton = acceptButton
-	acceptButton.SetOnButtonClick(func() {
+	acceptButton.SetOnClick(func() {
 		c.Accept()
 	})
 }
 
 func (c *Dialog) SetRejectButton(rejectButton *Button) {
 	c.rejectButton = rejectButton
-	rejectButton.SetOnButtonClick(func() {
+	rejectButton.SetOnClick(func() {
 		c.Reject()
 	})
 }
@@ -255,14 +255,20 @@ func (c *Dialog) Reject() {
 func (c *Dialog) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyEnter {
 		if c.acceptButton != nil {
-			c.acceptButton.Press()
+			//c.acceptButton.Press()
+			if f := c.acceptButton.GetPropFunction("onclick"); f != nil {
+				f()
+			}
 		}
 		c.Accept()
 		return true
 	}
 	if key == nuikey.KeyEsc {
 		if c.rejectButton != nil {
-			c.rejectButton.Press()
+			//c.rejectButton.Press()
+			if f := c.rejectButton.GetPropFunction("onclick"); f != nil {
+				f()
+			}
 		}
 		c.Reject()
 		return true
