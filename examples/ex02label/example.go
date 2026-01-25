@@ -15,7 +15,7 @@ func NewMainForm() *MainForm {
 		<column>
 			<label id="lblMain" text="This is a label example."/>
 			<vspacer />
-			<label text="Underline" underline="true" xexpandable="false" align="right"/>
+			<label text="Underline" underline="true" xexpandable="false" align="right" cursor="pointer" onclick="OnLabelClick"/>
 			<vspacer />
 			<row>
 				<button text="Set Empty Text" onclick="BtnSetEmptyText"/>
@@ -41,6 +41,13 @@ func NewMainForm() *MainForm {
 		</column>
 	`, &c, nil)
 	return &c
+}
+
+func (c *MainForm) OnLabelClick() {
+	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
+	if lbl != nil {
+		ui.ShowMessageBox("Message", "Clicked 000 00 00000 0 00000 000 0000  123 456 789 on the underline label. Hello world from Nuiforms!")
+	}
 }
 
 func (c *MainForm) BtnSetEmptyText() {
