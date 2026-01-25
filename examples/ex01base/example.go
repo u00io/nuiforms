@@ -2,12 +2,12 @@ package ex01base
 
 import "github.com/u00io/nuiforms/ui"
 
-type MainForm struct {
+type MainWidget struct {
 	ui.Widget
 }
 
-func NewMainForm() *MainForm {
-	var c MainForm
+func NewMainWidget() *MainWidget {
+	var c MainWidget
 	c.InitWidget()
 	c.SetLayout(`
 		<label text="This is the base form example."/>
@@ -17,5 +17,5 @@ func NewMainForm() *MainForm {
 
 func Run(form *ui.Form) {
 	form.SetTitle("Example 01 - Base Form")
-	form.Panel().AddWidgetOnGrid(NewMainForm(), 0, 0)
+	form.SetMainWidget(NewMainWidget())
 }
