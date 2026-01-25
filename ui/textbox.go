@@ -12,20 +12,17 @@ import (
 type TextBox struct {
 	Widget
 
-	cursorPosX         int
-	cursorPosY         int
-	selectionLeftX     int
-	selectionLeftY     int
-	selectionRightX    int
-	selectionRightY    int
-	mouseButtonPressed bool
-	cursorWidth        int
-	//multiline           bool
+	cursorPosX          int
+	cursorPosY          int
+	selectionLeftX      int
+	selectionLeftY      int
+	selectionRightX     int
+	selectionRightY     int
+	mouseButtonPressed  bool
+	cursorWidth         int
 	leftAndRightPadding int
 
 	dragingCursor bool
-	// readonly      bool
-	//isPassword bool
 
 	blockUpdate bool
 	emptyText   string
@@ -121,12 +118,10 @@ func (c *TextBox) Lines() []string {
 
 func (c *TextBox) SetReadOnly(readonly bool) {
 	c.SetProp("readonly", readonly)
-	UpdateMainForm()
 }
 
 func (c *TextBox) SetIsPassword(isPassword bool) {
 	c.SetProp("isPassword", isPassword)
-	UpdateMainForm()
 }
 
 func (c *TextBox) SetOnTextChanged(onTextChanged func()) {
@@ -182,16 +177,16 @@ func (c *TextBox) SetText(text string) {
 	c.setText(text, true)
 }
 
+func (c *TextBox) Text() string {
+	return c.GetPropString("text", "")
+}
+
 func (c *TextBox) SetEmptyText(text string) {
 	c.redraw()
 	c.emptyText = text
 	c.updateInnerSize()
 	c.ScrollToBegin()
 	UpdateMainForm()
-}
-
-func (c *TextBox) Text() string {
-	return c.GetPropString("text", "")
 }
 
 func (c *TextBox) SetMultiline(multiline bool) {
