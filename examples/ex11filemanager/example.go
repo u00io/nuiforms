@@ -56,7 +56,7 @@ func NewMainWidget() *MainWidget {
 	c.bottomPanel = ui.NewPanel()
 	c.cmdLine = ui.NewTextBox()
 	c.cmdLine.SetName("CommandLine")
-	c.cmdLine.SetEmptyText("Enter command here...")
+	c.cmdLine.SetHint("Enter command here...")
 	c.cmdLine.SetOnTextBoxKeyDown(func() {
 		key := ui.CurrentEvent().Parameter.(*ui.EventTextboxKeyDown).Key
 		mods := ui.CurrentEvent().Parameter.(*ui.EventTextboxKeyDown).Mods

@@ -13,7 +13,8 @@ func NewMainWidget() *MainWidget {
 	c.InitWidget()
 	c.SetLayout(`
 		<column>
-			<textbox id="txtLine" />
+			<textbox id="txtLine" hint="Enter text here" />
+			<textbox id="txtLineReadOnly" readonly="true" text="This is read-only text" />
 			<textbox id="txtMultiline" multiline="true" />
 		</column>
 	`, &c, nil)

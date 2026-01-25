@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"image/color"
 	"strings"
 	"unicode/utf8"
 
@@ -25,7 +24,6 @@ type TextBox struct {
 	dragingCursor bool
 
 	blockUpdate bool
-	emptyText   string
 
 	padding int
 
@@ -34,6 +32,15 @@ type TextBox struct {
 
 	propIsProcessing bool
 }
+
+/*
+Properties:
+- text: string - The text of the textbox.
+- hint: string - The hint text displayed when the textbox is empty.
+- multiline: string - Whether the textbox supports multiple lines.
+- readonly: bool - Whether the textbox is read-only.
+- ispassword: bool - Whether the textbox masks input (for password entry).
+*/
 
 type textboxModifyCommand int
 
@@ -103,7 +110,6 @@ func NewTextBox() *TextBox {
 	c.cursorVisible = true
 	c.ScrollToBegin()
 	c.updateInnerSize()
-	c.emptyText = "Type here..."
 
 	c.padding = 4
 
@@ -120,8 +126,12 @@ func (c *TextBox) SetReadOnly(readonly bool) {
 	c.SetProp("readonly", readonly)
 }
 
+func (c *TextBox) ReadOnly() bool {
+	return c.GetPropBool("readonly", false)
+}
+
 func (c *TextBox) SetIsPassword(isPassword bool) {
-	c.SetProp("isPassword", isPassword)
+	c.SetProp("ispassword", isPassword)
 }
 
 func (c *TextBox) SetOnTextChanged(onTextChanged func()) {
@@ -181,12 +191,12 @@ func (c *TextBox) Text() string {
 	return c.GetPropString("text", "")
 }
 
-func (c *TextBox) SetEmptyText(text string) {
-	c.redraw()
-	c.emptyText = text
-	c.updateInnerSize()
-	c.ScrollToBegin()
-	UpdateMainForm()
+func (c *TextBox) SetHint(text string) {
+	c.SetProp("hint", text)
+}
+
+func (c *TextBox) Hint() string {
+	return c.GetPropString("hint", "")
 }
 
 func (c *TextBox) SetMultiline(multiline bool) {
@@ -264,7 +274,7 @@ func (c *TextBox) updateInnerSize() {
 }
 
 func (c *TextBox) lineToPasswordChars(line string) string {
-	if c.GetPropBool("isPassword", false) {
+	if c.GetPropBool("ispassword", false) {
 		lenOfLine := utf8.RuneCountInString(line)
 		line = ""
 		for i := 0; i < lenOfLine; i++ {
@@ -358,10 +368,10 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		cursorPosInPixels := charPos[c.cursorPosX]
 		curX := cursorPosInPixels - (c.cursorWidth / 2)
 		curY := yStaticOffset + c.cursorPosY*oneLineHeight
-		ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight, color.RGBA{0x00, 0xFF, 0x00, 0xFF}) // c.foregroundColor.Color())
+		ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight, c.ForegroundColor())
 	}
 
-	if c.Text() == "" && c.emptyText != "" && !focus {
+	if c.Text() == "" && c.Hint() != "" && !focus {
 		ctx.SetHAlign(HAlignLeft)
 		if c.Multiline() {
 			ctx.SetVAlign(VAlignTop)
@@ -369,7 +379,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 			ctx.SetVAlign(VAlignCenter)
 		}
 		ctx.SetColor(ColorFromHex("#777777"))
-		ctx.DrawText(c.leftAndRightPadding, 0, c.w, c.h, c.emptyText)
+		ctx.DrawText(c.leftAndRightPadding, 0, c.w, c.h, c.Hint())
 	}
 }
 
@@ -387,6 +397,10 @@ func (c *TextBox) KeyChar(ch rune, mods nuikey.KeyModifiers) {
 }
 
 func (c *TextBox) cutSelected() {
+	if c.ReadOnly() {
+		return
+	}
+
 	if len(c.selectedLines()) == 0 {
 		return
 	}
@@ -413,7 +427,7 @@ func (c *TextBox) copySelected() {
 }
 
 func (c *TextBox) paste() {
-	if c.GetPropBool("readonly", false) {
+	if c.ReadOnly() {
 		return
 	}
 
@@ -493,8 +507,8 @@ func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	}
 
 	if key == nuikey.KeyEnter {
-		if c.GetPropBool("readonly", false) {
-			return false
+		if c.ReadOnly() {
+			return true
 		}
 		return c.insertReturn(mods)
 	}
@@ -510,16 +524,18 @@ func (c *TextBox) KeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	}
 
 	if key == nuikey.KeyBackspace {
-		if !c.GetPropBool("readonly", false) {
-			c.modifyText(textboxModifyCommandBackspace, mods, nil)
+		if c.ReadOnly() {
+			return true
 		}
+		c.modifyText(textboxModifyCommandBackspace, mods, nil)
 		return true
 	}
 
 	if key == nuikey.KeyDelete {
-		if !c.GetPropBool("readonly", false) {
-			c.modifyText(textboxModifyCommandDelete, mods, nil)
+		if c.ReadOnly() {
+			return true
 		}
+		c.modifyText(textboxModifyCommandDelete, mods, nil)
 		return true
 	}
 
@@ -593,7 +609,12 @@ func (c *TextBox) moveCursorNearPoint(x, y int, modifiers nuikey.KeyModifiers) {
 		}
 	}
 
-	if x > charPos[len(charPos)-1] {
+	widthOfLastChar := 0
+	if len(charPos) > 1 {
+		widthOfLastChar = charPos[len(charPos)-1] - charPos[len(charPos)-2]
+	}
+
+	if x > charPos[len(charPos)-1]-widthOfLastChar/2 {
 		c.moveCursor(len(charPos)-1, lineNumber, modifiers)
 	}
 }
