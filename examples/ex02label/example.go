@@ -46,7 +46,7 @@ func NewMainForm() *MainForm {
 func (c *MainForm) OnLabelClick() {
 	lbl := c.FindWidgetByName("lblMain").(*ui.Label)
 	if lbl != nil {
-		ui.ShowMessageBox("Message", "Clicked 000 00 00000 0 00000 000 0000  123 456 789 on the underline label. Hello world from Nuiforms!")
+		ui.ShowMessageBox("Message", "1234 12345 1234 56 1234 567 12345 780123456 123456789 1234567890")
 	}
 }
 

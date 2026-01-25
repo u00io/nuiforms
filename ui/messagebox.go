@@ -1,50 +1,34 @@
 package ui
 
-import "strings"
-
 func ShowMessageBox(title string, messageText string) {
 	width := 500
+
+	fontFamily := ThemeFontFamily()
+	fontSize := ThemeFontSize()
+
 	charsPerLine := 20
 
-	smartWordWrap := func(text string, maxChars int) []string {
-		words := strings.Fields(text)
-		lines := make([]string, 0)
-		currentLine := ""
-		for _, word := range words {
-			if len(currentLine)+len(word)+1 > maxChars {
-				lines = append(lines, strings.TrimSpace(currentLine))
-				currentLine = ""
-			}
-			currentLine += word + " "
-		}
-		if len(currentLine) > 0 {
-			lines = append(lines, strings.TrimSpace(currentLine))
-		}
-		return lines
+	oneSymbolWidth, _, err := MeasureText(fontFamily, fontSize, "W")
+	if err == nil {
+		charsPerLine = (width - 20) / (oneSymbolWidth)
 	}
 
 	// wrap the text to fit within the message box width
-	lines1 := smartWordWrap(messageText, charsPerLine)
-	lines := make([]string, 0)
-	/*if len(lines1) >= 5 {
-		lines = lines1[:5]
+	lines := MakeLinesFromStringWithWordWrapping(messageText, charsPerLine)
+	if len(lines) >= 5 {
+		lines = lines[:5]
 		lines = append(lines, "...")
-	}*/
-	_ = lines1
+	}
 
-	lines = append(lines, "11111")
-	lines = append(lines, "22222")
-	lines = append(lines, "33333")
-	lines = append(lines, "44444")
-	lines = append(lines, "55555")
+	lineHeight := DefaultUiLineHeight + 2
 
-	dialogHeight := 140 + len(lines)*(30+10)
+	dialogHeight := 100 + len(lines)*lineHeight
 
 	widgetToFocusAfterClose := MainForm.focusedWidget
 	dialog := NewDialog(title, width, dialogHeight)
 	dialog.ContentPanel().SetLayout(`
 		<column>
-			<column id="colLines"/>
+			<column id="colLines" spacing="2"/>
 			<vspacer />
 			<row>
 				<hspacer />

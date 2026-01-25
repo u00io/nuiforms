@@ -1989,13 +1989,7 @@ func (c *Widget) makeColumnsInfo(fullWidth int) (map[int]*ContainerGridColumnInf
 		}
 	}
 
-	allCellPadding := 0
-	for _, colInfo := range columnsInfo {
-		if colInfo.width > 0 {
-			allCellPadding++
-		}
-	}
-	allCellPadding--
+	allCellPadding := len(columnsInfo) - 1
 	allCellPadding *= cellPadding
 	if allCellPadding < 0 {
 		allCellPadding = 0
@@ -2165,13 +2159,7 @@ func (c *Widget) makeRowsInfo(fullHeight int) (map[int]*ContainerGridRowInfo, in
 		}
 	}
 
-	allCellPadding := 0
-	for _, rowInfo := range rowsInfo {
-		if rowInfo.height > 0 {
-			allCellPadding++
-		}
-	}
-	allCellPadding--
+	allCellPadding := len(rowsInfo) - 1
 	allCellPadding *= cellPadding
 	if allCellPadding < 0 {
 		allCellPadding = 0
