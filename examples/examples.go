@@ -4,7 +4,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex00layout"
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02label"
-	"github.com/u00io/nuiforms/examples/ex03masterdetail"
+	"github.com/u00io/nuiforms/examples/ex03textbox"
 	"github.com/u00io/nuiforms/examples/ex06font"
 	"github.com/u00io/nuiforms/examples/ex09textbox"
 	"github.com/u00io/nuiforms/examples/ex10tabwidget"
@@ -44,9 +44,9 @@ func Run() {
 			ex02label.Run(form)
 		})
 
-		addButton("Example 03 - Master Detail", func() {
+		addButton("Example 03 - TextBox", func() {
 			form.Panel().RemoveAllWidgets()
-			ex03masterdetail.Run(form)
+			ex03textbox.Run(form)
 		})
 
 		addButton("Example 06 - Font", func() {

@@ -220,7 +220,7 @@ func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	c.topWidget.ProcessPaint(cnv)
 	if c.hoverWidget != nil {
-		// c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
+		//c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
 	}
 }
 
@@ -249,9 +249,10 @@ func (c *Form) DrawWidgetDebugInfo(w Widgeter, cnv *Canvas) {
 		cnv.SetHAlign(HAlignLeft)
 		cnv.SetVAlign(VAlignTop)
 		cnv.SetColor(col)
+		cnv.SetFontFamily("roboto")
 		cnv.SetFontSize(12)
 		cnv.DrawText(posX, posY, 200, 20, line)
-		fmt.Println("PosX:", posX, "PosY:", posY, "Line:", line)
+		//fmt.Println("PosX:", posX, "PosY:", posY, "Line:", line)
 		posY += 20
 	}
 

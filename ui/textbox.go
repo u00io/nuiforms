@@ -12,15 +12,15 @@ import (
 type TextBox struct {
 	Widget
 
-	cursorPosX          int
-	cursorPosY          int
-	selectionLeftX      int
-	selectionLeftY      int
-	selectionRightX     int
-	selectionRightY     int
-	mouseButtonPressed  bool
-	cursorWidth         int
-	multiline           bool
+	cursorPosX         int
+	cursorPosY         int
+	selectionLeftX     int
+	selectionLeftY     int
+	selectionRightX    int
+	selectionRightY    int
+	mouseButtonPressed bool
+	cursorWidth        int
+	//multiline           bool
 	leftAndRightPadding int
 
 	dragingCursor bool
@@ -34,6 +34,8 @@ type TextBox struct {
 
 	cursorVisible         bool
 	skipOneCursorBlinking bool
+
+	propIsProcessing bool
 }
 
 type textboxModifyCommand int
@@ -92,16 +94,15 @@ func NewTextBox() *TextBox {
 	})
 
 	c.SetCanBeFocused(true)
-	c.multiline = false
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)
 	c.SetMinSize(100, DefaultUiLineHeight)
-	c.SetMaxSize(10000, DefaultUiLineHeight)
+	//c.SetMaxSize(2000, DefaultUiLineHeight)
 
 	//c.lines = make([]string, 1)
 	c.cursorWidth = 1
 	c.leftAndRightPadding = 0
-	c.multiline = false
+	c.SetMultiline(false)
 	c.cursorVisible = true
 	c.ScrollToBegin()
 	c.updateInnerSize()
@@ -193,21 +194,38 @@ func (c *TextBox) Text() string {
 	return c.GetPropString("text", "")
 }
 
-func (c *TextBox) SetMultiline(multiline bool, w *Widget) {
-	c.multiline = multiline
-	if c.multiline {
-		w.allowScrollX = true
-		w.allowScrollY = true
-		w.SetXExpandable(true)
-		w.SetYExpandable(true)
+func (c *TextBox) SetMultiline(multiline bool) {
+	c.SetProp("multiline", multiline)
+}
+
+func (c *TextBox) Multiline() bool {
+	return c.GetPropBool("multiline", false)
+}
+
+// ///////////////////////////////////////////////////////////////////////////////
+// Props
+func (c *TextBox) ProcessPropChange(key string, value interface{}) {
+	if c.propIsProcessing {
+		return
+	}
+	c.propIsProcessing = true
+
+	multiline := c.GetPropBool("multiline", false)
+	if multiline {
+		c.allowScrollX = true
+		c.allowScrollY = true
+		c.SetXExpandable(true)
+		c.SetYExpandable(true)
 		//c.verticalScrollVisible.SetOwnValue(true)
 		//c.horizontalScrollVisible.SetOwnValue(true)
 	} else {
-		w.SetXExpandable(true)
-		w.SetYExpandable(false)
+		c.SetXExpandable(true)
+		c.SetYExpandable(false)
 	}
 	c.updateInnerSize()
-	UpdateMainForm()
+	UpdateMainFormLayout()
+
+	c.propIsProcessing = false
 }
 
 func (c *TextBox) AssemblyText(lines []string) string {
@@ -241,11 +259,11 @@ func (c *TextBox) updateInnerSize() {
 		}
 	}
 	c.innerWidth = maxTextWidth + c.leftAndRightPadding*3
-	if c.multiline {
+	if c.Multiline() {
 		c.allowScrollY = true
 	}
 
-	if !c.multiline {
+	if !c.Multiline() {
 		c.innerHeight = c.Height()
 	}
 }
@@ -267,7 +285,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 	oneLineHeight := c.OneLineHeight()
 
 	var yStaticOffset int
-	if c.multiline {
+	if c.Multiline() {
 		yStaticOffset = 1
 	} else {
 		yStaticOffset = (c.Height() - oneLineHeight) / 2
@@ -303,7 +321,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 
 			rectY := selY * oneLineHeight
 
-			if !c.multiline {
+			if !c.Multiline() {
 				rectY = yStaticOffset
 			}
 
@@ -350,7 +368,12 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 
 	if c.Text() == "" && c.emptyText != "" && !focus {
 		ctx.SetHAlign(HAlignLeft)
-		ctx.SetVAlign(VAlignCenter)
+		if c.Multiline() {
+			ctx.SetVAlign(VAlignTop)
+		} else {
+			ctx.SetVAlign(VAlignCenter)
+		}
+		ctx.SetColor(ColorFromHex("#777777"))
 		ctx.DrawText(c.leftAndRightPadding, 0, c.w, c.h, c.emptyText)
 	}
 }
@@ -588,7 +611,7 @@ func (c *TextBox) MouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey
 }
 
 func (c *TextBox) insertReturn(modifiers nuikey.KeyModifiers) bool {
-	if !c.multiline {
+	if !c.Multiline() {
 		return false
 	}
 
@@ -910,15 +933,13 @@ func (c *TextBox) OneLineHeight() int {
 	return fontHeight
 }
 
-/*
 func (c *TextBox) MinHeight() int {
-	return c.OneLineHeight() + 4 + c.TopBorderWidth() + c.BottomBorderWidth()
+	return c.OneLineHeight() + 4
 }
 
 func (c *TextBox) AcceptsReturn() bool {
-	return c.multiline
+	return c.Multiline()
 }
-*/
 
 /*func (c *TextBox) FontFamily() string {
 	return "robotomono"
