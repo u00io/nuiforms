@@ -23,6 +23,8 @@ func NewLabel(text string) *Label {
 	c.SetTypeName("Label")
 	c.SetOnPaint(c.onPaint)
 	c.SetText(text)
+	c.innerHeight = DefaultUiLineHeight
+	c.SetMinHeight(c.innerHeight)
 	c.updateInnerSize()
 	return &c
 }
@@ -106,10 +108,6 @@ func (c *Label) updateInnerSize() {
 		return
 	}
 	_ = textWidth
-
-	// Min height is DefaultUiLineHeight
-	c.innerHeight = DefaultUiLineHeight
-	c.SetMinHeight(c.innerHeight)
 
 	if !c.XExpandable() {
 		// if not expandable, set inner width to text width
