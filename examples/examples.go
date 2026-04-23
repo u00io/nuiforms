@@ -9,7 +9,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex09textbox"
 	"github.com/u00io/nuiforms/examples/ex10tabwidget"
 	"github.com/u00io/nuiforms/examples/ex11filemanager"
-	"github.com/u00io/nuiforms/examples/ex12cards"
+	"github.com/u00io/nuiforms/examples/ex12chart"
 	"github.com/u00io/nuiforms/examples/ex13table"
 	"github.com/u00io/nuiforms/examples/ex14popup"
 	"github.com/u00io/nuiforms/examples/ex15dialog"
@@ -69,9 +69,9 @@ func Run() {
 			ex11filemanager.Run(form)
 		})
 
-		addButton("Example 12 - Cards", func() {
+		addButton("Example 12 - Chart", func() {
 			form.Panel().RemoveAllWidgets()
-			ex12cards.Run(form)
+			ex12chart.Run(form)
 		})
 
 		addButton("Example 13 - Table Widget", func() {
