@@ -13,6 +13,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex13table"
 	"github.com/u00io/nuiforms/examples/ex14popup"
 	"github.com/u00io/nuiforms/examples/ex15dialog"
+	"github.com/u00io/nuiforms/examples/ex16numbox"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -89,7 +90,12 @@ func Run() {
 			ex15dialog.Run(form)
 		})
 
-		addButton("Example 16 - Light Theme", func() {
+		addButton("Example 16 - NumBox", func() {
+			form.Panel().RemoveAllWidgets()
+			ex16numbox.Run(form)
+		})
+
+		addButton("Example 17 - Light Theme", func() {
 			ui.ApplyLightTheme()
 		})
 
