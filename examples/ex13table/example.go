@@ -28,7 +28,8 @@ func TestImage() image.Image {
 
 type TableWidget struct {
 	ui.Widget
-	lvItem *ui.Table
+	lvItems1 *ui.Table
+	lvItems2 *ui.Table
 
 	lblInnerWidget    *ui.Label
 	txtBoxInnerWidget *ui.TextBox
@@ -38,52 +39,68 @@ func NewTableWidget() *TableWidget {
 	var c TableWidget
 	c.InitWidget()
 	c.SetTypeName("TableWidget")
-	c.lvItem = ui.NewTable()
-	c.lvItem.SetColumnCount(3)
-	c.lvItem.SetColumnWidth(0, 200)
-	c.lvItem.SetColumnWidth(1, 200)
-	c.lvItem.SetColumnWidth(2, 200)
-	c.lvItem.SetColumnName(0, "Col1")
-	c.lvItem.SetColumnName(1, "Col2")
-	c.lvItem.SetColumnName(2, "Col3")
-	c.lvItem.SetHeaderRowCount(2)
+	c.lvItems1 = ui.NewTable()
+	c.lvItems1.SetColumnCount(3)
+	c.lvItems1.SetColumnWidth(0, 200)
+	c.lvItems1.SetColumnWidth(1, 200)
+	c.lvItems1.SetColumnWidth(2, 200)
+	c.lvItems1.SetColumnName(0, "Col1")
+	c.lvItems1.SetColumnName(1, "Col2")
+	c.lvItems1.SetColumnName(2, "Col3")
+	c.lvItems1.SetHeaderRowCount(2)
 
-	c.lvItem.SetEditTriggerDoubleClick(true)
-	c.lvItem.SetEditTriggerEnter(true)
-	c.lvItem.SetEditTriggerF2(true)
+	c.lvItems1.SetEditTriggerDoubleClick(true)
+	c.lvItems1.SetEditTriggerEnter(true)
+	c.lvItems1.SetEditTriggerF2(true)
 
-	c.lvItem.SetColumnCellName2(1, 0, "Col1 Header")
-	c.lvItem.SetRowCount(10)
+	c.lvItems1.SetColumnCellName2(1, 0, "Col1 Header")
+	c.lvItems1.SetRowCount(10)
 	for i := 0; i < 10; i++ {
-		c.lvItem.SetCellText2(i, 0, "row "+fmt.Sprint(i))
-		c.lvItem.SetCellText2(i, 1, "col2 text")
-		c.lvItem.SetCellText2(i, 2, "col2 text")
+		c.lvItems1.SetCellText2(i, 0, "row "+fmt.Sprint(i))
+		c.lvItems1.SetCellText2(i, 1, "col2 text")
+		c.lvItems1.SetCellText2(i, 2, "col2 text")
 	}
 
-	c.lvItem.SetHeaderCellSpan2(0, 0, 2, 1)
-	c.lvItem.SetHeaderCellSpan2(0, 1, 1, 2)
+	c.lvItems1.SetHeaderCellSpan2(0, 0, 2, 1)
+	c.lvItems1.SetHeaderCellSpan2(0, 1, 1, 2)
 
-	c.lvItem.SetColumnCellName2(0, 1, "SPANNED COLUMN")
-	c.lvItem.SetColumnCellName2(1, 1, "COL1 HEADER")
-	c.lvItem.SetColumnCellName2(1, 2, "COL2 HEADER")
+	c.lvItems1.SetColumnCellName2(0, 1, "SPANNED COLUMN")
+	c.lvItems1.SetColumnCellName2(1, 1, "COL1 HEADER")
+	c.lvItems1.SetColumnCellName2(1, 2, "COL2 HEADER")
 
-	c.AddWidgetOnGrid(c.lvItem, 0, 0)
+	c.AddWidgetOnGrid(c.lvItems1, 0, 0)
 	c.SetYExpandable(false)
 
 	c.lblInnerWidget = ui.NewLabel("This is an inner widget")
 	c.lblInnerWidget.SetBackgroundColor(color.RGBA{R: 90, G: 90, B: 90, A: 255})
 	c.lblInnerWidget.SetAutoFillBackground(true)
-	c.lvItem.AddWidgetOnTable(c.lblInnerWidget, 1, 1, 2, 2)
+	c.lvItems1.AddWidgetOnTable(c.lblInnerWidget, 1, 1, 2, 2)
 
 	c.txtBoxInnerWidget = ui.NewTextBox()
 	c.txtBoxInnerWidget.SetText("This is an inner TextBox")
-	c.lvItem.AddWidgetOnTable(c.txtBoxInnerWidget, 2, 5, 1, 1)
+	c.lvItems1.AddWidgetOnTable(c.txtBoxInnerWidget, 2, 5, 1, 1)
 
-	c.lvItem.SetCellImage(5, 0, TestImage(), 32)
+	c.lvItems1.SetCellImage(5, 0, TestImage(), 32)
 
-	c.lvItem.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	c.lvItems1.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		return false
 	})
+
+	c.lvItems2 = ui.NewTable()
+	c.lvItems2.SetColumnCount(3)
+	c.lvItems2.SetColumnWidth(0, 200)
+	c.lvItems2.SetColumnWidth(1, 200)
+	c.lvItems2.SetColumnWidth(2, 200)
+	c.lvItems2.SetColumnName(0, "Col1")
+	c.lvItems2.SetColumnName(1, "Col2")
+	c.lvItems2.SetColumnName(2, "Col3")
+	c.lvItems2.SetRowCount(10)
+	for i := 0; i < 10; i++ {
+		c.lvItems2.SetCellText2(i, 0, "row "+fmt.Sprint(i))
+		c.lvItems2.SetCellText2(i, 1, "col2 text")
+		c.lvItems2.SetCellText2(i, 2, "col2 text")
+	}
+	c.AddWidgetOnGrid(c.lvItems2, 1, 0)
 
 	return &c
 }
