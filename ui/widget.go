@@ -2341,9 +2341,49 @@ func (c *Widget) ClearLayoutCache() {
 }
 
 type uiNode struct {
-	XMLName xml.Name
-	Attrs   []xml.Attr `xml:",any,attr"`
-	Nodes   []uiNode   `xml:",any"`
+	XMLName   xml.Name
+	Attrs     []xml.Attr `xml:",any,attr"`
+	Nodes     []uiNode   `xml:",any"`
+	InnerText string     `xml:",chardata"`
+}
+
+func (c *uiNode) GetChildByName(name string) *uiNode {
+	for index, child := range c.Nodes {
+		if child.XMLName.Local == name {
+			return &c.Nodes[index]
+		}
+	}
+	return nil
+}
+
+func (c *uiNode) GetAttrByName(name string) *xml.Attr {
+	for index, attr := range c.Attrs {
+		if attr.Name.Local == name {
+			return &c.Attrs[index]
+		}
+	}
+	return nil
+}
+
+func (c *uiNode) GetAttrValueByName(name string, defaultValue string) string {
+	for _, attr := range c.Attrs {
+		if attr.Name.Local == name {
+			return attr.Value
+		}
+	}
+	return defaultValue
+}
+
+func (c *uiNode) GetAttrValueByNameInt(name string, defaultValue int) int {
+	for _, attr := range c.Attrs {
+		if attr.Name.Local == name {
+			if intValue, err := strconv.Atoi(attr.Value); err == nil {
+				return intValue
+			}
+			return defaultValue
+		}
+	}
+	return defaultValue
 }
 
 func (c *Widget) SetLayout(layoutAsXml string, eventProcessor interface{}, widgets map[string]Widgeter) error {
@@ -2391,6 +2431,10 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		w = NewComboBox()
 	case "table":
 		w = NewTable()
+		{
+			table := w.(*Table)
+			table.TableSetLayoutXml(n)
+		}
 	case "tabwidget":
 		w = NewTabWidget()
 	case "scrollarea":

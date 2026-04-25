@@ -188,6 +188,52 @@ func NewTable() *Table {
 	return &c
 }
 
+func (c *Table) TableSetLayoutXml(n *uiNode) {
+	// columns
+	columnsNode := n.GetChildByName("columns")
+	if columnsNode != nil {
+		type columnInfo struct {
+			text  string
+			width int
+		}
+		columnsInfos := make([]*columnInfo, 0)
+		columnIndex := 0
+		for _, columnNode := range columnsNode.Nodes {
+			if columnNode.XMLName.Local == "column" {
+				var colInfo columnInfo
+				colInfo.text = columnNode.GetAttrValueByName("text", "")
+				colInfo.width = columnNode.GetAttrValueByNameInt("width", c.defaultColumnWidth)
+				columnsInfos = append(columnsInfos, &colInfo)
+				columnIndex++
+			}
+		}
+
+		c.SetColumnCount(columnIndex)
+		for index, colInfo := range columnsInfos {
+			c.SetColumnName(index, colInfo.text)
+			c.SetColumnWidth(index, colInfo.width)
+		}
+	}
+
+	rowsNode := n.GetChildByName("rows")
+	if rowsNode != nil {
+		rowIndex := 0
+		for _, rowNode := range rowsNode.Nodes {
+			if rowNode.XMLName.Local == "row" {
+				cellIndex := 0
+				for _, cellNode := range rowNode.Nodes {
+					if cellNode.XMLName.Local == "cell" {
+						c.SetCellText2(rowIndex, cellIndex, cellNode.InnerText)
+						cellIndex++
+					}
+				}
+				rowIndex++
+			}
+		}
+		c.SetRowCount(rowIndex)
+	}
+}
+
 func (c *Table) SetRowHeight(height int) {
 	c.rowHeight1 = height
 	c.updateInnerSize()
