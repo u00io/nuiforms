@@ -69,6 +69,8 @@ func ColorToHex(col color.Color) string {
 	return fmt.Sprintf("#%02X%02X%02X%02X", uint8(r>>8), uint8(g>>8), uint8(b>>8), uint8(a>>8))
 }
 
+const DefaultFontSize = 16.0
+
 func init() {
 	Theme = make(map[string]interface{})
 
@@ -83,7 +85,7 @@ func init() {
 	ApplyDarkTheme()
 
 	Theme["fontFamily"] = "robotomono"
-	Theme["fontSize"] = 18
+	Theme["fontSize"] = DefaultFontSize
 }
 
 func ThemeBackgroundColorDarkTheme(elevation int, role string) color.RGBA {
@@ -207,7 +209,7 @@ func ThemeFontSize() float64 {
 			return fontSize
 		}
 	}
-	return 18.0 // Default font size
+	return DefaultFontSize
 }
 
 func GetThemeColor(name string, defaultColor color.RGBA) color.RGBA {

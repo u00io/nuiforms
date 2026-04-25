@@ -355,6 +355,7 @@ func (c *Form) processMouseMove(x int, y int) {
 	}
 
 	if c.lastMouseCursor != newCursor {
+		// fmt.Println("Set mouse cursor:", newCursor)
 		c.wnd.SetMouseCursor(newCursor)
 		c.lastMouseCursor = newCursor
 	}

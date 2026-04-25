@@ -1,7 +1,7 @@
 package examples
 
 import (
-	"github.com/u00io/nuiforms/examples/ex00layout"
+	"github.com/u00io/nuiforms/examples/ex00gallery"
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02label"
 	"github.com/u00io/nuiforms/examples/ex03textbox"
@@ -30,9 +30,9 @@ func Run() {
 			form.Panel().AddWidgetOnGrid(btn, form.Panel().NextGridRow(), 0)
 		}
 
-		addButton("Example 00 - Layouts", func() {
+		addButton("GALLERY", func() {
 			form.Panel().RemoveAllWidgets()
-			ex00layout.Run(form)
+			ex00gallery.Run(form)
 		})
 
 		addButton("Example 01 - Base Form", func() {

@@ -223,7 +223,7 @@ func (c *Table) TableSetLayoutXml(n *uiNode) {
 				cellIndex := 0
 				for _, cellNode := range rowNode.Nodes {
 					if cellNode.XMLName.Local == "cell" {
-						c.SetCellText2(rowIndex, cellIndex, cellNode.InnerText)
+						c.SetCellText2(rowIndex, cellIndex, cellNode.GetAttrValueByName("text", ""))
 						cellIndex++
 					}
 				}

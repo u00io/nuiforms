@@ -2430,13 +2430,17 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 	case "combobox":
 		w = NewComboBox()
 	case "table":
-		w = NewTable()
 		{
+			w = NewTable()
 			table := w.(*Table)
 			table.TableSetLayoutXml(n)
 		}
 	case "tabwidget":
-		w = NewTabWidget()
+		{
+			w = NewTabWidget()
+			tabWidget := w.(*TabWidget)
+			tabWidget.SetLayoutXml(n)
+		}
 	case "scrollarea":
 		w = NewScrollArea()
 	case "widget":
@@ -2465,7 +2469,9 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		return
 	}
 
-	parent.AddWidgetOnGrid(w, row, col)
+	if parent != nil {
+		parent.AddWidgetOnGrid(w, row, col)
+	}
 
 	// Set attributes - only after adding to parent
 	for _, attr := range n.Attrs {
@@ -2482,12 +2488,14 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 				}
 			}
 
-			// Get function by name from eventProcessor
-			method := reflect.ValueOf(eventProcessor).MethodByName(attr.Value)
-			if method.IsValid() {
-				w.SetPropFunction(attr.Name.Local, method.Interface().(func()))
-			} else {
-				fmt.Printf("Event handler %s not found in eventProcessor\n", attr.Value)
+			if eventProcessor != nil {
+				// Get function by name from eventProcessor
+				method := reflect.ValueOf(eventProcessor).MethodByName(attr.Value)
+				if method.IsValid() {
+					w.SetPropFunction(attr.Name.Local, method.Interface().(func()))
+				} else {
+					fmt.Printf("Event handler %s not found in eventProcessor\n", attr.Value)
+				}
 			}
 		} else {
 			w.SetProp(attr.Name.Local, attr.Value)

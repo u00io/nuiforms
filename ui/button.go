@@ -22,7 +22,7 @@ func NewButton(text string) *Button {
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 	c.SetCanBeFocused(true)
-	c.SetElevation(1)
+	c.SetElevation(3)
 
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
@@ -31,8 +31,6 @@ func NewButton(text string) *Button {
 
 	c.SetText(text)
 	c.SetProp("padding", 6)
-
-	//c.Widget.allowCallMouseClickCallback = false
 
 	return &c
 }
@@ -45,16 +43,6 @@ func (c *Button) SetText(text string) {
 	c.SetProp("text", text)
 	UpdateMainForm()
 }
-
-/*func (c *Button) SetOnButtonClick(fn func()) {
-	c.SetPropFunction("onclick", fn)
-}
-
-func (c *Button) Press() {
-	if f := c.GetPropFunction("onclick"); f != nil {
-		f()
-	}
-}*/
 
 func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyEnter || key == nuikey.KeySpace {
