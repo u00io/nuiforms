@@ -17,6 +17,9 @@ const (
 func NewButton(text string) *Button {
 	var c Button
 	c.InitWidget()
+
+	c.dontAllowOnClickIfDisabled = true
+
 	c.SetTypeName("Button")
 	c.SetMinSize(DefaultButtonMinWidth, DefaultUiLineHeight)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
@@ -54,10 +57,9 @@ func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Button) draw(cnv *Canvas) {
-
 	backColor := c.BackgroundColor()
 
-	if c.IsHovered() && c.enabled {
+	if c.IsHovered() && c.Enabled() {
 		backColor = c.BackgroundColorWithAddElevation(1)
 	}
 	if c.pressed {
@@ -68,9 +70,14 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetColor(backColor)
 	cnv.FillRoundedRect(0, 0, c.Width(), c.Height(), 5)
 
+	foreColor := c.ForegroundColor()
+	if !c.Enabled() {
+		foreColor = c.ForegroundColorDisabled()
+	}
+
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(c.ForegroundColor())
+	cnv.SetColor(foreColor)
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
@@ -78,6 +85,14 @@ func (c *Button) draw(cnv *Canvas) {
 
 func (c *Button) ProcessPropChange(key string, value interface{}) {
 	padding := c.GetPropInt("padding", 6)
+	if key == "enabled" {
+		if c.Enabled() {
+			c.SetMouseCursor(nuimouse.MouseCursorPointer)
+		} else {
+			c.SetMouseCursor(nuimouse.MouseCursorNotDefined)
+		}
+	}
+
 	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
 		return
@@ -99,7 +114,7 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
-	if !c.enabled {
+	if !c.Enabled() {
 		return false
 	}
 	c.pressed = true
@@ -107,7 +122,7 @@ func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y in
 }
 
 func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
-	if !c.enabled {
+	if !c.Enabled() {
 		return false
 	}
 	c.pressed = false

@@ -7,13 +7,7 @@ import (
 
 var Theme map[string]interface{}
 
-/*var DefaultSurfaceBackground = ColorFromHex("#121212")
-var DefaultPrimaryBackground = ColorFromHex("#0D47A1")
-var DefaultSecondaryBackground = ColorFromHex("#26C6DA")
-
-var DefaultSurface = ColorFromHex("#FFFFFF")
-var DefaultPrimary = ColorFromHex("#FFFFFF")
-var DefaultSecondary = ColorFromHex("#FFFFFF")*/
+const DefaultFontSize = 17.0
 
 var IsDarkTheme = true
 
@@ -68,8 +62,6 @@ func ColorToHex(col color.Color) string {
 	r, g, b, a := col.RGBA()
 	return fmt.Sprintf("#%02X%02X%02X%02X", uint8(r>>8), uint8(g>>8), uint8(b>>8), uint8(a>>8))
 }
-
-const DefaultFontSize = 16.0
 
 func init() {
 	Theme = make(map[string]interface{})
@@ -191,6 +183,10 @@ func ThemeForegroundColor(role string) color.RGBA {
 			return fgColor
 		}
 	}
+	return ColorFromHex("#777777")
+}
+
+func ThemeForegroundColorDisabled() color.RGBA {
 	return ColorFromHex("#777777")
 }
 

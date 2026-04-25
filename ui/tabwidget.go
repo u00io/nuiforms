@@ -60,15 +60,14 @@ func (c *TabWidget) onTabChanged(index int) {
 	c.rebuildInterface()
 }
 
-func (c *TabWidget) SetLayoutXml(n *uiNode) {
+func (c *TabWidget) SetLayoutXml(n *uiNode, eventProcessor interface{}, widgets map[string]Widgeter) {
 	for _, child := range n.Nodes {
 		if child.XMLName.Local == "tab" {
 			childNode := child
 			childNode.XMLName.Local = "panel"
 			name := child.GetAttrValueByName("text", "")
 			wContent := NewPanel()
-			wContent.buildNode(&childNode, wContent, 0, 0, nil, nil)
-			//wContent.AddWidgetOnGrid(NewLabel("123123"), 0, 0)
+			wContent.buildNode(&childNode, wContent, 0, 0, eventProcessor, widgets)
 			c.AddPage(name, wContent)
 		}
 	}

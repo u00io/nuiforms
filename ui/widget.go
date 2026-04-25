@@ -72,7 +72,7 @@ type Widget struct {
 	scrollingYInitial         int
 	scrollingYInitialMousePos int
 
-	enabled bool
+	// enabled bool
 
 	props          map[string]interface{}
 	propsFunctions map[string]func()
@@ -88,6 +88,8 @@ type Widget struct {
 	canBeFocused bool
 
 	allowCallMouseClickCallback bool
+
+	dontAllowOnClickIfDisabled bool
 
 	// temp
 	lastMouseX       int // After scrolling
@@ -242,7 +244,7 @@ func (c *Widget) InitWidget() {
 	c.widgets = make([]Widgeter, 0)
 	c.closeByClickOutside = true
 
-	c.enabled = true
+	c.SetProp("enabled", true)
 	// c.backgroundColor = color.RGBA{R: 0, G: 0, B: 0, A: 0}
 	c.PopupWidgets = make([]Widgeter, 0)
 }
@@ -257,11 +259,11 @@ func (c *Widget) SetAutoFillBackground(autoFill bool) {
 }
 
 func (c *Widget) Enabled() bool {
-	return c.enabled
+	return c.GetPropBool("enabled", true)
 }
 
 func (c *Widget) SetEnabled(enabled bool) {
-	c.enabled = enabled
+	c.SetProp("enabled", enabled)
 }
 
 func (c *Widget) FullPath() []string {
@@ -1295,8 +1297,10 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 
 	f := c.GetPropFunction("onclick")
 	if f != nil {
-		f()
-		processed = true
+		if c.Enabled() || (!c.dontAllowOnClickIfDisabled) {
+			f()
+			processed = true
+		}
 	}
 
 	return processed
@@ -2250,6 +2254,10 @@ func (c *Widget) ForegroundColor() color.Color {
 	return ThemeForegroundColor(c.Role())
 }
 
+func (c *Widget) ForegroundColorDisabled() color.Color {
+	return ThemeForegroundColorDisabled()
+}
+
 func (c *Widget) CurrentElevation() int {
 	summedElevation := 0
 	for _, wId := range c.FullPath() {
@@ -2439,7 +2447,7 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		{
 			w = NewTabWidget()
 			tabWidget := w.(*TabWidget)
-			tabWidget.SetLayoutXml(n)
+			tabWidget.SetLayoutXml(n, eventProcessor, widgets)
 		}
 	case "scrollarea":
 		w = NewScrollArea()
@@ -2480,6 +2488,11 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 			continue
 		}
 		if strings.HasPrefix(attr.Name.Local, "on") {
+			fmt.Println("Set ON:", attr.Value)
+			if attr.Value == "BtnUsualButton" {
+				fmt.Println("Found BtnUsualButton event handler")
+			}
+
 			// If event processor is map[string]func(), then get function from map
 			if eventProcessorMap, ok := eventProcessor.(map[string]func()); ok {
 				if eventHandler, ok := eventProcessorMap[attr.Value]; ok {

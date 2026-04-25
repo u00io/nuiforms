@@ -24,8 +24,8 @@ func NewLayoutExample() *LayoutExample {
 					<column>
 						<label text="Toolbar"/>
 						<row padding="0">
-							<button text="Usual Button"/>
-							<button text="Disabled Button"/>
+							<button text="Usual Button" onclick="BtnUsualButton"/>
+							<button text="Disabled Button" enabled="false" onclick="BtnDisabledButton"/>
 							<hspacer/>
 						</row>
 					</column>
@@ -70,6 +70,14 @@ func (c *LayoutExample) BtnLightTheme() {
 
 func (c *LayoutExample) BtnDarkTheme() {
 	ui.ApplyDarkTheme()
+}
+
+func (c *LayoutExample) BtnUsualButton() {
+	ui.ShowMessageBox("Message", "You clicked the button!")
+}
+
+func (c *LayoutExample) BtnDisabledButton() {
+	ui.ShowMessageBox("Message", "You clicked the disabled button! How did you do that?")
 }
 
 func Run(form *ui.Form) {
