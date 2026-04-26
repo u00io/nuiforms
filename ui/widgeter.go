@@ -87,6 +87,9 @@ type Widgeter interface {
 	AddWidgetOnGrid(widget Widgeter, gridX, gridY int)
 	RemoveWidget(widget Widgeter)
 
+	AllChildren() []Widgeter
+	IsCanBeFocused() bool
+
 	IsVisible() bool
 
 	GridX() int
@@ -107,4 +110,6 @@ type Widgeter interface {
 	SetYExpandable(expandable bool)
 
 	ClearLayoutCache()
+
+	nextFocus()
 }

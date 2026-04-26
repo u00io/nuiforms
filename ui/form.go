@@ -396,11 +396,20 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 	}
 
 	if c.focusedWidget != nil {
-		c.focusedWidget.ProcessKeyDown(keyCode, mods)
-		c.Update()
-		return
+		if c.focusedWidget.ProcessKeyDown(keyCode, mods) {
+			c.Update()
+			return
+		}
 	}
-	c.topWidget.ProcessKeyDown(keyCode, mods)
+	if !c.topWidget.ProcessKeyDown(keyCode, mods) {
+		if keyCode == nuikey.KeyTab {
+			if len(c.topWidget.PopupWidgets) > 0 {
+				c.topWidget.PopupWidgets[0].nextFocus()
+			} else {
+				c.topWidget.nextFocus()
+			}
+		}
+	}
 	c.Update()
 }
 

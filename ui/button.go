@@ -51,9 +51,10 @@ func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyEnter || key == nuikey.KeySpace {
 		if f := c.GetPropFunction("onclick"); f != nil {
 			f()
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (c *Button) draw(cnv *Canvas) {
@@ -81,6 +82,11 @@ func (c *Button) draw(cnv *Canvas) {
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
+
+	if c.IsFocused() {
+		cnv.SetColor(ColorFromHex("#0088AA"))
+		cnv.DrawRoundedRect(1, 1, c.Width()-2, c.Height()-2, 4)
+	}
 }
 
 func (c *Button) ProcessPropChange(key string, value interface{}) {

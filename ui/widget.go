@@ -2527,3 +2527,52 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		}
 	}
 }
+
+func (c *Widget) AllChildren() []Widgeter {
+	var all []Widgeter
+	for _, w := range c.widgets {
+		all = append(all, w)
+		if len(w.Widgets()) > 0 {
+			all = append(all, w.AllChildren()...)
+		}
+	}
+	return all
+}
+
+func (c *Widget) nextFocus() {
+	children := c.AllChildren()
+	if len(children) == 0 {
+		return
+	}
+
+	focusedWidgetIndex := -1
+	var focusableWidgets []Widgeter
+	for i, w := range children {
+		if w.IsCanBeFocused() && w.IsVisible() {
+			focusableWidgets = append(focusableWidgets, w)
+			if MainForm.FocusedWidget().Id() == w.Id() {
+				focusedWidgetIndex = i
+			}
+		}
+	}
+
+	if len(focusableWidgets) == 0 {
+		return
+	}
+
+	nextIndexToFocus := focusedWidgetIndex
+	for {
+		nextIndexToFocus++
+		if nextIndexToFocus >= len(focusableWidgets) {
+			nextIndexToFocus = 0
+		}
+		if nextIndexToFocus == focusedWidgetIndex {
+			return
+		}
+		if focusableWidgets[nextIndexToFocus].IsVisible() {
+			focusableWidgets[nextIndexToFocus].Focus()
+			return
+		}
+	}
+
+}
