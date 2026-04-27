@@ -111,5 +111,6 @@ type Widgeter interface {
 
 	ClearLayoutCache()
 
-	nextFocus()
+	nextFocus(reverse bool)
+	nextFocusByDirection(dir string)
 }

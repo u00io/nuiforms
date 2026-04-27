@@ -403,10 +403,39 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 	}
 	if !c.topWidget.ProcessKeyDown(keyCode, mods) {
 		if keyCode == nuikey.KeyTab {
+			reverse := mods.Shift
 			if len(c.topWidget.PopupWidgets) > 0 {
-				c.topWidget.PopupWidgets[0].nextFocus()
+				c.topWidget.PopupWidgets[0].nextFocus(reverse)
 			} else {
-				c.topWidget.nextFocus()
+				c.topWidget.nextFocus(reverse)
+			}
+		}
+		if keyCode == nuikey.KeyArrowUp {
+			if len(c.topWidget.PopupWidgets) > 0 {
+				c.topWidget.PopupWidgets[0].nextFocusByDirection("up")
+			} else {
+				c.topWidget.nextFocusByDirection("up")
+			}
+		}
+		if keyCode == nuikey.KeyArrowDown {
+			if len(c.topWidget.PopupWidgets) > 0 {
+				c.topWidget.PopupWidgets[0].nextFocusByDirection("down")
+			} else {
+				c.topWidget.nextFocusByDirection("down")
+			}
+		}
+		if keyCode == nuikey.KeyArrowLeft {
+			if len(c.topWidget.PopupWidgets) > 0 {
+				c.topWidget.PopupWidgets[0].nextFocusByDirection("left")
+			} else {
+				c.topWidget.nextFocusByDirection("left")
+			}
+		}
+		if keyCode == nuikey.KeyArrowRight {
+			if len(c.topWidget.PopupWidgets) > 0 {
+				c.topWidget.PopupWidgets[0].nextFocusByDirection("right")
+			} else {
+				c.topWidget.nextFocusByDirection("right")
 			}
 		}
 	}

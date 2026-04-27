@@ -2539,7 +2539,8 @@ func (c *Widget) AllChildren() []Widgeter {
 	return all
 }
 
-func (c *Widget) nextFocus() {
+func (c *Widget) nextFocus(reverse bool) {
+	fmt.Println("Widget::netFocus")
 	children := c.AllChildren()
 	if len(children) == 0 {
 		return
@@ -2547,13 +2548,19 @@ func (c *Widget) nextFocus() {
 
 	focusedWidgetIndex := -1
 	var focusableWidgets []Widgeter
-	for i, w := range children {
+	for _, w := range children {
 		if w.IsCanBeFocused() && w.IsVisible() {
 			focusableWidgets = append(focusableWidgets, w)
 			if MainForm.FocusedWidget().Id() == w.Id() {
-				focusedWidgetIndex = i
+				focusedWidgetIndex = len(focusableWidgets) - 1
 			}
 		}
+	}
+
+	fmt.Println("Focused widget index:", focusedWidgetIndex)
+
+	for i, w := range focusableWidgets {
+		fmt.Println("Focusable widget:", i, w.Id(), "Type:", w.TypeName())
 	}
 
 	if len(focusableWidgets) == 0 {
@@ -2562,9 +2569,16 @@ func (c *Widget) nextFocus() {
 
 	nextIndexToFocus := focusedWidgetIndex
 	for {
-		nextIndexToFocus++
-		if nextIndexToFocus >= len(focusableWidgets) {
-			nextIndexToFocus = 0
+		if reverse {
+			nextIndexToFocus--
+			if nextIndexToFocus < 0 {
+				nextIndexToFocus = len(focusableWidgets) - 1
+			}
+		} else {
+			nextIndexToFocus++
+			if nextIndexToFocus >= len(focusableWidgets) {
+				nextIndexToFocus = 0
+			}
 		}
 		if nextIndexToFocus == focusedWidgetIndex {
 			return
@@ -2575,4 +2589,66 @@ func (c *Widget) nextFocus() {
 		}
 	}
 
+}
+
+// left, right, up, down focus navigation
+func (c *Widget) nextFocusByDirection(dir string) {
+	children := c.AllChildren()
+	if len(children) == 0 {
+		return
+	}
+
+	focusWidget := MainForm.FocusedWidget()
+
+	var focusableWidgets []Widgeter
+	for _, w := range children {
+		if w.IsCanBeFocused() && w.IsVisible() {
+			focusableWidgets = append(focusableWidgets, w)
+		}
+	}
+	focusedWidgetClientX, focusedWidgetClientY := focusWidget.RectClientAreaOnWindow()
+	focusXAvg := focusedWidgetClientX + focusWidget.Width()/2
+	focusYAvg := focusedWidgetClientY + focusWidget.Height()/2
+
+	// find nearest focusable widget above the currently focused widget
+	var nearestWidget Widgeter
+	minDistance := 1000000000.0
+	for _, w := range focusableWidgets {
+		if w.Id() == focusWidget.Id() {
+			continue
+		}
+		wClientX, wClientY := w.RectClientAreaOnWindow()
+		wXAvg := wClientX + w.Width()/2
+		wYAvg := wClientY + w.Height()/2
+
+		distance := math.Sqrt(math.Pow(float64(wXAvg-focusXAvg), 2) + math.Pow(float64(wYAvg-focusYAvg), 2))
+		if dir == "up" && wYAvg < focusYAvg && distance < minDistance {
+			if wXAvg > focusedWidgetClientX && wXAvg < focusedWidgetClientX+focusWidget.Width() {
+				minDistance = distance
+				nearestWidget = w
+			}
+		}
+		if dir == "down" && wYAvg > focusYAvg && distance < minDistance {
+			if wXAvg > focusedWidgetClientX && wXAvg < focusedWidgetClientX+focusWidget.Width() {
+				minDistance = distance
+				nearestWidget = w
+			}
+		}
+		if dir == "left" && wXAvg < focusXAvg && distance < minDistance {
+			if wYAvg > focusedWidgetClientY && wYAvg < focusedWidgetClientY+focusWidget.Height() {
+				minDistance = distance
+				nearestWidget = w
+			}
+		}
+		if dir == "right" && wXAvg > focusXAvg && distance < minDistance {
+			if wYAvg > focusedWidgetClientY && wYAvg < focusedWidgetClientY+focusWidget.Height() {
+				minDistance = distance
+				nearestWidget = w
+			}
+		}
+	}
+
+	if nearestWidget != nil {
+		nearestWidget.Focus()
+	}
 }
