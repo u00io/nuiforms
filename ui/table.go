@@ -594,6 +594,11 @@ func (c *Table) SetCellSelectionDisabled(row int, col int, disabled bool) {
 }
 
 func (c *Table) SetCurrentCell2(row int, col int) {
+	MainForm.LayoutingBlockPush()
+	defer MainForm.LayoutingBlockPop()
+	MainForm.UpdateBlockPush()
+	defer MainForm.UpdateBlockPop()
+
 	cellObj := c.getCellObj(row, col)
 	if cellObj.selectionDisabled {
 		return
@@ -679,6 +684,11 @@ func (c *Table) GetCellData2(row int, col int) interface{} {
 }
 
 func (c *Table) ScrollToCell2(row, col int) {
+	MainForm.LayoutingBlockPush()
+	defer MainForm.LayoutingBlockPop()
+	MainForm.UpdateBlockPush()
+	defer MainForm.UpdateBlockPop()
+
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
@@ -694,16 +704,21 @@ func (c *Table) ScrollToCell2(row, col int) {
 }
 
 func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+	MainForm.LayoutingBlockPush()
+	defer MainForm.LayoutingBlockPop()
+	MainForm.UpdateBlockPush()
+	defer MainForm.UpdateBlockPop()
+
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
-		fmt.Println("Header column border clicked:", headerColumnBorder)
+		// fmt.Println("Header column border clicked:", headerColumnBorder)
 		c.columnResizingIndex = headerColumnBorder
 		return true
 	}
 
 	headerColumn := c.headerColumnByPosition(x, y)
 	if headerColumn >= 0 {
-		fmt.Println("Header column clicked:", headerColumn)
+		// fmt.Println("Header column clicked:", headerColumn)
 		if c.onColumnClick != nil {
 			c.onColumnClick(headerColumn)
 		}
@@ -766,6 +781,11 @@ func (c *Table) onFocused() {
 }
 
 func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	MainForm.LayoutingBlockPush()
+	defer MainForm.LayoutingBlockPop()
+	MainForm.UpdateBlockPush()
+	defer MainForm.UpdateBlockPop()
+
 	processed := false
 
 	if c.onKeyDown != nil {

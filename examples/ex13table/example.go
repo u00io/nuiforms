@@ -2,6 +2,7 @@ package ex13table
 
 import (
 	_ "embed"
+	"fmt"
 	"image"
 	"image/png"
 	"strings"
@@ -33,22 +34,26 @@ func NewTableWidget() *TableWidget {
 	c.SetTypeName("TableWidget")
 
 	c.SetLayout(`
-		<table>
+		<table id="lvItems">
 			<columns>
 				<column text="ID" width="100" />
 				<column text="Name" width="200" />
 			</columns>
 			<rows>
 				<row>
-					<cell>1</cell>
-					<cell>John Doe</cell>
-				</row>
-				<row>
-					<cell>2</cell>
-					<cell>Jane Smith</cell>
+					<cell text="1"></cell>
+					<cell text="John Doe"></cell>
 				</row>
 			</rows>
 		</table>
 	`, &c, nil)
+
+	lvItems := c.FindWidgetByName("lvItems").(*ui.Table)
+	lvItems.SetRowCount(100)
+	for i := 0; i < 100; i++ {
+		lvItems.SetCellText2(i, 0, fmt.Sprint(i+1))
+		lvItems.SetCellText2(i, 1, "Name "+fmt.Sprint(i+1))
+	}
+
 	return &c
 }
