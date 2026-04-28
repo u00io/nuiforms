@@ -2243,7 +2243,16 @@ func (c *Widget) FontFamily() string {
 	return ThemeFontFamily()
 }
 
+func (c *Widget) SetFontSize(fontSize float64) {
+	c.SetProp("fontsize", fontSize)
+}
+
 func (c *Widget) FontSize() float64 {
+	if c.GetProp("fontsize") != nil {
+		if fontSize, ok := c.GetProp("fontsize").(float64); ok {
+			return fontSize
+		}
+	}
 	return ThemeFontSize()
 }
 

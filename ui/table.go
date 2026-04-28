@@ -800,16 +800,16 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		if c.currentCellX > 0 {
 			c.SetCurrentCell2(c.currentCellY, c.currentCellX-1)
 			UpdateMainForm()
-			processed = true
 		}
+		processed = true
 	}
 
 	if key == nuikey.KeyArrowRight {
 		if c.currentCellX < c.columnCount-1 {
 			c.SetCurrentCell2(c.currentCellY, c.currentCellX+1)
 			UpdateMainForm()
-			processed = true
 		}
+		processed = true
 	}
 
 	if key == nuikey.KeyArrowUp {
@@ -820,8 +820,8 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			}
 			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
 			UpdateMainForm()
-			processed = true
 		}
+		processed = true
 	}
 
 	if key == nuikey.KeyArrowDown {
@@ -832,8 +832,8 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			}
 			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
 			UpdateMainForm()
-			processed = true
 		}
+		processed = true
 	}
 
 	if key == nuikey.KeyHome {
