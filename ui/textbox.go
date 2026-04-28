@@ -365,10 +365,12 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		if err != nil {
 			return
 		}
-		cursorPosInPixels := charPos[c.cursorPosX]
-		curX := cursorPosInPixels - (c.cursorWidth / 2)
-		curY := yStaticOffset + c.cursorPosY*oneLineHeight
-		ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight, c.ForegroundColor())
+		if c.cursorPosX < len(charPos) {
+			cursorPosInPixels := charPos[c.cursorPosX]
+			curX := cursorPosInPixels - (c.cursorWidth / 2)
+			curY := yStaticOffset + c.cursorPosY*oneLineHeight
+			ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight, c.ForegroundColor())
+		}
 	}
 
 	if c.Text() == "" && c.Hint() != "" && !focus {
@@ -876,8 +878,15 @@ func (c *TextBox) modifyText(cmd textboxModifyCommand, modifiers nuikey.KeyModif
 	case textboxModifyCommandSetText:
 		{
 			lines = strings.Split(strings.Replace(data.(string), "\r", "", -1), "\n")
-			//curPosX = 0
-			//curPosY = 0
+
+			// Ensure cursor is in a valid position
+			if curPosY >= len(lines) {
+				curPosY = len(lines) - 1
+			}
+			runes := []rune(lines[curPosY])
+			if curPosX > len(runes) {
+				curPosX = len(runes)
+			}
 		}
 	case textboxModifyCommandInsertString:
 		{
