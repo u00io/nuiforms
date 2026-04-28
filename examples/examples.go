@@ -100,6 +100,6 @@ func Run() {
 		})
 
 		form.Panel().AddWidgetOnGrid(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
-		form.ExecMaximized()
+		form.Exec()
 	}
 }
