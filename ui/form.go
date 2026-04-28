@@ -156,6 +156,13 @@ func (c *Form) Size() (int, int) {
 	return c.width, c.height
 }
 
+func (c *Form) IsMaximized() bool {
+	if c.wnd != nil {
+		return c.wnd.IsMaximized()
+	}
+	return false
+}
+
 func (c *Form) SetOnGlobalKeyDown(onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool) {
 	c.onGlobalKeyDown = onGlobalKeyDown
 }
