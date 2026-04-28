@@ -14,8 +14,12 @@ import (
 )
 
 type Form struct {
-	wnd    nui.Window
-	title  string
+	wnd   nui.Window
+	title string
+
+	posX int
+	posY int
+
 	width  int
 	height int
 
@@ -41,6 +45,8 @@ type Form struct {
 
 	updateBlockStack    int
 	layoutingBlockStack int
+
+	OnClose func() bool
 }
 
 var MainForm *Form
@@ -102,6 +108,8 @@ func NewForm() *Form {
 	MainForm = &c
 
 	c.title = "Form"
+	c.posX = -1
+	c.posY = -1
 	c.width = 800
 	c.height = 600
 	topWidget := NewPanel()
@@ -135,6 +143,17 @@ func (c *Form) SetSize(width, height int) {
 	if c.wnd != nil {
 		c.wnd.Resize(width, height)
 	}
+}
+
+func (c *Form) Position() (int, int) {
+	if c.wnd != nil {
+		return c.wnd.PosX(), c.wnd.PosY()
+	}
+	return 0, 0
+}
+
+func (c *Form) Size() (int, int) {
+	return c.width, c.height
 }
 
 func (c *Form) SetOnGlobalKeyDown(onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool) {
@@ -172,6 +191,10 @@ func (c *Form) exec(maximazed bool) {
 	c.wnd.OnChar(c.processChar)
 	c.wnd.OnTimer(c.processTimer)
 	c.wnd.OnMove(c.processWindowMove)
+	c.wnd.OnCloseRequest(c.processWindowClose)
+	if c.posX >= 0 && c.posY >= 0 {
+		c.wnd.Move(c.posX, c.posY)
+	}
 
 	c.wnd.Show()
 	if maximazed {
@@ -213,6 +236,13 @@ func (c *Form) Update() {
 func (c *Form) forceUpdate() {
 	c.needUpdate = true
 	c.realUpdate()
+}
+
+func (c *Form) processWindowClose() bool {
+	if c.OnClose != nil {
+		return c.OnClose()
+	}
+	return true
 }
 
 func (c *Form) processPaint(rgba *image.RGBA) {
@@ -494,6 +524,14 @@ func (c *Form) processTimer() {
 
 func (c *Form) processWindowMove(x, y int) {
 	c.forceUpdate()
+}
+
+func (c *Form) Move(x, y int) {
+	c.posX = x
+	c.posY = y
+	if c.wnd != nil {
+		c.wnd.Move(x, y)
+	}
 }
 
 func (c *Form) freeMemory() {
