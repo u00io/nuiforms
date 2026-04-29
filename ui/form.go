@@ -59,6 +59,13 @@ func init() {
 	allwidgets = make(map[string]Widgeter)
 }
 
+func (c *Form) SystemHandle() any {
+	if c.wnd != nil {
+		return c.wnd.SystemHandle()
+	}
+	return nil
+}
+
 func UpdateMainForm() {
 	if MainForm != nil {
 		MainForm.Update()

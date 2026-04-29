@@ -55,5 +55,7 @@ func NewTableWidget() *TableWidget {
 		lvItems.SetCellText2(i, 1, "Name "+fmt.Sprint(i+1))
 	}
 
+	lvItems.SetColumnImage(0, TestImage(), 30)
+
 	return &c
 }

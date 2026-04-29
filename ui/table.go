@@ -45,6 +45,7 @@ type Table struct {
 	onSelectionChanged  func(row int, col int)
 	onCellChanged       func(row int, col int, text string, data interface{}) bool
 	onCellMouseDblClick func()
+	onCellMouseDown     func(button nuimouse.MouseButton, row int, col int, x int, y int, mods nuikey.KeyModifiers)
 
 	headerWidget  *tableHeader
 	editorTextBox *TextBox
@@ -79,23 +80,32 @@ type tableHeaderRow struct {
 }
 
 type tableHeaderCell struct {
-	name    string
+	name string
+
+	image      image.Image
+	imageWidth int
+
 	spanCol int
 	spanRow int
 }
 
-func (c tableHeaderCell) SpanCol() int {
+func (c *tableHeaderCell) SpanCol() int {
 	if c.spanCol <= 0 {
 		return 1
 	}
 	return c.spanCol
 }
 
-func (c tableHeaderCell) SpanRow() int {
+func (c *tableHeaderCell) SpanRow() int {
 	if c.spanRow <= 0 {
 		return 1
 	}
 	return c.spanRow
+}
+
+func (c *tableHeaderCell) setImage(img image.Image, imgWidth int) {
+	c.image = img
+	c.imageWidth = imgWidth
 }
 
 type tableCell struct {
@@ -437,6 +447,15 @@ func (c *Table) SetColumnWidth(col int, width int) {
 	}
 }
 
+func (c *Table) SetColumnImage(col int, img image.Image, imgWidth int) {
+	if col < 0 || col >= c.columnCount {
+		return
+	}
+	colHeader := c.headerCell2(0, col)
+	colHeader.setImage(img, imgWidth)
+	UpdateMainForm()
+}
+
 func (c *Table) ColumnWidth(col int) int {
 	if col < 0 || col >= c.columnCount {
 		return c.defaultColumnWidth
@@ -730,6 +749,11 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 		c.SetCurrentCell2(row, col)
 		//fmt.Println("Cell clicked:", col, row, " at ", x, y)
 	}
+
+	if c.onCellMouseDown != nil {
+		c.onCellMouseDown(button, row, col, x, y, mods)
+	}
+
 	return true
 }
 
@@ -747,6 +771,10 @@ type EventTableCellMouseDblClick struct {
 
 func (c *Table) SetOnCellMouseDblClick(callback func()) {
 	c.onCellMouseDblClick = callback
+}
+
+func (c *Table) SetOnCellMouseDown(callback func(button nuimouse.MouseButton, row int, col int, x int, y int, mods nuikey.KeyModifiers)) {
+	c.onCellMouseDown = callback
 }
 
 func (c *Table) onMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
@@ -1173,12 +1201,37 @@ func (c *Table) drawPost(cnv *Canvas) {
 
 			// Header Background
 			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColorWithAddElevation(3))
+
+			imgWidth := 0
+			imgHeight := c.rowHeight1 - c.cellPadding*2
+			if headerCell != nil && headerCell.image != nil {
+				imgWidth = headerCell.imageWidth
+				b := headerCell.image.Bounds()
+				aspRatioImg := float64(b.Max.X) / float64(b.Max.Y)
+				aspRationWidget := float64(imgWidth) / float64(imgHeight)
+				if aspRatioImg > aspRationWidget {
+					image := resize.Resize(uint(imgWidth), 0, headerCell.image, resize.Bicubic)
+					b := image.Bounds()
+					offsetX := (imgWidth-b.Max.X)/2 + x
+					offsetY := (imgHeight-b.Max.Y)/2 + y
+					cnv.DrawImage(offsetX+c.cellPadding, offsetY+c.cellPadding, image)
+				} else {
+					image := resize.Resize(0, uint(imgHeight), headerCell.image, resize.Bicubic)
+					b := image.Bounds()
+					offsetX := (imgWidth-b.Max.X)/2 + x
+					offsetY := (imgHeight-b.Max.Y)/2 + y
+					cnv.DrawImage(offsetX+c.cellPadding, offsetY+c.cellPadding, image)
+				}
+
+				imgWidth += c.cellPadding
+			}
+
 			cnv.SetHAlign(HAlignLeft)
 			cnv.SetVAlign(VAlignCenter)
 			cnv.SetColor(c.ForegroundColor())
 			cnv.SetFontFamily(c.FontFamily())
 			cnv.SetFontSize(c.FontSize())
-			cnv.DrawText(x+c.cellPadding, y+c.cellPadding, cellWidth-c.cellPadding*2, cellHeight-c.cellPadding*2, headerCell.name)
+			cnv.DrawText(x+c.cellPadding+imgWidth, y+c.cellPadding, cellWidth-c.cellPadding*2-imgWidth, cellHeight-c.cellPadding*2, headerCell.name)
 
 			cnv.SetColor(c.CellBorderColor())
 			cnv.DrawRect(x, y, cellWidth+1, cellHeight+1)
