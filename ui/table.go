@@ -121,6 +121,8 @@ type tableCell struct {
 	image      image.Image
 	imageWidth int
 
+	contraction bool
+
 	editTriggerDoubleClick bool
 	editTriggerEnter       bool
 	editTriggerF2          bool
@@ -555,6 +557,12 @@ func (c *Table) SetCellImage(row int, col int, img image.Image, imgWidth int) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.image = img
 	cellObj.imageWidth = imgWidth
+	UpdateMainForm()
+}
+
+func (c *Table) SetCellContraction(row int, col int, contraction bool) {
+	cellObj := c.getCellObj(row, col)
+	cellObj.contraction = contraction
 	UpdateMainForm()
 }
 
@@ -1131,8 +1139,41 @@ func (c *Table) draw(cnv *Canvas) {
 						}
 					}
 					cnv.SetColor(col)
+
+					drawContractionDots := false
+					if cellObj != nil && cellObj.contraction {
+						textW, textH, err := MeasureText(c.FontFamily(), c.FontSize(), cellText)
+						if err == nil {
+							_ = textH
+							if textW > columnWidth-c.cellPadding*2-imgWidth {
+								drawContractionDots = true
+							}
+						}
+					}
+
 					_ = cellText
 					cnv.DrawText(x+c.cellPadding+imgWidth, y+c.cellPadding, columnWidth-c.cellPadding*2-imgWidth, c.rowHeight1-c.cellPadding*2, cellText)
+					if drawContractionDots {
+						dots := ".."
+						dotsW, _, err := MeasureText(c.FontFamily(), c.FontSize(), dots)
+						if err == nil {
+							// fill background on dots place to hide last part of text
+							var backColorDots color.RGBA
+							{
+								r, g, b, a := backColor.RGBA()
+								backColorDots = color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
+								if backColorDots.A > 0 {
+									backColorDots.A = 240
+								}
+							}
+
+							backPadding := 5
+
+							cnv.FillRect(x+columnWidth-dotsW-c.cellPadding-backPadding, y+c.cellPadding, dotsW+backPadding, c.rowHeight1-c.cellPadding*2, backColorDots)
+							cnv.DrawText(x+columnWidth-dotsW-c.cellPadding, y+c.cellPadding, dotsW, c.rowHeight1-c.cellPadding*2, dots)
+						}
+					}
+
 				}
 			}
 		}

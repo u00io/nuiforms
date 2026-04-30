@@ -167,6 +167,7 @@ func (c *FilePanel) loadDirectory(entry *Entry) error {
 			c.fileList.SetCellText2(i, 0, en.DisplayName())
 			c.fileList.SetCellText2(i, 1, fmt.Sprint(en.Size))
 		}
+		c.fileList.SetCellContraction(i, 0, true)
 		c.fileList.SetCellText2(i, 2, en.Modified.Format("2006-01-02 15:04:05"))
 
 		c.fileList.SetCellData2(i, 0, en)
