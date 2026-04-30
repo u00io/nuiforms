@@ -1152,6 +1152,11 @@ func (c *Table) draw(cnv *Canvas) {
 					}
 
 					_ = cellText
+
+					if drawContractionDots {
+						cnv.SetHAlign(HAlignLeft)
+					}
+
 					cnv.DrawText(x+c.cellPadding+imgWidth, y+c.cellPadding, columnWidth-c.cellPadding*2-imgWidth, c.rowHeight1-c.cellPadding*2, cellText)
 					if drawContractionDots {
 						dots := ".."
