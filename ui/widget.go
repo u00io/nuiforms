@@ -72,6 +72,8 @@ type Widget struct {
 	scrollingYInitial         int
 	scrollingYInitialMousePos int
 
+	previousFocusedWidget Widgeter
+
 	// enabled bool
 
 	props          map[string]interface{}
@@ -1612,6 +1614,7 @@ func (c *Widget) SetMaxHeight(maxHeight int) {
 
 func (c *Widget) AppendPopupWidget(w Widgeter) {
 	if w != nil {
+		w.setPreviousFocusedWidget(MainForm.focusedWidget)
 		c.PopupWidgets = append(c.PopupWidgets, w)
 		w.SetParentWidgetId(MainForm.Panel().Id())
 		allwidgets[w.Id()] = w
@@ -1633,8 +1636,12 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 
 		for i := foundIndex; i < len(c.PopupWidgets); i++ {
 			popupWidget := c.PopupWidgets[i]
+			previousFocusedWidget := popupWidget.getPreviousFocusedWidget()
 			popupWidget.ProcessClosePopup()
 			delete(allwidgets, popupWidget.Id())
+			if previousFocusedWidget != nil {
+				previousFocusedWidget.Focus()
+			}
 		}
 
 		if foundIndex < len(c.PopupWidgets) {
@@ -1646,8 +1653,12 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 
 func (c *Widget) CloseAllPopup() {
 	for _, popupWidget := range c.PopupWidgets {
+		previousFocusedWidget := popupWidget.getPreviousFocusedWidget()
 		popupWidget.ProcessClosePopup()
 		delete(allwidgets, popupWidget.Id())
+		if previousFocusedWidget != nil {
+			previousFocusedWidget.Focus()
+		}
 	}
 
 	c.PopupWidgets = make([]Widgeter, 0)
@@ -1657,12 +1668,16 @@ func (c *Widget) CloseAllPopup() {
 func (c *Widget) CloseTopPopup() {
 	if len(c.PopupWidgets) == 0 {
 		return
+
 	}
 
+	previousFocusedWidget := c.PopupWidgets[len(c.PopupWidgets)-1].getPreviousFocusedWidget()
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
-
 	delete(allwidgets, c.PopupWidgets[len(c.PopupWidgets)-1].Id())
 	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
+	if previousFocusedWidget != nil {
+		previousFocusedWidget.Focus()
+	}
 }
 
 func (c *Widget) ProcessClosePopup() {
@@ -2660,4 +2675,12 @@ func (c *Widget) nextFocusByDirection(dir string) {
 	if nearestWidget != nil {
 		nearestWidget.Focus()
 	}
+}
+
+func (c *Widget) setPreviousFocusedWidget(w Widgeter) {
+	c.previousFocusedWidget = w
+}
+
+func (c *Widget) getPreviousFocusedWidget() Widgeter {
+	return c.previousFocusedWidget
 }

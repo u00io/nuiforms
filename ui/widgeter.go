@@ -113,4 +113,7 @@ type Widgeter interface {
 
 	nextFocus(reverse bool)
 	nextFocusByDirection(dir string)
+
+	setPreviousFocusedWidget(w Widgeter)
+	getPreviousFocusedWidget() Widgeter
 }
