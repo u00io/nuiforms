@@ -130,6 +130,22 @@ func NewForm() *Form {
 	return &c
 }
 
+func (c *Form) OpenPopup(w Widgeter) {
+	c.topWidget.AppendPopupWidget(w)
+	MainForm.Update()
+}
+
+func (c *Form) TopPopupWidget() Widgeter {
+	if len(c.topWidget.PopupWidgets) > 0 {
+		return c.topWidget.PopupWidgets[len(c.topWidget.PopupWidgets)-1]
+	}
+	return nil
+}
+
+func (c *Form) CloseTopPopup() {
+	c.topWidget.CloseTopPopup()
+}
+
 func (c *Form) Close() {
 	if c.wnd != nil {
 		c.wnd.Close()
