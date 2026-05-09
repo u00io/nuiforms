@@ -21,7 +21,9 @@ type Dialog struct {
 	acceptButton *Button
 	rejectButton *Button
 	OnAccept     func()
-	OnReject     func()
+	OnReject     func() bool
+
+	onRejectCalled bool
 
 	TryAccept func() bool
 	OnShow    func()
@@ -244,11 +246,19 @@ func (c *Dialog) Reject() {
 	}
 
 	onReject := c.OnReject
-
-	MainForm.Panel().CloseTopPopup()
-	c.closed = true
+	allowReject := true
 	if onReject != nil {
-		onReject()
+		if !c.onRejectCalled {
+			c.onRejectCalled = true
+			allowReject = onReject()
+			c.onRejectCalled = false
+		} else {
+			allowReject = true
+		}
+	}
+	if allowReject {
+		MainForm.Panel().CloseTopPopup()
+		c.closed = true
 	}
 }
 

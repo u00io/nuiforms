@@ -30,7 +30,7 @@ func NewButton(text string) *Button {
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
 	c.SetOnMouseUp(c.buttonProcessMouseUp)
-	c.SetOnKeyDown(c.onKeyDown)
+	// c.SetOnKeyDown(c.onKeyDown)
 
 	c.SetText(text)
 	c.SetProp("padding", 6)
@@ -45,6 +45,10 @@ func (c *Button) Text() string {
 func (c *Button) SetText(text string) {
 	c.SetProp("text", text)
 	UpdateMainForm()
+}
+
+func (c *Button) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+	return c.onKeyDown(key, mods)
 }
 
 func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {

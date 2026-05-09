@@ -1647,6 +1647,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 		if foundIndex < len(c.PopupWidgets) {
 			c.PopupWidgets = append(c.PopupWidgets[:foundIndex], c.PopupWidgets[foundIndex+1:]...)
 		}
+		c.ClearFocus()
 		UpdateMainForm()
 	}
 }
@@ -1661,6 +1662,8 @@ func (c *Widget) CloseAllPopup() {
 		}
 	}
 
+	c.ClearFocus()
+
 	c.PopupWidgets = make([]Widgeter, 0)
 	UpdateMainForm()
 }
@@ -1670,6 +1673,8 @@ func (c *Widget) CloseTopPopup() {
 		return
 
 	}
+
+	c.ClearFocus()
 
 	previousFocusedWidget := c.PopupWidgets[len(c.PopupWidgets)-1].getPreviousFocusedWidget()
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
@@ -1681,6 +1686,14 @@ func (c *Widget) CloseTopPopup() {
 }
 
 func (c *Widget) ProcessClosePopup() {
+}
+
+func (c *Widget) ClearFocus() {
+	if MainForm.focusedWidget != nil {
+		MainForm.focusedWidget.ProcessFocusLost()
+		MainForm.focusedWidget = nil
+		MainForm.Update()
+	}
 }
 
 // var updateLayoutStack int
@@ -2475,6 +2488,8 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 		}
 	case "scrollarea":
 		w = NewScrollArea()
+	case "progressbar":
+		w = NewProgressBar(0, 100, 0)
 	case "widget":
 		{
 			// <widget id="InnerWidget" />

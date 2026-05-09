@@ -460,7 +460,22 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 			c.Update()
 			return
 		}
+
+		parentWidgetId := c.focusedWidget.ParentWidgetId()
+		for parentWidgetId != "" {
+			parentWidget := WidgetById(parentWidgetId)
+			if parentWidget != nil {
+				if parentWidget.ProcessKeyDown(keyCode, mods) {
+					c.Update()
+					return
+				}
+				parentWidgetId = parentWidget.ParentWidgetId()
+			} else {
+				break
+			}
+		}
 	}
+
 	if !c.topWidget.ProcessKeyDown(keyCode, mods) {
 		if keyCode == nuikey.KeyTab {
 			reverse := mods.Shift

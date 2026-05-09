@@ -48,8 +48,9 @@ func Run(form *ui.Form) {
 			name := dialog.txtName.Text()
 			form.SetTitle("Hello " + name)
 		}
-		dialog.dialog.OnReject = func() {
+		dialog.dialog.OnReject = func() bool {
 			form.SetTitle("Dialog was cancelled")
+			return true
 		}
 	})
 	form.Panel().AddWidgetOnGrid(btn, 0, 0)
