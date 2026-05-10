@@ -205,7 +205,7 @@ func (c *Form) exec(maximazed bool) {
 	}
 	mainFormExecuted = true
 
-	c.wnd = nui.CreateWindow(c.title, c.width, c.height, true, maximazed)
+	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, false, maximazed)
 
 	c.wnd.OnPaint(c.processPaint)
 	c.wnd.OnResize(c.processResize)
