@@ -61,6 +61,9 @@ type Table struct {
 
 	modeLoading     bool
 	modeLoadingText string
+
+	previousCurrentCellX int
+	previousCurrentCellY int
 }
 
 type innerWidget struct {
@@ -244,6 +247,14 @@ func (c *Table) TableSetLayoutXml(n *uiNode) {
 		}
 		c.SetRowCount(rowIndex)
 	}
+}
+
+func (c *Table) PreviousCurrentCellX() int {
+	return c.previousCurrentCellX
+}
+
+func (c *Table) PreviousCurrentCellY() int {
+	return c.previousCurrentCellY
 }
 
 func (c *Table) SetRowHeight(height int) {
@@ -625,6 +636,9 @@ func (c *Table) SetCurrentCell2(row int, col int) {
 	defer MainForm.LayoutingBlockPop()
 	MainForm.UpdateBlockPush()
 	defer MainForm.UpdateBlockPop()
+
+	c.previousCurrentCellX = c.currentCellX
+	c.previousCurrentCellY = c.currentCellY
 
 	cellObj := c.getCellObj(row, col)
 	if cellObj.selectionDisabled {

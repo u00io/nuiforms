@@ -549,7 +549,7 @@ func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 
 func (c *Form) processTimer() {
 
-	if time.Since(c.lastFreeMemoryTime) > 5*time.Second {
+	if time.Since(c.lastFreeMemoryTime) > 30*time.Second {
 		c.freeMemory()
 		c.lastFreeMemoryTime = time.Now()
 	}
