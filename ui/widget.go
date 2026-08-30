@@ -2645,6 +2645,11 @@ func (c *Widget) nextFocusByDirection(dir string) {
 			focusableWidgets = append(focusableWidgets, w)
 		}
 	}
+
+	if focusWidget == nil || len(focusableWidgets) == 0 {
+		return
+	}
+
 	focusedWidgetClientX, focusedWidgetClientY := focusWidget.RectClientAreaOnWindow()
 	focusXAvg := focusedWidgetClientX + focusWidget.Width()/2
 	focusYAvg := focusedWidgetClientY + focusWidget.Height()/2
