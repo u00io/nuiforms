@@ -442,7 +442,7 @@ func (c *Form) FocusedWidget() Widgeter {
 	return c.focusedWidget
 }
 
-func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
+func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 	if c.lastKeyboardModifiers != mods {
 		c.lastKeyboardModifiers = mods
@@ -451,14 +451,14 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 	if c.onGlobalKeyDown != nil {
 		if c.onGlobalKeyDown(keyCode, mods) {
 			c.Update()
-			return
+			return true
 		}
 	}
 
 	if c.focusedWidget != nil {
 		if c.focusedWidget.ProcessKeyDown(keyCode, mods) {
 			c.Update()
-			return
+			return true
 		}
 
 		parentWidgetId := c.focusedWidget.ParentWidgetId()
@@ -467,7 +467,7 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 			if parentWidget != nil {
 				if parentWidget.ProcessKeyDown(keyCode, mods) {
 					c.Update()
-					return
+					return true
 				}
 				parentWidgetId = parentWidget.ParentWidgetId()
 			} else {
@@ -515,6 +515,7 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) {
 		}
 	}
 	c.Update()
+	return false
 }
 
 func (c *Form) processKeyUp(keyCode nuikey.Key, mods nuikey.KeyModifiers) {

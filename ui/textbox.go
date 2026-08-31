@@ -65,8 +65,7 @@ func NewTextBox() *TextBox {
 	c.SetElevation(-3)
 
 	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
-		c.KeyDown(key, mods)
-		return true
+		return c.KeyDown(key, mods)
 	})
 
 	c.SetOnChar(func(char rune, mods nuikey.KeyModifiers) bool {

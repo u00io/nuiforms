@@ -3,6 +3,7 @@ package ex09textbox
 import (
 	"encoding/base64"
 
+	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -33,5 +34,15 @@ func Run(form *ui.Form) {
 	<vspacer />
 </column>
 		`, fns, nil)
+
+	textBox := form.Panel().FindWidgetByName("tb2").(*ui.TextBox)
+
+	textBox.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
+		if key == nuikey.KeyEsc {
+			form.Close()
+			return true
+		}
+		return textBox.KeyDown(key, mods)
+	})
 
 }
