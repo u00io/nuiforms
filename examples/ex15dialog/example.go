@@ -1,12 +1,15 @@
 package ex15dialog
 
 import (
+	"fmt"
+
 	"github.com/u00io/nuiforms/ui"
 )
 
 type DialogEnterName struct {
 	dialog       *ui.Dialog
 	txtName      *ui.TextBox
+	lvItems      *ui.Table
 	panelContent *ui.Panel
 	panelButtons *ui.Panel
 	btnOk        *ui.Button
@@ -15,12 +18,28 @@ type DialogEnterName struct {
 
 func NewDialogEnterName() *DialogEnterName {
 	var c DialogEnterName
-	c.dialog = ui.NewDialog("Enter Name", 300, 200)
+	c.dialog = ui.NewDialog("Enter Name", 480, 320)
 	c.panelContent = ui.NewPanel()
 	c.txtName = ui.NewTextBox()
-	c.panelContent.AddWidgetOnGrid(ui.NewLabel("Name:"), 0, 0)
-	c.panelContent.AddWidgetOnGrid(c.txtName, 0, 1)
-	c.panelContent.AddWidgetOnGrid(ui.NewVSpacer(), 1, 0)
+
+	c.lvItems = ui.NewTable()
+	c.lvItems.SetColumnCount(2)
+	c.lvItems.SetColumnName(0, "ID")
+	c.lvItems.SetColumnName(1, "Value")
+	c.lvItems.SetRowCount(5)
+	for i := 0; i < 5; i++ {
+		for j := 0; j < 2; j++ {
+			c.lvItems.SetCellText2(i, j, fmt.Sprint(i)+","+fmt.Sprint(j))
+		}
+	}
+
+	c.lvItems.SetOnCellMouseDblClick(func() {
+		fmt.Println("DBLCLICK")
+	})
+
+	c.panelContent.AddWidgetOnGrid(c.txtName, 0, 0)
+	c.panelContent.AddWidgetOnGrid(c.lvItems, 1, 0)
+	// c.panelContent.AddWidgetOnGrid(ui.NewVSpacer(), 2, 0)
 	c.dialog.ContentPanel().AddWidgetOnGrid(c.panelContent, 0, 0)
 	c.dialog.SetCloseByClickOutside(false)
 
