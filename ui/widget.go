@@ -1461,6 +1461,16 @@ func (c *Widget) ProcessKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+	fmt.Println("Widget Mouse Double Click", x, y)
+
+	if len(c.PopupWidgets) > 0 {
+		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
+		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
+			topWidget.ProcessMouseDblClick(button, x-topWidget.X(), y-topWidget.Y(), mods)
+			return true
+		}
+	}
+
 	x += c.scrollX
 	y += c.scrollY
 
