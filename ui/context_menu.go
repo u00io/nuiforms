@@ -49,7 +49,7 @@ func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 	item.OnClick = onClick
 
 	c.items = append(c.items, item)
-	c.AddWidget(item)
+	c.AddWidget(item, 0, 0)
 	return item
 }
 
@@ -59,7 +59,7 @@ func (c *ContextMenu) AddItemWithSubmenu(text string, innerMenu *ContextMenu) *C
 	item.SetText(text)
 	item.innerMenu = innerMenu
 	c.items = append(c.items, item)
-	c.AddWidget(item)
+	c.AddWidget(item, 0, 0)
 	return item
 }
 

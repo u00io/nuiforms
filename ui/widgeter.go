@@ -83,8 +83,7 @@ type Widgeter interface {
 
 	Anchors() (left, top, right, bottom bool)
 
-	AddWidget(widget Widgeter)
-	AddWidgetOnGrid(widget Widgeter, gridX, gridY int)
+	AddWidget(widget Widgeter, gridX, gridY int)
 	RemoveWidget(widget Widgeter)
 
 	AllChildren() []Widgeter

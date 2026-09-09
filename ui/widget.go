@@ -454,16 +454,6 @@ func (c *Widget) AddTimer(intervalMs int, callback func()) {
 	c.timers = append(c.timers, t)
 }
 
-func (c *Widget) AddWidget(w Widgeter) {
-	if _, exists := allwidgets[w.Id()]; exists {
-		return
-	}
-	c.widgets = append(c.widgets, w)
-	w.SetParentWidgetId(c.Id())
-	allwidgets[w.Id()] = w
-	c.updateLayout(0, 0, 0, 0)
-}
-
 func (c *Widget) SetPanelPadding(padding int) {
 	//c.panelPadding = padding
 	c.SetProp("padding", padding)
@@ -474,7 +464,7 @@ func (c *Widget) SetCellPadding(padding int) {
 	c.SetProp("spacing", padding)
 }
 
-func (c *Widget) AddWidgetOnGrid(w Widgeter, gridRow int, gridColumn int) {
+func (c *Widget) AddWidget(w Widgeter, gridRow int, gridColumn int) {
 	if _, exists := allwidgets[w.Id()]; exists {
 		return
 	}
@@ -2527,7 +2517,7 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 	}
 
 	if parent != nil {
-		parent.AddWidgetOnGrid(w, row, col)
+		parent.AddWidget(w, row, col)
 	}
 
 	// Set attributes - only after adding to parent

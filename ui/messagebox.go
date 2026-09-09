@@ -48,7 +48,7 @@ func ShowMessageBox(title string, messageText string) {
 		lblLine := NewLabel(line)
 		lblLine.SetTextAlign(HAlignLeft)
 		lblLine.SetXExpandable(true)
-		colLines.AddWidgetOnGrid(lblLine, i, 0)
+		colLines.AddWidget(lblLine, i, 0)
 	}
 	UpdateMainFormLayout()
 

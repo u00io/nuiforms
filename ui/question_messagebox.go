@@ -7,9 +7,9 @@ func ShowQuestionMessageBox(title string, messageText string, onOk func(), onCan
 	txtMessage := NewLabel(messageText)
 	txtMessage.SetTextAlign(HAlignCenter)
 	txtMessage.SetMaxWidth(width)
-	dialog.ContentPanel().AddWidgetOnGrid(txtMessage, 0, 0)
+	dialog.ContentPanel().AddWidget(txtMessage, 0, 0)
 
-	dialog.ContentPanel().AddWidgetOnGrid(NewVSpacer(), 1, 0)
+	dialog.ContentPanel().AddWidget(NewVSpacer(), 1, 0)
 
 	panelButtons := NewPanel()
 
@@ -21,8 +21,8 @@ func ShowQuestionMessageBox(title string, messageText string, onOk func(), onCan
 		dialog.Close()
 		widgetToFocusAfterClose.Focus()
 	})
-	panelButtons.AddWidgetOnGrid(NewHSpacer(), 0, 0)
-	panelButtons.AddWidgetOnGrid(btnOK, 0, 1)
+	panelButtons.AddWidget(NewHSpacer(), 0, 0)
+	panelButtons.AddWidget(btnOK, 0, 1)
 
 	btnCancel := NewButton("Cancel")
 	btnCancel.SetOnClick(func() {
@@ -32,11 +32,11 @@ func ShowQuestionMessageBox(title string, messageText string, onOk func(), onCan
 		dialog.Close()
 		widgetToFocusAfterClose.Focus()
 	})
-	panelButtons.AddWidgetOnGrid(btnCancel, 0, 2)
+	panelButtons.AddWidget(btnCancel, 0, 2)
 
-	panelButtons.AddWidgetOnGrid(NewHSpacer(), 0, 3)
+	panelButtons.AddWidget(NewHSpacer(), 0, 3)
 
-	dialog.ContentPanel().AddWidgetOnGrid(panelButtons, 2, 0)
+	dialog.ContentPanel().AddWidget(panelButtons, 2, 0)
 	dialog.ShowDialog()
 	btnOK.Focus()
 }

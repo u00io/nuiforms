@@ -192,7 +192,7 @@ func (c *Form) SetOnGlobalKeyDown(onGlobalKeyDown func(keyCode nuikey.Key, mods 
 
 func (c *Form) SetMainWidget(w Widgeter) {
 	c.topWidget.RemoveAllWidgets()
-	c.topWidget.AddWidgetOnGrid(w, 0, 0)
+	c.topWidget.AddWidget(w, 0, 0)
 }
 
 func (c *Form) Panel() *Panel {

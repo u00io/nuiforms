@@ -7,16 +7,16 @@ func ShowEnterStringDialog(title string, messageText string, initialValue string
 	txtMessage := NewLabel(messageText)
 	txtMessage.SetTextAlign(HAlignCenter)
 	txtMessage.SetMaxWidth(width)
-	dialog.ContentPanel().AddWidgetOnGrid(txtMessage, 0, 0)
+	dialog.ContentPanel().AddWidget(txtMessage, 0, 0)
 
 	txtValue := NewTextBox()
 	txtValue.SetText(initialValue)
-	dialog.ContentPanel().AddWidgetOnGrid(txtValue, 1, 0)
+	dialog.ContentPanel().AddWidget(txtValue, 1, 0)
 
-	dialog.ContentPanel().AddWidgetOnGrid(NewVSpacer(), 2, 0)
+	dialog.ContentPanel().AddWidget(NewVSpacer(), 2, 0)
 
 	panelButtons := NewPanel()
-	panelButtons.AddWidgetOnGrid(NewHSpacer(), 0, 0)
+	panelButtons.AddWidget(NewHSpacer(), 0, 0)
 	btnOK := NewButton("OK")
 	btnOK.SetOnClick(func() {
 		if onSubmit != nil {
@@ -25,16 +25,16 @@ func ShowEnterStringDialog(title string, messageText string, initialValue string
 		dialog.Close()
 		widgetToFocusAfterClose.Focus()
 	})
-	panelButtons.AddWidgetOnGrid(btnOK, 0, 1)
+	panelButtons.AddWidget(btnOK, 0, 1)
 
 	btnCancel := NewButton("Cancel")
 	btnCancel.SetOnClick(func() {
 		dialog.Close()
 		widgetToFocusAfterClose.Focus()
 	})
-	panelButtons.AddWidgetOnGrid(btnCancel, 0, 2)
+	panelButtons.AddWidget(btnCancel, 0, 2)
 
-	dialog.ContentPanel().AddWidgetOnGrid(panelButtons, 3, 0)
+	dialog.ContentPanel().AddWidget(panelButtons, 3, 0)
 	dialog.ShowDialog()
 	btnOK.Focus()
 }

@@ -121,7 +121,7 @@ func (c *comboBoxPopup) AddItem(text string, onClick func(index int)) {
 	item.parentWidgetId = c.Id()
 	item.OnClick = onClick
 	c.items = append(c.items, item)
-	c.AddWidget(item)
+	c.AddWidget(item, 0, 0)
 }
 
 func (c *comboBoxPopup) rebuildVisualElements() {

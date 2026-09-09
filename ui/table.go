@@ -194,7 +194,7 @@ func NewTable() *Table {
 	c.headerWidget.OnHeaderMouseMove = func(x, y int, mods nuikey.KeyModifiers) nuimouse.MouseCursor {
 		return c.onMouseMoveHeader(x+c.scrollX, y+c.scrollY, mods)
 	}
-	c.AddWidget(c.headerWidget)
+	c.AddWidget(c.headerWidget, 0, 0)
 
 	c.innerWidgets = make([]*innerWidget, 0)
 
@@ -342,7 +342,7 @@ func (c *Table) AddWidgetOnTable(widget Widgeter, posCellRow int, posCellCol int
 	inWidget.widthInCells = widthInCells
 	inWidget.heightInCells = heightInCells
 	c.innerWidgets = append(c.innerWidgets, &inWidget)
-	c.AddWidget(widget)
+	c.AddWidget(widget, 0, 0)
 	c.updateInnerWidgetsLayout()
 }
 
