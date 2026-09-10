@@ -109,10 +109,9 @@ func NewId() string {
 
 func NewForm() *Form {
 	var c Form
-	if MainForm != nil {
-		panic("MainForm already exists, cannot create a new one")
+	if MainForm == nil {
+		MainForm = &c
 	}
-	MainForm = &c
 
 	c.title = "Form"
 	c.posX = -1
@@ -199,11 +198,10 @@ func (c *Form) Panel() *Panel {
 	return c.topWidget
 }
 
-func (c *Form) exec(maximazed bool) {
-	if mainFormExecuted {
-		panic("MainForm already executed, cannot execute again")
+func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
+	if !mainFormExecuted {
+		mainFormExecuted = true
 	}
-	mainFormExecuted = true
 
 	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, false, maximazed)
 
@@ -226,22 +224,28 @@ func (c *Form) exec(maximazed bool) {
 		c.wnd.Move(c.posX, c.posY)
 	}
 
-	c.wnd.Show()
-	if maximazed {
-		c.wnd.MaximizeWindow()
+	if modal {
+		c.wnd.ShowModal(parent.wnd)
+	} else {
+		c.wnd.Show()
+		if maximazed {
+			c.wnd.MaximizeWindow()
+		}
+		c.processResize(c.width, c.height)
+		c.wnd.EventLoop()
 	}
-
-	c.processResize(c.width, c.height)
-
-	c.wnd.EventLoop()
 }
 
 func (c *Form) Exec() {
-	c.exec(false)
+	c.exec(false, false, nil)
+}
+
+func (c *Form) ExecModal() {
+	c.exec(false, true, c)
 }
 
 func (c *Form) ExecMaximized() {
-	c.exec(true)
+	c.exec(true, false, nil)
 }
 
 func (c *Form) realUpdate() {
