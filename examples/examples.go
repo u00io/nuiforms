@@ -19,7 +19,6 @@ func Run() {
 		}
 
 		addButton("Example 01 - Base Form", func() {
-			form.Panel().RemoveAllWidgets()
 			ex01base.Run(form)
 		})
 
