@@ -233,7 +233,7 @@ func (c *NumBox) SetValue(v float64) {
 	if changed {
 		c.fireValueChanged()
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) Value() float64 {
@@ -272,7 +272,7 @@ func (c *NumBox) SetText(text string) {
 	c.selectionAnchorPos = c.cursorPos
 	c.selectionEndPos = c.cursorPos
 	c.editingText = true
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) hasSelection() bool {
@@ -333,7 +333,7 @@ func (c *NumBox) ProcessPropChange(key string, value interface{}) {
 			if changed {
 				c.fireValueChanged()
 			}
-			UpdateMainForm()
+			c.form.Update()
 		}
 	}
 }
@@ -479,7 +479,7 @@ func (c *NumBox) onMouseDownLeft(x, y int, mods nuikey.KeyModifiers) {
 		c.selectionAnchorPos = c.cursorPos
 		c.selectionEndPos = c.cursorPos
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) onMouseMove(x, y int, mods nuikey.KeyModifiers) {
@@ -505,7 +505,7 @@ func (c *NumBox) onMouseMove(x, y int, mods nuikey.KeyModifiers) {
 	pos := c.cursorPosFromPixel(clickX)
 	c.cursorPos = pos
 	c.selectionEndPos = pos
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) onMouseUpLeft(x, y int, mods nuikey.KeyModifiers) {
@@ -514,7 +514,7 @@ func (c *NumBox) onMouseUpLeft(x, y int, mods nuikey.KeyModifiers) {
 	_ = mods
 	c.mouseButtonPressed = false
 	c.draggingSelection = false
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) onMouseWheel(deltaY int) {
@@ -567,7 +567,7 @@ func (c *NumBox) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		c.selectionAnchorPos = 0
 		c.selectionEndPos = len([]rune(c.text))
 		c.cursorPos = c.selectionEndPos
-		UpdateMainForm()
+		c.form.Update()
 		return true
 	}
 
@@ -581,7 +581,7 @@ func (c *NumBox) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		} else {
 			c.clearSelection()
 		}
-		UpdateMainForm()
+		c.form.Update()
 		return true
 	case nuikey.KeyArrowRight:
 		if c.cursorPos < len([]rune(c.text)) {
@@ -592,7 +592,7 @@ func (c *NumBox) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		} else {
 			c.clearSelection()
 		}
-		UpdateMainForm()
+		c.form.Update()
 		return true
 	case nuikey.KeyHome:
 		c.cursorPos = 0
@@ -601,7 +601,7 @@ func (c *NumBox) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		} else {
 			c.clearSelection()
 		}
-		UpdateMainForm()
+		c.form.Update()
 		return true
 	case nuikey.KeyEnd:
 		c.cursorPos = len([]rune(c.text))
@@ -610,7 +610,7 @@ func (c *NumBox) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		} else {
 			c.clearSelection()
 		}
-		UpdateMainForm()
+		c.form.Update()
 		return true
 	case nuikey.KeyBackspace:
 		c.deleteLeft()
@@ -689,7 +689,7 @@ func (c *NumBox) insertRune(ch rune) {
 	c.cursorPos++
 	c.clearSelection()
 	c.editingText = true
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) insertMinus() {
@@ -712,7 +712,7 @@ func (c *NumBox) insertMinus() {
 	c.text = string(runes)
 	c.clearSelection()
 	c.editingText = true
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) deleteSelection() {
@@ -729,7 +729,7 @@ func (c *NumBox) deleteSelection() {
 	c.cursorPos = from
 	c.clearSelection()
 	c.editingText = true
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) deleteLeft() {
@@ -746,7 +746,7 @@ func (c *NumBox) deleteLeft() {
 	c.text = string(runes)
 	c.clearSelection()
 	c.editingText = true
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) deleteRight() {
@@ -762,7 +762,7 @@ func (c *NumBox) deleteRight() {
 	c.text = string(runes)
 	c.clearSelection()
 	c.editingText = true
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) parseText(text string) (float64, bool) {
@@ -788,7 +788,7 @@ func (c *NumBox) commitText(force bool) {
 	}
 	// If invalid, revert to current value formatting.
 	c.refreshTextFromValue()
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *NumBox) stepBy(delta float64) {
@@ -806,4 +806,3 @@ func (c *NumBox) stepBy(delta float64) {
 	}
 	c.SetValue(v)
 }
-

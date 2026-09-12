@@ -260,14 +260,14 @@ func (c *Table) PreviousCurrentCellY() int {
 func (c *Table) SetRowHeight(height int) {
 	c.rowHeight1 = height
 	c.updateInnerSize()
-	UpdateMainFormLayout()
-	UpdateMainForm()
+	c.form.UpdateLayout()
+	c.form.Update()
 }
 
 func (c *Table) SetCellOnDraw(row int, col int, onDraw func(cnv *Canvas)) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.onDraw = onDraw
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellBorderColor(col color.RGBA) {
@@ -292,7 +292,7 @@ func (c *Table) CellBorderWidth() int {
 func (c *Table) SetModeLoading(loading bool, text string) {
 	c.modeLoading = loading
 	c.modeLoadingText = text
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetOnColumnResize(callback func(col int, newWidth int)) {
@@ -466,7 +466,7 @@ func (c *Table) SetColumnImage(col int, img image.Image, imgWidth int) {
 	}
 	colHeader := c.headerCell2(0, col)
 	colHeader.setImage(img, imgWidth)
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) ColumnWidth(col int) int {
@@ -552,7 +552,7 @@ func (c *Table) SetCellText2(row int, col int, text string) {
 		}
 	}
 
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellDisplayText(row int, col int, text string) {
@@ -561,81 +561,81 @@ func (c *Table) SetCellDisplayText(row int, col int, text string) {
 	cellObj.displayText = text
 	cellObj.displayTextExists = true
 
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellImage(row int, col int, img image.Image, imgWidth int) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.image = img
 	cellObj.imageWidth = imgWidth
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellContraction(row int, col int, contraction bool) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.contraction = contraction
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellData2(row int, col int, data interface{}) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.data = data
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellColor(row int, col int, color color.Color) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.color = color
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellHAlign(row int, col int, align HAlign) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.hAlign = align
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellVAlign(row int, col int, align VAlign) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.vAlign = align
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellEditTriggerDoubleClick(row int, col int, enabled bool) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.editTriggerDoubleClick = enabled
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellEditTriggerEnter(row int, col int, enabled bool) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.editTriggerEnter = enabled
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellEditTriggerF2(row int, col int, enabled bool) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.editTriggerF2 = enabled
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellEditTriggerKeyDown(row int, col int, enabled bool) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.editTriggerKeyDown = enabled
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCellSelectionDisabled(row int, col int, disabled bool) {
 	cellObj := c.getCellObj(row, col)
 	cellObj.selectionDisabled = disabled
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) SetCurrentCell2(row int, col int) {
-	MainForm.LayoutingBlockPush()
-	defer MainForm.LayoutingBlockPop()
-	MainForm.UpdateBlockPush()
-	defer MainForm.UpdateBlockPop()
+	c.form.LayoutingBlockPush()
+	defer c.form.LayoutingBlockPop()
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
 
 	c.previousCurrentCellX = c.currentCellX
 	c.previousCurrentCellY = c.currentCellY
@@ -657,7 +657,7 @@ func (c *Table) SetCurrentCell2(row int, col int) {
 
 	c.ScrollToCell2(c.currentCellY, c.currentCellX)
 
-	UpdateMainForm()
+	c.form.Update()
 	if c.onSelectionChanged != nil {
 		c.onSelectionChanged(c.currentCellY, c.currentCellX)
 	}
@@ -725,10 +725,10 @@ func (c *Table) GetCellData2(row int, col int) interface{} {
 }
 
 func (c *Table) ScrollToCell2(row, col int) {
-	MainForm.LayoutingBlockPush()
-	defer MainForm.LayoutingBlockPop()
-	MainForm.UpdateBlockPush()
-	defer MainForm.UpdateBlockPop()
+	c.form.LayoutingBlockPush()
+	defer c.form.LayoutingBlockPop()
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
 
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
@@ -741,14 +741,14 @@ func (c *Table) ScrollToCell2(row, col int) {
 	rightBottomX := leftTopX + c.columnWidth(col)
 	rightBottomY := leftTopY + c.rowHeight1
 	c.ScrollEnsureVisible(rightBottomX, rightBottomY)
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
-	MainForm.LayoutingBlockPush()
-	defer MainForm.LayoutingBlockPop()
-	MainForm.UpdateBlockPush()
-	defer MainForm.UpdateBlockPop()
+	c.form.LayoutingBlockPush()
+	defer c.form.LayoutingBlockPop()
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
 
 	headerColumnBorder := c.headerColumnBorderByPosition(x, y)
 	if headerColumnBorder >= 0 {
@@ -831,10 +831,10 @@ func (c *Table) onFocused() {
 }
 
 func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
-	MainForm.LayoutingBlockPush()
-	defer MainForm.LayoutingBlockPop()
-	MainForm.UpdateBlockPush()
-	defer MainForm.UpdateBlockPop()
+	c.form.LayoutingBlockPush()
+	defer c.form.LayoutingBlockPop()
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
 
 	processed := false
 
@@ -849,7 +849,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyArrowLeft {
 		if c.currentCellX > 0 {
 			c.SetCurrentCell2(c.currentCellY, c.currentCellX-1)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		processed = true
 	}
@@ -857,7 +857,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	if key == nuikey.KeyArrowRight {
 		if c.currentCellX < c.columnCount-1 {
 			c.SetCurrentCell2(c.currentCellY, c.currentCellX+1)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		processed = true
 	}
@@ -869,7 +869,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 				selectRowIndex = c.rowCount - 1
 			}
 			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		processed = true
 	}
@@ -881,20 +881,20 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 				selectRowIndex = c.rowCount - 1
 			}
 			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		processed = true
 	}
 
 	if key == nuikey.KeyHome {
 		c.SetCurrentCell2(0, c.currentCellX)
-		UpdateMainForm()
+		c.form.Update()
 		processed = true
 	}
 
 	if key == nuikey.KeyEnd {
 		c.SetCurrentCell2(c.rowCount-1, c.currentCellX)
-		UpdateMainForm()
+		c.form.Update()
 		processed = true
 	}
 
@@ -912,7 +912,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		}
 		if allowEdit {
 			c.EditCurrentCell("")
-			UpdateMainForm()
+			c.form.Update()
 			processed = true
 		}
 	}
@@ -931,7 +931,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		}
 		if allowEdit {
 			c.EditCurrentCell("")
-			UpdateMainForm()
+			c.form.Update()
 			processed = true
 		}
 	}
@@ -944,7 +944,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		}
 		if targetRow != c.currentCellY {
 			c.SetCurrentCell2(targetRow, c.currentCellX)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		processed = true
 	}
@@ -957,7 +957,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		}
 		if targetRow != c.currentCellY {
 			c.SetCurrentCell2(targetRow, c.currentCellX)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		processed = true
 	}
@@ -992,7 +992,7 @@ func (c *Table) onMouseMoveHeader(x int, y int, _ nuikey.KeyModifiers) nuimouse.
 			c.updateInnerWidgetsLayout()*/
 			c.SetColumnWidth(c.columnResizingIndex, newWidth)
 			c.SetMouseCursor(nuimouse.MouseCursorResizeHor)
-			UpdateMainForm()
+			c.form.Update()
 		}
 		return nuimouse.MouseCursorResizeHor
 	}
@@ -1482,7 +1482,7 @@ func (c *Table) EditCurrentCell(enteredText string) {
 				c.SetCellText2(c.currentCellY, c.currentCellX, c.editorTextBox.Text())
 				c.RemoveWidget(c.editorTextBox)
 				c.editorTextBox = nil
-				UpdateMainForm()
+				c.form.Update()
 				c.Focus()
 			}
 			ev.Processed = true
@@ -1492,7 +1492,7 @@ func (c *Table) EditCurrentCell(enteredText string) {
 			if c.editorTextBox != nil {
 				c.RemoveWidget(c.editorTextBox)
 				c.editorTextBox = nil
-				UpdateMainForm()
+				c.form.Update()
 				c.Focus()
 			}
 			ev.Processed = true
@@ -1503,7 +1503,7 @@ func (c *Table) EditCurrentCell(enteredText string) {
 		if c.editorTextBox != nil {
 			c.RemoveWidget(c.editorTextBox)
 			c.editorTextBox = nil
-			UpdateMainForm()
+			c.form.Update()
 			c.Focus()
 		}
 	})

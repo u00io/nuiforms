@@ -40,7 +40,7 @@ func NewContextMenuItem() *ContextMenuItem {
 
 func (c *ContextMenuItem) SetText(text string) {
 	c.text = text
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *ContextMenuItem) ControlType() string {
@@ -94,7 +94,7 @@ func (c *ContextMenuItem) mouseDownHandler(button nuimouse.MouseButton, x int, y
 }
 
 func (c *ContextMenuItem) MouseEnter() {
-	MainForm.Panel().CloseAfterPopupWidget(c.parentMenu)
+	c.form.Panel().CloseAfterPopupWidget(c.parentMenu)
 	if c.innerMenu != nil {
 		c.timerEnabled = true
 		c.timerLastElapsedDTMSec = time.Now().UnixNano() / 1000000
@@ -107,7 +107,7 @@ func (c *ContextMenuItem) MouseLeave() {
 }
 
 func (c *ContextMenuItem) MouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
-	UpdateMainForm()
+	c.form.Update()
 	return true
 }
 

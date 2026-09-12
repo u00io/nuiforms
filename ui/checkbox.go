@@ -37,7 +37,7 @@ func (c *Checkbox) Text() string {
 
 func (c *Checkbox) SetText(text string) {
 	c.SetProp("text", text)
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Checkbox) SetOnStateChanged(fn func()) {
@@ -105,7 +105,7 @@ func (c *Checkbox) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y in
 		return false
 	}
 
-	hoverWidgeter := MainForm.hoverWidget
+	hoverWidgeter := c.form.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
 		c.SetChecked(!c.Checked())

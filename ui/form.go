@@ -46,17 +46,15 @@ type Form struct {
 	updateBlockStack    int
 	layoutingBlockStack int
 
+	allwidgets map[string]Widgeter
+
 	OnClose func() bool
 }
 
-var MainForm *Form
-var mainFormExecuted bool
-
-var allwidgets map[string]Widgeter
-var nextId int64
+var nextWidgetId int64
 
 func init() {
-	allwidgets = make(map[string]Widgeter)
+	nextWidgetId = 1
 }
 
 func (c *Form) SystemHandle() any {
@@ -66,52 +64,34 @@ func (c *Form) SystemHandle() any {
 	return nil
 }
 
-func UpdateMainForm() {
-	if MainForm != nil {
-		MainForm.Update()
+func (c *Form) Maximize() {
+	if c.wnd != nil {
+		c.wnd.MaximizeWindow()
 	}
 }
 
-func MaximizeMainForm() {
-	if MainForm != nil && MainForm.wnd != nil {
-		MainForm.wnd.MaximizeWindow()
-	}
-}
-
-func UpdateMainFormLayout() {
-	if MainForm != nil && MainForm.Panel() != nil {
-		MainForm.Panel().ClearLayoutCache()
-		MainForm.Panel().updateLayout(0, 0, 0, 0)
-		for _, popupWidget := range MainForm.Panel().PopupWidgets {
+func (c *Form) UpdateLayout() {
+	if c != nil && c.Panel() != nil {
+		c.Panel().ClearLayoutCache()
+		c.Panel().updateLayout(0, 0, 0, 0)
+		for _, popupWidget := range c.Panel().PopupWidgets {
 			if popupWidget != nil {
 				popupWidget.updateLayout(0, 0, 0, 0)
 			}
 		}
-		MainForm.Update()
+		c.Update()
 	}
 }
 
-func WidgetById(id string) Widgeter {
-	if widget, exists := allwidgets[id]; exists {
+func (c *Form) WidgetById(id string) Widgeter {
+	if widget, exists := c.allwidgets[id]; exists {
 		return widget
 	}
 	return nil
 }
 
-func NewId() string {
-	id := fmt.Sprint(nextId)
-	for len(id) < 3 {
-		id = "0" + id
-	}
-	nextId++
-	return id
-}
-
 func NewForm() *Form {
 	var c Form
-	if MainForm == nil {
-		MainForm = &c
-	}
 
 	c.title = "Form"
 	c.posX = -1
@@ -119,19 +99,30 @@ func NewForm() *Form {
 	c.width = 800
 	c.height = 600
 	topWidget := NewPanel()
+	topWidget.form = &c
 	topWidget.SetName("FormTopWidget")
 	topWidget.SetPosition(0, 0)
 	topWidget.SetSize(c.width, c.height)
 	topWidget.SetAnchors(true, true, true, true)
 	topWidget.SetAutoFillBackground(true)
 	c.topWidget = topWidget
-	allwidgets[topWidget.Id()] = topWidget
+	c.allwidgets = make(map[string]Widgeter)
+	c.allwidgets[topWidget.Id()] = topWidget
 	return &c
+}
+
+func newWidgetId() string {
+	id := fmt.Sprint(nextWidgetId)
+	for len(id) < 3 {
+		id = "0" + id
+	}
+	nextWidgetId++
+	return id
 }
 
 func (c *Form) OpenPopup(w Widgeter) {
 	c.topWidget.AppendPopupWidget(w)
-	MainForm.Update()
+	c.Update()
 }
 
 func (c *Form) TopPopupWidget() Widgeter {
@@ -199,10 +190,6 @@ func (c *Form) Panel() *Panel {
 }
 
 func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
-	if !mainFormExecuted {
-		mainFormExecuted = true
-	}
-
 	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, false, maximazed)
 
 	c.wnd.OnPaint(c.processPaint)
@@ -240,8 +227,8 @@ func (c *Form) Exec() {
 	c.exec(false, false, nil)
 }
 
-func (c *Form) ExecModal() {
-	c.exec(false, true, c)
+func (c *Form) ExecModal(parent *Form) {
+	c.exec(false, true, parent)
 }
 
 func (c *Form) ExecMaximized() {
@@ -257,6 +244,12 @@ func (c *Form) realUpdate() {
 }
 
 func (c *Form) Update() {
+	if c == nil {
+		return
+	}
+	if c.wnd == nil {
+		return
+	}
 	if c.updateBlockStack > 0 {
 		c.needUpdate = true
 		return
@@ -467,7 +460,7 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
 
 		parentWidgetId := c.focusedWidget.ParentWidgetId()
 		for parentWidgetId != "" {
-			parentWidget := WidgetById(parentWidgetId)
+			parentWidget := c.WidgetById(parentWidgetId)
 			if parentWidget != nil {
 				if parentWidget.ProcessKeyDown(keyCode, mods) {
 					c.Update()
@@ -613,6 +606,6 @@ func (c *Form) LayoutingBlockPop() {
 	}
 	c.layoutingBlockStack--
 	if c.layoutingBlockStack == 0 {
-		UpdateMainFormLayout()
+		c.UpdateLayout()
 	}
 }

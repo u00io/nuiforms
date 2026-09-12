@@ -10,5 +10,6 @@ func NewExampleForm() *ui.Form {
 
 func Run(form *ui.Form) {
 	f := NewExampleForm()
-	f.ExecModal()
+	f.SetSize(200, 100)
+	f.Exec()
 }

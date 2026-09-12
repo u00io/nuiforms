@@ -38,7 +38,7 @@ func (c *ButtonImage) Image() image.Image {
 
 func (c *ButtonImage) SetImage(img image.Image) {
 	c.img = img
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *ButtonImage) SetOnButtonClick(fn func(btn *ButtonImage)) {
@@ -85,7 +85,7 @@ func (c *ButtonImage) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y
 		return false
 	}
 
-	hoverWidgeter := MainForm.hoverWidget
+	hoverWidgeter := c.form.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
 		if c.onButtonClick != nil {

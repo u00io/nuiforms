@@ -47,7 +47,7 @@ func (c *ComboBox) SetSelectedIndex(index int) {
 		return
 	}
 	c.selectedIndex = index
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *ComboBox) SelectedItemText() string {
@@ -69,7 +69,7 @@ func (c *ComboBox) OpenPopup() {
 	for _, item := range c.items {
 		popup.AddItem(item.text, func(index int) {
 			c.SetSelectedIndex(index)
-			UpdateMainForm()
+			c.form.Update()
 		})
 	}
 	x, y := c.RectClientAreaOnWindow()
@@ -112,8 +112,8 @@ func NewComboBoxPopup() *comboBoxPopup {
 func (c *comboBoxPopup) ShowPopup(x int, y int) {
 	c.SetPosition(x, y)
 	c.rebuildVisualElements()
-	MainForm.Panel().AppendPopupWidget(c)
-	UpdateMainForm()
+	c.form.Panel().AppendPopupWidget(c)
+	c.form.Update()
 }
 
 func (c *comboBoxPopup) AddItem(text string, onClick func(index int)) {
@@ -173,6 +173,6 @@ func (c *comboBoxPopupItem) mouseDownHandler(button nuimouse.MouseButton, x int,
 	if c.OnClick != nil {
 		c.OnClick(c.index)
 	}
-	MainForm.Panel().CloseTopPopup()
+	c.form.Panel().CloseTopPopup()
 	return true
 }

@@ -39,7 +39,7 @@ func (c *tabWidgetButton) Text() string {
 
 func (c *tabWidgetButton) SetText(text string) {
 	c.text = text
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *tabWidgetButton) SetOnButtonClick(fn func(btn *tabWidgetButton)) {
@@ -68,7 +68,7 @@ func (c *tabWidgetButton) buttonProcessMouseUp(button nuimouse.MouseButton, x in
 		return false
 	}
 
-	hoverWidgeter := MainForm.hoverWidget
+	hoverWidgeter := c.form.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
 		if c.onButtonClick != nil {

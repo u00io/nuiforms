@@ -44,7 +44,7 @@ func (c *Button) Text() string {
 
 func (c *Button) SetText(text string) {
 	c.SetProp("text", text)
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Button) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
@@ -120,7 +120,7 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 		c.SetMinWidth(textWidth + padding*2)
 	}
 
-	UpdateMainFormLayout()
+	c.form.UpdateLayout()
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
@@ -142,7 +142,7 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 		return false
 	}
 
-	hoverWidgeter := MainForm.hoverWidget
+	hoverWidgeter := c.form.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
 		//c.Press()

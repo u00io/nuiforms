@@ -149,7 +149,7 @@ func (c *dialogHeader) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bool 
 		c.dialog.SetPosition(c.lastMouseDownDialogX+deltaX, c.lastMouseDownDialogY+deltaY)
 		//c.dialog.SetPosition(c.dialog.X()+deltaX, c.dialog.Y()+deltaY)
 		fmt.Println("Dialog moved to:", c.dialog.X(), c.dialog.Y(), "Delta:", deltaX, deltaY)
-		UpdateMainForm()
+		c.form.Update()
 	}
 	return true
 }
@@ -166,8 +166,8 @@ func (c *Dialog) Close() {
 }
 
 func (c *Dialog) ShowDialog() {
-	windowWidth := MainForm.Panel().Width()
-	windowHeight := MainForm.Panel().Height()
+	windowWidth := c.form.Panel().Width()
+	windowHeight := c.form.Panel().Height()
 
 	x := (windowWidth - c.Width()) / 2
 	y := (windowHeight - c.Height()) / 2
@@ -177,7 +177,7 @@ func (c *Dialog) ShowDialog() {
 
 func (c *Dialog) ShowDialogAtPos(x, y int) {
 	c.SetPosition(x, y)
-	MainForm.Panel().AppendPopupWidget(c)
+	c.form.Panel().AppendPopupWidget(c)
 	c.ContentPanel().Focus()
 	//c.Window().ProcessTabDown()
 
@@ -185,7 +185,7 @@ func (c *Dialog) ShowDialogAtPos(x, y int) {
 		c.OnShow()
 	}
 
-	UpdateMainFormLayout()
+	c.form.Update()
 }
 
 func (c *Dialog) ContentPanel() *Panel {
@@ -233,7 +233,7 @@ func (c *Dialog) Accept() {
 	}
 
 	onAccept := c.OnAccept
-	MainForm.Panel().CloseTopPopup()
+	c.form.Panel().CloseTopPopup()
 	c.closed = true
 	if onAccept != nil {
 		onAccept()
@@ -257,7 +257,7 @@ func (c *Dialog) Reject() {
 		}
 	}
 	if allowReject {
-		MainForm.Panel().CloseTopPopup()
+		c.form.Panel().CloseTopPopup()
 		c.closed = true
 	}
 }

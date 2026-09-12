@@ -148,11 +148,11 @@ func (c *TextBox) SetOnTextBoxKeyDown(onKeyDown func()) {
 }
 
 func (c *TextBox) timerCursorBlinking() {
-	if MainForm.focusedWidget != nil {
-		if MainForm.focusedWidget.Id() == c.id {
+	if c.form.focusedWidget != nil {
+		if c.form.focusedWidget.Id() == c.id {
 			if !c.skipOneCursorBlinking {
 				c.cursorVisible = !c.cursorVisible
-				UpdateMainForm()
+				c.form.Update()
 			}
 			c.skipOneCursorBlinking = false
 		}
@@ -175,7 +175,7 @@ func (c *TextBox) setText(text string, updateProp bool) {
 	c.modifyText(textboxModifyCommandSetText, modifiers, text)
 	c.updateInnerSize()
 	c.ScrollToBegin()
-	UpdateMainForm()
+	c.form.Update()
 
 	if updateProp {
 		c.SetProp("text", text)
@@ -227,7 +227,7 @@ func (c *TextBox) ProcessPropChange(key string, value interface{}) {
 		c.SetYExpandable(false)
 	}
 	c.updateInnerSize()
-	UpdateMainFormLayout()
+	c.form.Update()
 
 	c.propIsProcessing = false
 }
@@ -353,7 +353,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		yOffset += oneLineHeight
 	}
 
-	focus := MainForm.focusedWidget == c
+	focus := c.form.focusedWidget == c
 
 	// Cursor
 	if focus && c.cursorVisible {
@@ -558,7 +558,7 @@ func (c *TextBox) MouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 		c.dragingCursor = true
 		c.cursorVisible = true
 		c.skipOneCursorBlinking = true
-		UpdateMainForm()
+		c.form.Update()
 	}
 }
 
@@ -567,7 +567,7 @@ func (c *TextBox) MouseMove(x int, y int, mods nuikey.KeyModifiers) {
 	if c.mouseButtonPressed {
 		c.moveCursorNearPoint(x, y, mods)
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *TextBox) moveCursorNearPoint(x, y int, modifiers nuikey.KeyModifiers) {
@@ -624,7 +624,7 @@ func (c *TextBox) MouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey
 	c.dragingCursor = false
 	c.redraw()
 	c.mouseButtonPressed = false
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *TextBox) insertReturn(modifiers nuikey.KeyModifiers) bool {
@@ -721,7 +721,7 @@ func (c *TextBox) moveCursor(posX int, posY int, modifiers nuikey.KeyModifiers) 
 	if !c.blockUpdate {
 		c.ensureVisibleCursor()
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *TextBox) SelectedText() string {
@@ -927,7 +927,7 @@ func (c *TextBox) modifyText(cmd textboxModifyCommand, modifiers nuikey.KeyModif
 
 	}
 
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *TextBox) SelectAllText() {

@@ -9,6 +9,8 @@ type Widgeter interface {
 	Id() string
 	ParentWidgetId() string
 	SetParentWidgetId(id string)
+	setId(id string)
+	setForm(f *Form)
 	FullPath() []string
 	TypeName() string
 	Name() string
@@ -18,6 +20,7 @@ type Widgeter interface {
 	Height() int
 	InnerWidth() int
 	InnerHeight() int
+	Form() *Form
 
 	SetProp(key string, value interface{})
 	SetPropFunction(key string, f func())

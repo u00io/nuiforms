@@ -19,7 +19,7 @@ func ApplyDarkTheme() {
 	Theme["foreground.surface"] = ColorFromHex("#FFFFFF")
 	Theme["foreground.primary"] = ColorFromHex("#FFFFFF")
 	Theme["foreground.secondary"] = ColorFromHex("#FFFFFF")
-	UpdateMainForm()
+	//UpdateMainForm()
 }
 
 func ApplyLightTheme() {
@@ -30,13 +30,13 @@ func ApplyLightTheme() {
 	Theme["foreground.surface"] = ColorFromHex("#000000")
 	Theme["foreground.primary"] = ColorFromHex("#FFFFFF")
 	Theme["foreground.secondary"] = ColorFromHex("#FFFFFF")
-	UpdateMainForm()
+	//UpdateMainForm()
 }
 
 func ApplyBaseFontSize(fontSize float64) {
 	Theme["fontSize"] = fontSize
-	UpdateMainFormLayout()
-	UpdateMainForm()
+	//UpdateMainFormLayout()
+	//UpdateMainForm()
 }
 
 func ColorFromHex(hexStr string) color.RGBA {

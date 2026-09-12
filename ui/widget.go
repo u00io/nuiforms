@@ -18,6 +18,7 @@ type Widget struct {
 	name     string
 	typeName string
 
+	form           *Form
 	parentWidgetId string
 
 	// position
@@ -213,8 +214,12 @@ const MinInt = -MaxInt - 1
 const MAX_WIDTH = 100000
 const MAX_HEIGHT = 100000
 
+func (c *Widget) Form() *Form {
+	return c.form
+}
+
 func (c *Widget) InitWidget() {
-	c.id = NewId()
+	c.id = newWidgetId()
 	c.typeName = "Widget"
 	c.name = "Widget-" + c.id
 	c.props = make(map[string]any)
@@ -273,7 +278,7 @@ func (c *Widget) FullPath() []string {
 	path = append(path, c.Id())
 	parentWidgetId := c.parentWidgetId
 	for parentWidgetId != "" {
-		parentWidget := WidgetById(parentWidgetId)
+		parentWidget := c.form.WidgetById(parentWidgetId)
 		if parentWidget == nil {
 			break
 		}
@@ -314,7 +319,7 @@ func (c *Widget) SetVisible(visible bool) {
 	if c.visible != visible {
 		c.visible = visible
 		c.updateLayout(c.w, c.h, c.w, c.h)
-		UpdateMainForm()
+		c.form.Update()
 	}
 }
 
@@ -465,20 +470,31 @@ func (c *Widget) SetCellPadding(padding int) {
 }
 
 func (c *Widget) AddWidget(w Widgeter, gridRow int, gridColumn int) {
-	if _, exists := allwidgets[w.Id()]; exists {
-		return
+	if c.form != nil {
+		if _, exists := c.form.allwidgets[w.Id()]; exists {
+			return
+		}
 	}
 	w.SetGridPosition(gridRow, gridColumn)
 	c.widgets = append(c.widgets, w)
 	w.SetParentWidgetId(c.Id())
-	allwidgets[w.Id()] = w
+	w.setForm(c.form)
+	c.form.allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
-	MainForm.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
-	UpdateMainFormLayout()
+	c.form.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
+	c.form.UpdateLayout()
+}
+
+func (c *Widget) setId(id string) {
+	c.id = id
+}
+
+func (c *Widget) setForm(f *Form) {
+	c.form = f
 }
 
 func (c *Widget) RemoveWidget(w Widgeter) {
-	delete(allwidgets, w.Id())
+	delete(c.form.allwidgets, w.Id())
 	for i, widget := range c.widgets {
 		widgeter := widget
 		if widgeter.Id() == w.Id() {
@@ -492,12 +508,12 @@ func (c *Widget) RemoveWidget(w Widgeter) {
 
 func (c *Widget) RemoveAllWidgets() {
 	for _, w := range c.widgets {
-		delete(allwidgets, w.Id())
+		delete(c.form.allwidgets, w.Id())
 		w.SetParentWidgetId("")
 	}
 	c.widgets = make([]Widgeter, 0)
 	c.updateLayout(0, 0, 0, 0)
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Widget) FindWidgetByName(name string) Widgeter {
@@ -642,9 +658,11 @@ func (c *Widget) SetInnerSize(width, height int) {
 func (c *Widget) SetProp(key string, value any) {
 	c.props[key] = value
 
-	w := WidgetById(c.Id())
-	if w != nil {
-		w.ProcessPropChange(key, value)
+	if c.form != nil {
+		w := c.form.WidgetById(c.Id())
+		if w != nil {
+			w.ProcessPropChange(key, value)
+		}
 	}
 }
 
@@ -834,14 +852,14 @@ func (c *Widget) Focus() {
 		return
 	}
 	// fmt.Println("Widget Focused", c.Name(), "Id:", c.Id(), "Type:", c.TypeName())
-	widgetToFocus := WidgetById(c.Id())
+	widgetToFocus := c.form.WidgetById(c.Id())
 	if widgetToFocus == nil {
 		return
 	}
 	focusChanged := false
-	previousFocusedWidget := MainForm.focusedWidget
+	previousFocusedWidget := c.form.focusedWidget
 
-	if (MainForm.focusedWidget != nil && MainForm.focusedWidget.Id() != widgetToFocus.Id()) || previousFocusedWidget == nil {
+	if (c.form.focusedWidget != nil && c.form.focusedWidget.Id() != widgetToFocus.Id()) || previousFocusedWidget == nil {
 		focusChanged = true
 	}
 
@@ -850,8 +868,8 @@ func (c *Widget) Focus() {
 			previousFocusedWidget.ProcessFocusLost()
 		}
 
-		MainForm.focusedWidget = widgetToFocus
-		MainForm.Update()
+		c.form.focusedWidget = widgetToFocus
+		c.form.Update()
 
 		widgetToFocus.ProcessFocused()
 	}
@@ -870,11 +888,11 @@ func (c *Widget) ProcessFocusLost() {
 }
 
 func (c *Widget) IsFocused() bool {
-	return MainForm.focusedWidget == WidgetById(c.Id())
+	return c.form.focusedWidget == c.form.WidgetById(c.Id())
 }
 
 func (c *Widget) IsHovered() bool {
-	return MainForm.hoverWidget == WidgetById(c.Id())
+	return c.form.hoverWidget == c.form.WidgetById(c.Id())
 }
 
 func (c *Widget) Name() string {
@@ -1059,7 +1077,7 @@ func (c *Widget) findWidgetAt(x, y int) Widgeter {
 	if innerWidget != nil {
 		return innerWidget.findWidgetAt(x-innerWidget.X(), y-innerWidget.Y())
 	}
-	return WidgetById(c.Id())
+	return c.form.WidgetById(c.Id())
 	//return c
 }
 
@@ -1380,8 +1398,8 @@ func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 		//inWidget := true
 
 		inWidget := x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height()
-		if MainForm.mouseLeftButtonPressed && MainForm.mouseLeftButtonPressedWidget != nil {
-			pathToPressedWidget := MainForm.mouseLeftButtonPressedWidget.FullPath()
+		if c.form.mouseLeftButtonPressed && c.form.mouseLeftButtonPressedWidget != nil {
+			pathToPressedWidget := c.form.mouseLeftButtonPressedWidget.FullPath()
 			itemsInPathAsSet := make(map[string]bool)
 			for _, item := range pathToPressedWidget {
 				itemsInPathAsSet[item] = true
@@ -1411,7 +1429,7 @@ func (c *Widget) ProcessMouseLeave() bool {
 	if c.onMouseLeave != nil {
 		c.onMouseLeave()
 	}
-	MainForm.Update()
+	c.form.Update()
 	return true
 }
 
@@ -1419,7 +1437,7 @@ func (c *Widget) ProcessMouseEnter() bool {
 	if c.onMouseEnter != nil {
 		c.onMouseEnter()
 	}
-	MainForm.Update()
+	c.form.Update()
 	return true
 }
 
@@ -1614,12 +1632,12 @@ func (c *Widget) SetMaxHeight(maxHeight int) {
 
 func (c *Widget) AppendPopupWidget(w Widgeter) {
 	if w != nil {
-		w.setPreviousFocusedWidget(MainForm.focusedWidget)
+		w.setPreviousFocusedWidget(c.form.focusedWidget)
 		c.PopupWidgets = append(c.PopupWidgets, w)
-		w.SetParentWidgetId(MainForm.Panel().Id())
-		allwidgets[w.Id()] = w
+		w.SetParentWidgetId(c.form.Panel().Id())
+		c.form.allwidgets[w.Id()] = w
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
@@ -1638,7 +1656,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 			popupWidget := c.PopupWidgets[i]
 			previousFocusedWidget := popupWidget.getPreviousFocusedWidget()
 			popupWidget.ProcessClosePopup()
-			delete(allwidgets, popupWidget.Id())
+			delete(c.form.allwidgets, popupWidget.Id())
 			if previousFocusedWidget != nil {
 				previousFocusedWidget.Focus()
 			}
@@ -1648,7 +1666,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 			c.PopupWidgets = append(c.PopupWidgets[:foundIndex], c.PopupWidgets[foundIndex+1:]...)
 		}
 		c.ClearFocus()
-		UpdateMainForm()
+		c.form.Update()
 	}
 }
 
@@ -1656,7 +1674,7 @@ func (c *Widget) CloseAllPopup() {
 	for _, popupWidget := range c.PopupWidgets {
 		previousFocusedWidget := popupWidget.getPreviousFocusedWidget()
 		popupWidget.ProcessClosePopup()
-		delete(allwidgets, popupWidget.Id())
+		delete(c.form.allwidgets, popupWidget.Id())
 		if previousFocusedWidget != nil {
 			previousFocusedWidget.Focus()
 		}
@@ -1665,7 +1683,7 @@ func (c *Widget) CloseAllPopup() {
 	c.ClearFocus()
 
 	c.PopupWidgets = make([]Widgeter, 0)
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *Widget) CloseTopPopup() {
@@ -1678,7 +1696,7 @@ func (c *Widget) CloseTopPopup() {
 
 	previousFocusedWidget := c.PopupWidgets[len(c.PopupWidgets)-1].getPreviousFocusedWidget()
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
-	delete(allwidgets, c.PopupWidgets[len(c.PopupWidgets)-1].Id())
+	delete(c.form.allwidgets, c.PopupWidgets[len(c.PopupWidgets)-1].Id())
 	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
 	if previousFocusedWidget != nil {
 		previousFocusedWidget.Focus()
@@ -1689,10 +1707,10 @@ func (c *Widget) ProcessClosePopup() {
 }
 
 func (c *Widget) ClearFocus() {
-	if MainForm.focusedWidget != nil {
-		MainForm.focusedWidget.ProcessFocusLost()
-		MainForm.focusedWidget = nil
-		MainForm.Update()
+	if c.form.focusedWidget != nil {
+		c.form.focusedWidget.ProcessFocusLost()
+		c.form.focusedWidget = nil
+		c.form.Update()
 	}
 }
 
@@ -1706,7 +1724,11 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 		updateLayoutStack--
 	}()*/
 
-	if MainForm.layoutingBlockStack > 0 {
+	if c.form == nil {
+		return
+	}
+
+	if c.form.layoutingBlockStack > 0 {
 		return
 	}
 
@@ -2298,7 +2320,7 @@ func (c *Widget) ForegroundColorDisabled() color.Color {
 func (c *Widget) CurrentElevation() int {
 	summedElevation := 0
 	for _, wId := range c.FullPath() {
-		wId := WidgetById(wId)
+		wId := c.form.WidgetById(wId)
 		if wId != nil {
 			summedElevation += wId.Elevation()
 		}
@@ -2312,7 +2334,7 @@ func (c *Widget) BackgroundColorWithAddElevation(elevation int) color.Color {
 	}
 	summedElevation := elevation
 	for _, wId := range c.FullPath() {
-		wId := WidgetById(wId)
+		wId := c.form.WidgetById(wId)
 		if wId != nil {
 			summedElevation += wId.Elevation()
 		}
@@ -2326,7 +2348,7 @@ func (c *Widget) BackgroundColor() color.Color {
 	}
 	summedElevation := 0
 	for _, wId := range c.FullPath() {
-		wId := WidgetById(wId)
+		wId := c.form.WidgetById(wId)
 		if wId != nil {
 			summedElevation += wId.Elevation()
 		}
@@ -2351,7 +2373,7 @@ func (c *Widget) ParentWidget() Widgeter {
 	if parentWidgetId == "" {
 		return nil
 	}
-	return WidgetById(parentWidgetId)
+	return c.form.WidgetById(parentWidgetId)
 }
 
 func (c *Widget) RectClientAreaOnWindow() (x, y int) {
@@ -2590,7 +2612,7 @@ func (c *Widget) nextFocus(reverse bool) {
 	for _, w := range children {
 		if w.IsCanBeFocused() && w.IsVisible() {
 			focusableWidgets = append(focusableWidgets, w)
-			if MainForm.FocusedWidget().Id() == w.Id() {
+			if c.form.FocusedWidget().Id() == w.Id() {
 				focusedWidgetIndex = len(focusableWidgets) - 1
 			}
 		}
@@ -2637,7 +2659,7 @@ func (c *Widget) nextFocusByDirection(dir string) {
 		return
 	}
 
-	focusWidget := MainForm.FocusedWidget()
+	focusWidget := c.form.FocusedWidget()
 
 	var focusableWidgets []Widgeter
 	for _, w := range children {

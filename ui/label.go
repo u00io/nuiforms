@@ -62,7 +62,7 @@ func (c *Label) onPaint(cnv *Canvas) {
 // Props
 func (c *Label) ProcessPropChange(key string, value interface{}) {
 	c.updateInnerSize()
-	UpdateMainFormLayout()
+	c.form.UpdateLayout()
 }
 
 /////////////////////////////////////////////////////////////////////////////////

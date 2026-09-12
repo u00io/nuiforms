@@ -38,7 +38,7 @@ func (c *ImageBox) Image() image.Image {
 
 func (c *ImageBox) SetImage(img image.Image) {
 	c.image = img
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *ImageBox) Scaling() ImageBoxScale {
@@ -50,7 +50,7 @@ func (c *ImageBox) SetScaling(scaling ImageBoxScale) {
 		return
 	}
 	c.scaling = scaling
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *ImageBox) draw(cnv *Canvas) {

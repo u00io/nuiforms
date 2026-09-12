@@ -104,7 +104,7 @@ func (c *TabWidget) rebuildInterface() {
 	if c.currentPage >= 0 && c.currentPage < len(c.pages) {
 		c.panelContent.AddWidget(c.pages[c.currentPage].widget, 0, 0)
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *TabWidget) drawPost(cnv *Canvas) {
@@ -158,12 +158,12 @@ func (c *tabWidgetHeader) setCurrentPage(index int) {
 			c.onTabChangedCalled = false
 		}
 	}
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *tabWidgetHeader) SetItems(items []string) {
 	c.items = items
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *tabWidgetHeader) itemByCoords(x int, y int) int {
@@ -203,7 +203,7 @@ func (c *tabWidgetHeader) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bo
 	} else {
 		c.SetMouseCursor(nuimouse.MouseCursorNotDefined)
 	}
-	UpdateMainForm()
+	c.form.Update()
 	return true
 }
 

@@ -37,7 +37,7 @@ func (c *RadioButton) Text() string {
 
 func (c *RadioButton) SetText(text string) {
 	c.text = text
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *RadioButton) SetOnStateChanged(fn func(btn *RadioButton, checked bool)) {
@@ -102,7 +102,7 @@ func (c *RadioButton) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y
 		return false
 	}
 
-	hoverWidgeter := MainForm.hoverWidget
+	hoverWidgeter := c.form.hoverWidget
 	var localWidgeter Widgeter = c
 	if hoverWidgeter == localWidgeter {
 		if !c.checked {

@@ -55,7 +55,7 @@ func (c *Chart) Data() []ChartPoint {
 
 func (c *Chart) SetData(points []ChartPoint) {
 	c.points = points
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func formatChartTick(v, span float64) string {

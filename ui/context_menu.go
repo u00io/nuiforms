@@ -23,8 +23,8 @@ func NewContextMenu(parent Widgeter) *ContextMenu {
 func (c *ContextMenu) ShowMenu(x int, y int) {
 	c.SetPosition(x, y)
 	c.rebuildVisualElements()
-	MainForm.Panel().AppendPopupWidget(c)
-	UpdateMainForm()
+	c.form.Panel().AppendPopupWidget(c)
+	c.form.Update()
 }
 
 func (c *ContextMenu) showMenu(x int, y int, parentMenu *ContextMenu) {
@@ -33,7 +33,7 @@ func (c *ContextMenu) showMenu(x int, y int, parentMenu *ContextMenu) {
 	c.SetPosition(x, y)
 	c.rebuildVisualElements()
 	//c.Window().AppendPopup(c)
-	MainForm.Panel().AppendPopupWidget(c)
+	c.form.Panel().AppendPopupWidget(c)
 }
 
 func (c *ContextMenu) ClosePopup() {
@@ -66,7 +66,7 @@ func (c *ContextMenu) AddItemWithSubmenu(text string, innerMenu *ContextMenu) *C
 func (c *ContextMenu) RemoveAllItems() {
 	c.RemoveAllWidgets()
 	c.rebuildVisualElements()
-	UpdateMainForm()
+	c.form.Update()
 }
 
 func (c *ContextMenu) OnInit() {
@@ -74,7 +74,7 @@ func (c *ContextMenu) OnInit() {
 }
 
 func (c *ContextMenu) needToClose() {
-	MainForm.Panel().CloseTopPopup()
+	c.form.Panel().CloseTopPopup()
 	if c.parentMenu != nil {
 		c.parentMenu.needToClose()
 	}
