@@ -227,17 +227,20 @@ func (c *Form) createWindow(maximized bool) {
 func (c *Form) Show() {
 	c.createWindow(false)
 	c.wnd.Show()
+	c.processResize(c.width, c.height)
 }
 
 func (c *Form) ShowModal(parent *Form) {
 	c.createWindow(false)
 	c.wnd.ShowModal(parent.wnd)
+	c.processResize(c.width, c.height)
 }
 
 func (c *Form) ShowMaximized() {
 	c.createWindow(true)
 	c.wnd.Show()
 	c.wnd.MaximizeWindow()
+	c.processResize(c.width, c.height)
 }
 
 func (c *Form) Exec() {
