@@ -11,5 +11,6 @@ func NewExampleForm() *ui.Form {
 func Run(form *ui.Form) {
 	f := NewExampleForm()
 	f.SetSize(200, 100)
+	f.Show()
 	f.Exec()
 }

@@ -189,9 +189,8 @@ func (c *Form) Panel() *Panel {
 	return c.topWidget
 }
 
-func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
-	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, false, maximazed)
-
+func (c *Form) createWindow(maximized bool) {
+	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, false, maximized)
 	c.wnd.OnPaint(c.processPaint)
 	c.wnd.OnResize(c.processResize)
 	c.wnd.OnMouseButtonDown(c.processMouseDown)
@@ -210,7 +209,10 @@ func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
 	if c.posX >= 0 && c.posY >= 0 {
 		c.wnd.Move(c.posX, c.posY)
 	}
+}
 
+/*func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
+	c.createWindow()
 	if modal {
 		c.wnd.ShowModal(parent.wnd)
 	} else {
@@ -219,20 +221,30 @@ func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
 			c.wnd.MaximizeWindow()
 		}
 		c.processResize(c.width, c.height)
-		c.wnd.EventLoop()
 	}
+}*/
+
+func (c *Form) Show() {
+	c.createWindow(false)
+	c.wnd.Show()
+}
+
+func (c *Form) ShowModal(parent *Form) {
+	c.createWindow(false)
+	c.wnd.ShowModal(parent.wnd)
+}
+
+func (c *Form) ShowMaximized() {
+	c.createWindow(true)
+	c.wnd.Show()
+	c.wnd.MaximizeWindow()
 }
 
 func (c *Form) Exec() {
-	c.exec(false, false, nil)
-}
-
-func (c *Form) ExecModal(parent *Form) {
-	c.exec(false, true, parent)
-}
-
-func (c *Form) ExecMaximized() {
-	c.exec(true, false, nil)
+	if c.wnd == nil {
+		panic("window is not created. Call Show or ShowModal first")
+	}
+	c.wnd.Exec()
 }
 
 func (c *Form) realUpdate() {

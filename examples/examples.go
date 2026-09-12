@@ -24,6 +24,7 @@ func Run() {
 		})
 
 		form.Panel().AddWidget(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
+		form.Show()
 		form.Exec()
 	}
 }
