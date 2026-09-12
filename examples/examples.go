@@ -11,16 +11,16 @@ func Run() {
 		form.SetTitle("Examples")
 		form.SetSize(800, 600)
 
-		addButton := func(text string, onClick func()) {
+		addButton := func(text string, newFormFunc func() *ui.Form) {
 			btn := ui.NewButton(text)
-			btn.SetOnClick(onClick)
-
+			btn.SetOnClick(func() {
+				newForm := newFormFunc()
+				newForm.ShowModal(form)
+			})
 			form.Panel().AddWidget(btn, form.Panel().NextGridRow(), 0)
 		}
 
-		addButton("Example 01 - Base Form", func() {
-			ex01base.Run(form)
-		})
+		addButton("Example 01 - Base Form", ex01base.NewExampleForm)
 
 		form.Panel().AddWidget(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
 		form.Show()
