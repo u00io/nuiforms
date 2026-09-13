@@ -103,11 +103,10 @@ func (c *Label) SetUnderline(underline bool) {
 
 // updateInnerSize updates the inner size of the Label based on its text.
 func (c *Label) updateInnerSize() {
-	textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
+	textWidth, err := measureMultilineTextWidth(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
 		return
 	}
-	_ = textWidth
 
 	if !c.XExpandable() {
 		// if not expandable, set inner width to text width

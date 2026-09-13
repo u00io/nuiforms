@@ -46,6 +46,9 @@ type Form struct {
 	updateBlockStack    int
 	layoutingBlockStack int
 
+	allowMinimize bool
+	allowMaximize bool
+
 	allwidgets map[string]Widgeter
 
 	OnClose func() bool
@@ -98,6 +101,8 @@ func NewForm() *Form {
 	c.posY = -1
 	c.width = 800
 	c.height = 600
+	c.allowMinimize = true
+	c.allowMaximize = true
 	topWidget := NewPanel()
 	topWidget.form = &c
 	topWidget.SetName("FormTopWidget")
@@ -176,6 +181,20 @@ func (c *Form) IsMaximized() bool {
 	return false
 }
 
+func (c *Form) SetAllowMinimize(allow bool) {
+	c.allowMinimize = allow
+	if c.wnd != nil {
+		c.wnd.SetAllowMinimize(allow)
+	}
+}
+
+func (c *Form) SetAllowMaximize(allow bool) {
+	c.allowMaximize = allow
+	if c.wnd != nil {
+		c.wnd.SetAllowMaximize(allow)
+	}
+}
+
 func (c *Form) SetOnGlobalKeyDown(onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool) {
 	c.onGlobalKeyDown = onGlobalKeyDown
 }
@@ -206,6 +225,8 @@ func (c *Form) createWindow(maximized bool) {
 	c.wnd.OnTimer(c.processTimer)
 	c.wnd.OnMove(c.processWindowMove)
 	c.wnd.OnCloseRequest(c.processWindowClose)
+	c.wnd.SetAllowMinimize(c.allowMinimize)
+	c.wnd.SetAllowMaximize(c.allowMaximize)
 	if c.posX >= 0 && c.posY >= 0 {
 		c.wnd.Move(c.posX, c.posY)
 	}
