@@ -29,23 +29,12 @@ type Widget struct {
 	w int
 	h int
 
-	// anchors
-	anchorLeft   bool
-	anchorTop    bool
-	anchorRight  bool
-	anchorBottom bool
-
 	// inner widgets
 	absolutePositioning bool
 	widgets             []Widgeter
-	//cellPadding         int // Padding between cells in the grid
-	//panelPadding        int // Padding around the panel
 
 	gridX int // Grid position
 	gridY int // Grid position
-
-	//xExpandable bool // If the widget can expand in X direction
-	//yExpandable bool // If the widget can expand in Y direction
 
 	minWidth  int // Minimum width
 	maxWidth  int // Maximum width
@@ -244,10 +233,10 @@ func (c *Widget) InitWidget() {
 	c.scrollBarXColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
 	c.scrollBarYColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
 	c.innerWidth = 0
-	c.anchorLeft = true
+	/*c.anchorLeft = true
 	c.anchorTop = true
 	c.anchorRight = false
-	c.anchorBottom = false
+	c.anchorBottom = false*/
 	c.widgets = make([]Widgeter, 0)
 	c.closeByClickOutside = true
 
@@ -297,6 +286,9 @@ func (c *Widget) ParentWidgetId() string {
 
 func (c *Widget) SetParentWidgetId(id string) {
 	c.parentWidgetId = id
+	if id == "" {
+		c.attachToForm(nil)
+	}
 }
 
 func (c *Widget) SetName(name string) {
@@ -470,31 +462,41 @@ func (c *Widget) SetCellPadding(padding int) {
 }
 
 func (c *Widget) AddWidget(w Widgeter, gridRow int, gridColumn int) {
-	if c.form != nil {
-		if _, exists := c.form.allwidgets[w.Id()]; exists {
-			return
-		}
+	if _, exists := allwidgets[w.Id()]; exists {
+		return
 	}
 	w.SetGridPosition(gridRow, gridColumn)
 	c.widgets = append(c.widgets, w)
 	w.SetParentWidgetId(c.Id())
-	w.setForm(c.form)
-	c.form.allwidgets[w.Id()] = w
+	w.attachToForm(c.form)
+	allwidgets[w.Id()] = w
 	c.updateLayout(0, 0, 0, 0)
-	c.form.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
-	c.form.UpdateLayout()
+	if c.form != nil {
+		c.form.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
+		c.form.UpdateLayout()
+	}
 }
 
 func (c *Widget) setId(id string) {
 	c.id = id
 }
 
-func (c *Widget) setForm(f *Form) {
-	c.form = f
+func (c *Widget) attachToForm(form *Form) {
+	c.form = form
+	if form != nil {
+		allwidgets[c.id] = c
+	} else {
+		delete(allwidgets, c.id)
+	}
+	for _, w := range c.widgets {
+		w.attachToForm(form)
+	}
+	if c.contextMenu != nil {
+		c.contextMenu.attachToForm(form)
+	}
 }
 
 func (c *Widget) RemoveWidget(w Widgeter) {
-	delete(c.form.allwidgets, w.Id())
 	for i, widget := range c.widgets {
 		widgeter := widget
 		if widgeter.Id() == w.Id() {
@@ -508,7 +510,6 @@ func (c *Widget) RemoveWidget(w Widgeter) {
 
 func (c *Widget) RemoveAllWidgets() {
 	for _, w := range c.widgets {
-		delete(c.form.allwidgets, w.Id())
 		w.SetParentWidgetId("")
 	}
 	c.widgets = make([]Widgeter, 0)
@@ -926,10 +927,10 @@ func (c *Widget) SetMaxSize(maxWidth, maxHeight int) {
 }
 
 func (c *Widget) SetAnchors(left, top, right, bottom bool) {
-	c.anchorLeft = left
+	/*c.anchorLeft = left
 	c.anchorTop = top
 	c.anchorRight = right
-	c.anchorBottom = bottom
+	c.anchorBottom = bottom*/
 }
 
 func (c *Widget) SetOnClick(f func()) {
@@ -1352,6 +1353,10 @@ func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 }
 
 func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
+	if c.form == nil {
+		return false
+	}
+
 	if len(c.PopupWidgets) > 0 {
 		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
 		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
@@ -1595,9 +1600,9 @@ func (c *Widget) checkScrolls() {
 	}
 }
 
-func (c *Widget) Anchors() (left, top, right, bottom bool) {
+/*func (c *Widget) Anchors() (left, top, right, bottom bool) {
 	return c.anchorLeft, c.anchorTop, c.anchorRight, c.anchorBottom
-}
+}*/
 
 func (c *Widget) SetAbsolutePositioning(absolute bool) {
 	c.absolutePositioning = absolute
@@ -1635,7 +1640,8 @@ func (c *Widget) AppendPopupWidget(w Widgeter) {
 		w.setPreviousFocusedWidget(c.form.focusedWidget)
 		c.PopupWidgets = append(c.PopupWidgets, w)
 		w.SetParentWidgetId(c.form.Panel().Id())
-		c.form.allwidgets[w.Id()] = w
+		allwidgets[w.Id()] = w
+		w.attachToForm(w.Form())
 	}
 	c.form.Update()
 }
@@ -1656,7 +1662,6 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 			popupWidget := c.PopupWidgets[i]
 			previousFocusedWidget := popupWidget.getPreviousFocusedWidget()
 			popupWidget.ProcessClosePopup()
-			delete(c.form.allwidgets, popupWidget.Id())
 			if previousFocusedWidget != nil {
 				previousFocusedWidget.Focus()
 			}
@@ -1674,7 +1679,6 @@ func (c *Widget) CloseAllPopup() {
 	for _, popupWidget := range c.PopupWidgets {
 		previousFocusedWidget := popupWidget.getPreviousFocusedWidget()
 		popupWidget.ProcessClosePopup()
-		delete(c.form.allwidgets, popupWidget.Id())
 		if previousFocusedWidget != nil {
 			previousFocusedWidget.Focus()
 		}
@@ -1696,7 +1700,6 @@ func (c *Widget) CloseTopPopup() {
 
 	previousFocusedWidget := c.PopupWidgets[len(c.PopupWidgets)-1].getPreviousFocusedWidget()
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
-	delete(c.form.allwidgets, c.PopupWidgets[len(c.PopupWidgets)-1].Id())
 	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
 	if previousFocusedWidget != nil {
 		previousFocusedWidget.Focus()
@@ -1718,11 +1721,6 @@ func (c *Widget) ClearFocus() {
 
 func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 	//fmt.Println("Begin Widget", c.name, "layout updated:", "Width:", c.w, "Height:", c.h, "InnerWidth:", c.innerWidth, "InnerHeight:", c.innerHeight)
-	//dt := time.Now()
-	/*updateLayoutStack++
-	defer func() {
-		updateLayoutStack--
-	}()*/
 
 	if c.form == nil {
 		return
@@ -1738,31 +1736,10 @@ func (c *Widget) updateLayout(oldWidth, oldHeight, newWidth, newHeight int) {
 
 	if c.absolutePositioning {
 		for _, w := range c.widgets {
-			deltaWidth := newWidth - oldWidth
-			deltaHeight := newHeight - oldHeight
-
 			newX := w.X()
 			newY := w.Y()
 			newW := w.Width()
 			newH := w.Height()
-
-			anchorLeft, anchorTop, anchorRight, anchorBottom := w.Anchors()
-
-			if anchorLeft && anchorRight {
-				newW += deltaWidth
-			}
-			if !anchorLeft && anchorRight {
-				newX += deltaWidth
-			}
-
-			if anchorTop && anchorBottom {
-				newH += deltaHeight
-			}
-
-			if !anchorTop && anchorBottom {
-				newY += deltaHeight
-			}
-
 			w.SetSize(newW, newH)
 			w.SetPosition(newX, newY)
 		}
@@ -2362,6 +2339,7 @@ func (c *Widget) BackgroundColorForRole(role string) color.Color {
 
 func (c *Widget) SetContextMenu(menu *ContextMenu) {
 	c.contextMenu = menu
+	c.contextMenu.attachToForm(c.form)
 }
 
 func (c *Widget) ContextMenu() *ContextMenu {

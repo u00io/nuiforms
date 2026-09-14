@@ -15,6 +15,7 @@ func NewContextMenu(parent Widgeter) *ContextMenu {
 	var c ContextMenu
 	c.InitWidget()
 	c.SetAbsolutePositioning(true)
+	c.SetTypeName("ContextMenu")
 	c.SetName("PopupMenuPanel")
 	c.SetBackgroundColor(c.BackgroundColor())
 	return &c

@@ -3,6 +3,7 @@ package examples
 import (
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02messagebox"
+	"github.com/u00io/nuiforms/examples/ex03customwidget"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -23,9 +24,16 @@ func Run() {
 
 		addButton("Example 01 - Base Form", ex01base.NewExampleForm)
 		addButton("Example 02 - MessageBox", ex02messagebox.NewExample)
+		addButton("Example 03 - Custom Widget", ex03customwidget.NewExample)
 
 		form.Panel().AddWidget(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
 		form.Show()
 		form.Exec()
 	}
+}
+
+func RunSample() {
+	form := ex03customwidget.NewExample()
+	form.Show()
+	form.Exec()
 }

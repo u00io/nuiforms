@@ -10,7 +10,7 @@ type Widgeter interface {
 	ParentWidgetId() string
 	SetParentWidgetId(id string)
 	setId(id string)
-	setForm(f *Form)
+	attachToForm(f *Form)
 	FullPath() []string
 	TypeName() string
 	Name() string
@@ -50,11 +50,13 @@ type Widgeter interface {
 	SetName(name string)
 	SetPosition(x, y int)
 	SetSize(width, height int)
-	SetAnchors(left, top, right, bottom bool)
+	//SetAnchors(left, top, right, bottom bool)
 
 	getWidgetAt(x, y int) Widgeter
 	findWidgetAt(x, y int) Widgeter
+
 	Focus()
+	ClearFocus()
 
 	ProcessPaint(cnv *Canvas)
 	ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool
@@ -84,7 +86,7 @@ type Widgeter interface {
 	SetMouseCursor(cursor nuimouse.MouseCursor)
 	MouseCursor() nuimouse.MouseCursor
 
-	Anchors() (left, top, right, bottom bool)
+	// Anchors() (left, top, right, bottom bool)
 
 	AddWidget(widget Widgeter, gridX, gridY int)
 	RemoveWidget(widget Widgeter)

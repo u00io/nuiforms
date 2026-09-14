@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"runtime"
 	"runtime/debug"
+	"sort"
 	"time"
 
 	"github.com/u00io/nui/nui"
@@ -49,15 +50,31 @@ type Form struct {
 	allowMinimize bool
 	allowMaximize bool
 
-	allwidgets map[string]Widgeter
-
 	OnClose func() bool
 }
 
 var nextWidgetId int64
+var allwidgets map[string]Widgeter
 
 func init() {
 	nextWidgetId = 1
+	allwidgets = make(map[string]Widgeter)
+}
+
+func PrintAllWidgets() {
+	ws := make([]Widgeter, 0)
+	for _, w := range allwidgets {
+		ws = append(ws, w)
+	}
+	sort.Slice(ws, func(i, j int) bool {
+		return ws[i].Id() < ws[j].Id()
+	})
+	fmt.Println("")
+	fmt.Println("WIDGETS:")
+	for _, w := range ws {
+		fmt.Println(w.Id(), w.TypeName())
+	}
+	fmt.Println("")
 }
 
 func (c *Form) SystemHandle() any {
@@ -87,7 +104,7 @@ func (c *Form) UpdateLayout() {
 }
 
 func (c *Form) WidgetById(id string) Widgeter {
-	if widget, exists := c.allwidgets[id]; exists {
+	if widget, exists := allwidgets[id]; exists {
 		return widget
 	}
 	return nil
@@ -111,8 +128,7 @@ func NewForm() *Form {
 	topWidget.SetAnchors(true, true, true, true)
 	topWidget.SetAutoFillBackground(true)
 	c.topWidget = topWidget
-	c.allwidgets = make(map[string]Widgeter)
-	c.allwidgets[topWidget.Id()] = topWidget
+	allwidgets[topWidget.Id()] = topWidget
 	return &c
 }
 
@@ -375,7 +391,13 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressedWidget = widgetAtCoords
 	}
 	if widgetAtCoords != nil {
-		widgetAtCoords.Focus()
+		if widgetAtCoords.IsCanBeFocused() {
+			widgetAtCoords.Focus()
+		} else {
+			if c.FocusedWidget() != nil {
+				c.FocusedWidget().ClearFocus()
+			}
+		}
 	}
 	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers)
 	c.Update()
