@@ -852,6 +852,9 @@ func (c *Widget) Focus() {
 	if !c.canBeFocused {
 		return
 	}
+	if c.form == nil {
+		return
+	}
 	// fmt.Println("Widget Focused", c.Name(), "Id:", c.Id(), "Type:", c.TypeName())
 	widgetToFocus := c.form.WidgetById(c.Id())
 	if widgetToFocus == nil {

@@ -19,6 +19,40 @@ const (
 )
 
 func ShowMessageBox(parentWidget Widgeter, title string, text string) {
+	c, buttonPanel := newMessageBoxForm(title, text)
+
+	buttonPanel.AddHSpacer(0, 0)
+	buttonPanel.AddButton(0, 1, "OK", func() { c.Close() })
+	buttonPanel.AddHSpacer(0, 2)
+
+	showMessageBoxForm(c, parentWidget)
+}
+
+func ShowQuestionMessageBoxYesNo(parentWidget Widgeter, title string, text string, onYes func(), onNo func()) {
+	c, buttonPanel := newMessageBoxForm(title, text)
+
+	buttonPanel.AddHSpacer(0, 0)
+	buttonPanel.AddButton(0, 1, "Yes", func() {
+		c.Close()
+		if onYes != nil {
+			onYes()
+		}
+	})
+	buttonPanel.AddHSpacer(0, 2)
+	buttonPanel.AddButton(0, 3, "No", func() {
+		c.Close()
+		if onNo != nil {
+			onNo()
+		}
+	})
+	buttonPanel.AddHSpacer(0, 4)
+
+	showMessageBoxForm(c, parentWidget)
+}
+
+// newMessageBoxForm builds a message box form sized to fit the wrapped text
+// and returns it along with the empty panel reserved for the button row.
+func newMessageBoxForm(title string, text string) (*Form, *Panel) {
 	c := NewForm()
 	c.SetTitle(title)
 	c.SetAllowMinimize(false)
@@ -64,10 +98,12 @@ func ShowMessageBox(parentWidget Widgeter, title string, text string) {
 	lbl.SetTextAlign(HAlignCenter)
 	lbl.SetMinHeight(textHeight)
 	c.Panel().AddVSpacer(1, 0)
-	panel := c.Panel().AddPanel(2, 0)
-	panel.AddHSpacer(0, 0)
-	panel.AddButton(0, 1, "OK", func() { c.Close() })
-	panel.AddHSpacer(0, 2)
+	buttonPanel := c.Panel().AddPanel(2, 0)
+
+	return c, buttonPanel
+}
+
+func showMessageBoxForm(c *Form, parentWidget Widgeter) {
 	if parentWidget != nil {
 		c.ShowModal(parentWidget.Form())
 	} else {
