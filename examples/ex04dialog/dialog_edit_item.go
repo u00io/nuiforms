@@ -72,6 +72,9 @@ func NewDialogEditItem(item ItemToEdit) *DialogEditItem {
 }
 
 func (c *DialogEditItem) OnShow() {
+	c.Form().SetTitle("Edit Item Dialog")
+	c.Form().SetSize(400, 220)
+	c.Form().MoveToCenterOfParent()
 	c.txtName.Focus()
 	c.txtName.SelectAllText()
 }

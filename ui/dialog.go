@@ -29,12 +29,10 @@ func (c *DialogContent) onDialogReject() bool {
 	return true
 }
 
-func (c *Widget) ShowDialog(title string, width int, height int, centralWidget Widgeter) {
+func (c *Widget) ShowDialog(centralWidget Widgeter) {
 	form := NewForm()
-	form.SetTitle(title)
 	form.SetAllowMinimize(false)
 	form.SetAllowMaximize(false)
-	form.SetSize(width, height)
 	form.Panel().AddWidget(0, 0, centralWidget)
 	form.ShowModal(c.form)
 

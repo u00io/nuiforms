@@ -16,7 +16,7 @@ func NewExampleForm() *ui.Form {
 		dialog.OnCancel = func() {
 			ui.ShowMessageBox(form.Panel(), "Cancel", "Cancel clicked")
 		}
-		form.Panel().ShowDialog("New Item Dialog", 400, 150, dialog)
+		form.Panel().ShowDialog(dialog)
 	})
 	item := ItemToEdit{Name: "Item #1", Description: "First item", IsActive: true}
 	form.Panel().AddButton(0, 1, "Dialog Edit Item", func() {
@@ -28,7 +28,7 @@ func NewExampleForm() *ui.Form {
 		dialog.OnCancel = func() {
 			ui.ShowMessageBox(form.Panel(), "Cancel", "Edit cancelled")
 		}
-		form.Panel().ShowDialog("Edit Item Dialog", 400, 220, dialog)
+		form.Panel().ShowDialog(dialog)
 	})
 	settings := Settings{UserName: "user", Email: "user@example.com", Notifications: true}
 	form.Panel().AddButton(0, 2, "Dialog Settings", func() {
@@ -43,7 +43,7 @@ func NewExampleForm() *ui.Form {
 		dialog.OnCancel = func() {
 			ui.ShowMessageBox(form.Panel(), "Cancel", "Settings not changed")
 		}
-		form.Panel().ShowDialog("Settings", 400, 220, dialog)
+		form.Panel().ShowDialog(dialog)
 	})
 	form.Panel().AddButton(0, 3, "Simple Message Box", func() {
 		ui.ShowMessageBox(form.Panel(), "Message", "This is a simple message box")

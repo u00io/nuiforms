@@ -44,9 +44,12 @@ func NewDialogNewItem() *DialogNewItem {
 }
 
 func (c *DialogNewItem) OnShow() {
+	c.txtBox.Form().SetTitle("New Item Dialog")
+	c.txtBox.Form().SetSize(300, 150)
+	c.txtBox.Form().MoveToCenterOfParent()
 	c.txtBox.Focus()
 }
 
 func (c *DialogNewItem) OnReject() bool {
-	return false
+	return true
 }

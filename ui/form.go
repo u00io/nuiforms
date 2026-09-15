@@ -50,6 +50,11 @@ type Form struct {
 	allowMinimize bool
 	allowMaximize bool
 
+	// parentForm is the form this one was shown modally over (see ShowModal),
+	// kept around so MoveToCenterOfParent can re-center later - e.g. after
+	// OnDialogShow resizes the dialog to fit its actual content.
+	parentForm *Form
+
 	OnClose func() bool
 }
 
@@ -262,6 +267,7 @@ func (c *Form) ShowModal(parent *Form) {
 	if parent == nil {
 		panic("parent form cannot be nil for ShowModal")
 	}
+	c.parentForm = parent
 	if c.posX < 0 && c.posY < 0 {
 		c.centerOnForm(parent)
 	}
@@ -282,6 +288,19 @@ func (c *Form) centerOnForm(parent *Form) {
 	if c.posY < 0 {
 		c.posY = 0
 	}
+}
+
+// MoveToCenterOfParent re-centers the window over the form it was shown
+// modally over (see ShowModal). Useful when a dialog only knows its real
+// size once it's building itself (e.g. from OnDialogShow, after SetSize),
+// i.e. too late for ShowModal's own initial centering to use it. Does
+// nothing if the form was not shown via ShowModal.
+func (c *Form) MoveToCenterOfParent() {
+	if c.parentForm == nil {
+		return
+	}
+	c.centerOnForm(c.parentForm)
+	c.Move(c.posX, c.posY)
 }
 
 func (c *Form) ShowMaximized() {

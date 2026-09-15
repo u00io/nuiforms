@@ -70,6 +70,9 @@ func NewDialogSettings(settings Settings) *DialogSettings {
 }
 
 func (c *DialogSettings) OnShow() {
+	c.Form().SetTitle("Settings")
+	c.Form().SetSize(400, 220)
+	c.Form().MoveToCenterOfParent()
 	c.txtUserName.Focus()
 	c.txtUserName.SelectAllText()
 }
