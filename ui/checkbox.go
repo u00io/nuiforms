@@ -82,16 +82,22 @@ func (c *Checkbox) draw(cnv *Canvas) {
 	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.Text())
 
 	padding := 5
+	boxSize := 30 - padding*2
 
 	cnv.SetColor(c.BackgroundColorWithAddElevation(-2))
-	cnv.FillRoundedRect(padding, padding, 30-padding*2, 30-padding*2, 3)
+	cnv.FillRoundedRect(padding, padding, boxSize, boxSize, 3)
 
-	//cnv.SetColor(c.BackgroundColorWithAddElevation(5))
-	//cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
 	if c.Checked() {
-		cnv.SetColor(c.ForegroundColor())
-		internalPadding := 9
-		cnv.FillRoundedRect(internalPadding, internalPadding, 30-internalPadding*2, 30-internalPadding*2, 3)
+		tickColor := c.ForegroundColor()
+		tickWidth := 2
+		// A short stroke down to the tick's low point, then a longer stroke
+		// up to its top-right end - the usual checkmark shape, sized as
+		// fractions of boxSize so it stays right if padding/boxSize change.
+		x1, y1 := padding+boxSize*3/20, padding+boxSize*11/20
+		x2, y2 := padding+boxSize*8/20, padding+boxSize*16/20
+		x3, y3 := padding+boxSize*17/20, padding+boxSize*4/20
+		cnv.DrawLine(x1, y1, x2, y2, tickWidth, tickColor)
+		cnv.DrawLine(x2, y2, x3, y3, tickWidth, tickColor)
 	}
 }
 
