@@ -461,7 +461,7 @@ func (c *Widget) SetCellPadding(padding int) {
 	c.SetProp("spacing", padding)
 }
 
-func (c *Widget) AddWidget(w Widgeter, gridRow int, gridColumn int) {
+func (c *Widget) AddWidget(gridRow int, gridColumn int, w Widgeter) {
 	if _, exists := allwidgets[w.Id()]; exists {
 		return
 	}
@@ -2520,7 +2520,7 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 	}
 
 	if parent != nil {
-		parent.AddWidget(w, row, col)
+		parent.AddWidget(row, col, w)
 	}
 
 	// Set attributes - only after adding to parent

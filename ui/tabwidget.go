@@ -45,10 +45,10 @@ func NewTabWidget() *TabWidget {
 	c.panelTop.SetMinHeight(c.headerHeight)
 	c.panelTop.SetMaxHeight(c.headerHeight)
 	c.panelTop.onTabChanged = c.onTabChanged
-	c.AddWidget(c.panelTop, 0, 0)
+	c.AddWidget(0, 0, c.panelTop)
 
 	c.panelContent = NewPanel()
-	c.AddWidget(c.panelContent, 1, 0)
+	c.AddWidget(1, 0, c.panelContent)
 
 	c.SetOnPostPaint(c.drawPost)
 
@@ -102,7 +102,7 @@ func (c *TabWidget) rebuildInterface() {
 	//c.panelContent.SetAutoFillBackground(true)
 	//c.panelContent.SetBackgroundColor(ColorFromHex("#222222"))
 	if c.currentPage >= 0 && c.currentPage < len(c.pages) {
-		c.panelContent.AddWidget(c.pages[c.currentPage].widget, 0, 0)
+		c.panelContent.AddWidget(0, 0, c.pages[c.currentPage].widget)
 	}
 	c.form.Update()
 }

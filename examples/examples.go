@@ -19,14 +19,14 @@ func Run() {
 				newForm := newFormFunc()
 				newForm.ShowModal(form)
 			})
-			form.Panel().AddWidget(btn, form.Panel().NextGridRow(), 0)
+			form.Panel().AddWidget(form.Panel().NextGridRow(), 0, btn)
 		}
 
 		addButton("Example 01 - Base Form", ex01base.NewExampleForm)
 		addButton("Example 02 - MessageBox", ex02messagebox.NewExample)
 		addButton("Example 03 - Custom Widget", ex03customwidget.NewExample)
 
-		form.Panel().AddWidget(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
+		form.Panel().AddWidget(form.Panel().NextGridRow(), 0, ui.NewVSpacer())
 		form.Show()
 		form.Exec()
 	}

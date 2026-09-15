@@ -60,7 +60,7 @@ func NewDialogHeader() *dialogHeader {
 	c.headerText.SetOnMouseUp(c.onMouseUp)
 	c.headerText.SetOnMouseMove(c.onMouseMove)
 	c.headerText.SetOnMouseLeave(c.onMouseLeave)
-	c.AddWidget(c.headerText, 0, 0)
+	c.AddWidget(0, 0, c.headerText)
 
 	c.btnClose = NewButton("\u00D7")
 	c.btnClose.SetPosition(170, 0)
@@ -69,7 +69,7 @@ func NewDialogHeader() *dialogHeader {
 	c.btnClose.SetOnClick(func() {
 		c.dialog.Reject()
 	})
-	c.AddWidget(c.btnClose, 0, 0)
+	c.AddWidget(0, 0, c.btnClose)
 	return &c
 }
 
@@ -88,11 +88,11 @@ func NewDialog(title string, width, height int) *Dialog {
 	c.headerPanel.SetName("DialogHeaderPanel")
 	c.headerPanel.SetElevation(2)
 	c.headerPanel.SetAutoFillBackground(true)
-	c.AddWidget(c.headerPanel, 0, 0)
+	c.AddWidget(0, 0, c.headerPanel)
 
 	c.contentPanel = NewPanel()
 	c.contentPanel.SetName("DialogContentPanel")
-	c.AddWidget(c.contentPanel, 1, 0)
+	c.AddWidget(1, 0, c.contentPanel)
 
 	c.SetOnKeyDown(c.onKeyDown)
 

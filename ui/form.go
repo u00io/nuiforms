@@ -217,7 +217,7 @@ func (c *Form) SetOnGlobalKeyDown(onGlobalKeyDown func(keyCode nuikey.Key, mods 
 
 func (c *Form) SetMainWidget(w Widgeter) {
 	c.topWidget.RemoveAllWidgets()
-	c.topWidget.AddWidget(w, 0, 0)
+	c.topWidget.AddWidget(0, 0, w)
 }
 
 func (c *Form) Panel() *Panel {
@@ -225,7 +225,11 @@ func (c *Form) Panel() *Panel {
 }
 
 func (c *Form) createWindow(maximized bool) {
-	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, false, maximized)
+	// No explicit position and no parent to center on (ShowModal already
+	// resolves posX/posY via centerOnForm before this runs) - center on the
+	// screen instead of leaving it to the OS/window manager's default spot.
+	centerOnScreen := c.posX < 0 && c.posY < 0
+	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, centerOnScreen, maximized)
 	c.wnd.OnPaint(c.processPaint)
 	c.wnd.OnResize(c.processResize)
 	c.wnd.OnMouseButtonDown(c.processMouseDown)
@@ -248,19 +252,6 @@ func (c *Form) createWindow(maximized bool) {
 	}
 }
 
-/*func (c *Form) exec(maximazed bool, modal bool, parent *Form) {
-	c.createWindow()
-	if modal {
-		c.wnd.ShowModal(parent.wnd)
-	} else {
-		c.wnd.Show()
-		if maximazed {
-			c.wnd.MaximizeWindow()
-		}
-		c.processResize(c.width, c.height)
-	}
-}*/
-
 func (c *Form) Show() {
 	c.createWindow(false)
 	c.wnd.Show()
@@ -268,9 +259,26 @@ func (c *Form) Show() {
 }
 
 func (c *Form) ShowModal(parent *Form) {
+	if parent != nil && c.posX < 0 && c.posY < 0 {
+		c.centerOnForm(parent)
+	}
 	c.createWindow(false)
 	c.wnd.ShowModal(parent.wnd)
 	c.processResize(c.width, c.height)
+}
+
+// centerOnForm positions the window at the center of the given parent form.
+func (c *Form) centerOnForm(parent *Form) {
+	parentX, parentY := parent.Position()
+	parentWidth, parentHeight := parent.Size()
+	c.posX = parentX + (parentWidth-c.width)/2
+	c.posY = parentY + (parentHeight-c.height)/2
+	if c.posX < 0 {
+		c.posX = 0
+	}
+	if c.posY < 0 {
+		c.posY = 0
+	}
 }
 
 func (c *Form) ShowMaximized() {
