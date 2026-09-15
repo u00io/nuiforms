@@ -18,6 +18,7 @@ func NewExample() *Example {
 	c.tabWidget.AddPage("Label", NewExamplePageLabel())
 	c.tabWidget.AddPage("TextEdit", NewExamplePageTextBox())
 	c.tabWidget.AddPage("ContextMenu", NewExamplePageContextMenu())
+	c.tabWidget.AddPage("Button", NewExamplePageButton())
 
 	return &c
 }
