@@ -105,11 +105,13 @@ func (c *Checkbox) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y in
 		return false
 	}
 
-	hoverWidgeter := c.form.hoverWidget
-	var localWidgeter Widgeter = c
-	if hoverWidgeter == localWidgeter {
-		c.SetChecked(!c.Checked())
-	}
+	// Compare via bounds rather than "c.form.hoverWidget == c": for a
+	// Checkbox nested inside a custom composite widget, the interface value
+	// stored as hoverWidget can carry the promoted *Widget type instead of
+	// *Checkbox, so a direct comparison against c never matches even though
+	// the mouse is genuinely over this checkbox. The bounds check above
+	// already confirms that, so toggle unconditionally here.
+	c.SetChecked(!c.Checked())
 
 	return true
 }
