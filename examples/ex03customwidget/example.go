@@ -62,7 +62,7 @@ func (c *Content) SetMode(mode string) {
 	}
 }
 
-func NewExample() *ui.Form {
+func NewExampleForm() *ui.Form {
 	form := ui.NewForm()
 	form.Panel().AddWidget(0, 0, NewContent())
 	return form
