@@ -43,6 +43,11 @@ func NewExamplePageTextBox() *ExamplePageTextBox {
 	row = addSectionHeader(&c.Widget, row, "Multiline")
 	tbMultiline := ui.NewTextBox()
 	tbMultiline.SetMultiline(true)
+	// SetMultiline alone doesn't take effect until the textbox is attached
+	// to a form, so it stays vertically collapsed to one line in a page
+	// like this one that has no other expandable row to push it open.
+	// Setting YExpandable directly works regardless of attachment order.
+	tbMultiline.SetYExpandable(true)
 	tbMultiline.SetText("First line\nSecond line\nThird line")
 	tbMultiline.SetMinSize(300, ui.DefaultUiLineHeight*4)
 	c.AddWidget(row, 0, tbMultiline)
