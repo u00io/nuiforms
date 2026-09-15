@@ -21,6 +21,13 @@ func (c *Space) SetSize(width, height int) {
 	c.SetMaxSize(width, height)
 	c.SetXExpandable(false)
 	c.SetYExpandable(false)
+	// The layout engine also calls SetSize (via the Widgeter interface) on
+	// every layout pass to apply the computed on-screen size. Without this,
+	// c.w/c.h are never touched and stay at the InitWidget() defaults
+	// (300x180), so the widget's actual clickable/paintable area never
+	// shrinks to the declared fixed size - it silently overlaps whatever
+	// comes after it in the layout.
+	c.Widget.SetSize(width, height)
 }
 
 func (c *Space) MinWidth() int {
