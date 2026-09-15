@@ -353,7 +353,12 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		yOffset += oneLineHeight
 	}
 
-	focus := c.form.focusedWidget == c
+	// Compare by id via IsFocused() rather than "c.form.focusedWidget == c":
+	// for a TextBox nested inside a custom composite widget, the interface
+	// value stored as focusedWidget can carry the promoted *Widget type
+	// instead of *TextBox, so a direct pointer/interface comparison against
+	// c never matches even though the widget is genuinely focused.
+	focus := c.IsFocused()
 
 	// Cursor
 	if focus && c.cursorVisible {

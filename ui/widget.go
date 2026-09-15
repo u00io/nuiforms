@@ -287,7 +287,7 @@ func (c *Widget) ParentWidgetId() string {
 func (c *Widget) SetParentWidgetId(id string) {
 	c.parentWidgetId = id
 	if id == "" {
-		c.attachToForm(nil)
+		c.attachToForm(c, nil)
 	}
 }
 
@@ -461,15 +461,14 @@ func (c *Widget) SetCellPadding(padding int) {
 	c.SetProp("spacing", padding)
 }
 
-func (c *Widget) AddWidget(w Widgeter, gridRow int, gridColumn int) {
+func (c *Widget) AddWidget(gridRow int, gridColumn int, w Widgeter) {
 	if _, exists := allwidgets[w.Id()]; exists {
 		return
 	}
 	w.SetGridPosition(gridRow, gridColumn)
 	c.widgets = append(c.widgets, w)
 	w.SetParentWidgetId(c.Id())
-	w.attachToForm(c.form)
-	allwidgets[w.Id()] = w
+	w.attachToForm(w, c.form)
 	c.updateLayout(0, 0, 0, 0)
 	if c.form != nil {
 		c.form.Panel().updateLayout(0, 0, 0, 0) // Global Update Layout
@@ -481,18 +480,23 @@ func (c *Widget) setId(id string) {
 	c.id = id
 }
 
-func (c *Widget) attachToForm(form *Form) {
+// self must be the widget's own concrete Widgeter value (not c). c is only
+// the embedded Widget when this method is reached via a promoted-method call
+// through the Widgeter interface on a struct that embeds Widget (e.g. *Table),
+// so registering allwidgets under c instead of self would store the base
+// *Widget and silently break dispatch of any method the subtype overrides.
+func (c *Widget) attachToForm(self Widgeter, form *Form) {
 	c.form = form
 	if form != nil {
-		allwidgets[c.id] = c
+		allwidgets[c.id] = self
 	} else {
 		delete(allwidgets, c.id)
 	}
 	for _, w := range c.widgets {
-		w.attachToForm(form)
+		w.attachToForm(w, form)
 	}
 	if c.contextMenu != nil {
-		c.contextMenu.attachToForm(form)
+		c.contextMenu.attachToForm(c.contextMenu, form)
 	}
 }
 
@@ -1309,13 +1313,9 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		processed = c.onMouseDown(button, x, y, mods)
 	}
 
-	f := c.GetPropFunction("onclick")
-	if f != nil {
-		if c.Enabled() || (!c.dontAllowOnClickIfDisabled) {
-			f()
-			processed = true
-		}
-	}
+	// "onclick" is fired on mouse-up (see Button.buttonProcessMouseUp), not
+	// here on mouse-down, so a press can still be cancelled by dragging off
+	// the widget before releasing - the standard button click semantics.
 
 	return processed
 }
@@ -1644,7 +1644,7 @@ func (c *Widget) AppendPopupWidget(w Widgeter) {
 		c.PopupWidgets = append(c.PopupWidgets, w)
 		w.SetParentWidgetId(c.form.Panel().Id())
 		allwidgets[w.Id()] = w
-		w.attachToForm(w.Form())
+		w.attachToForm(w, w.Form())
 	}
 	c.form.Update()
 }
@@ -2342,7 +2342,7 @@ func (c *Widget) BackgroundColorForRole(role string) color.Color {
 
 func (c *Widget) SetContextMenu(menu *ContextMenu) {
 	c.contextMenu = menu
-	c.contextMenu.attachToForm(c.form)
+	c.contextMenu.attachToForm(c.contextMenu, c.form)
 }
 
 func (c *Widget) ContextMenu() *ContextMenu {
@@ -2520,7 +2520,7 @@ func (c *Widget) buildNode(n *uiNode, parent Widgeter, row int, col int, eventPr
 	}
 
 	if parent != nil {
-		parent.AddWidget(w, row, col)
+		parent.AddWidget(row, col, w)
 	}
 
 	// Set attributes - only after adding to parent

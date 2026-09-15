@@ -815,6 +815,21 @@ func (c *Canvas) FillRoundedRect(x int, y int, width int, height int, radius int
 	dc.Fill()
 }
 
+// FillTriangle fills the triangle with corners (x1,y1), (x2,y2), (x3,y3).
+func (c *Canvas) FillTriangle(x1, y1, x2, y2, x3, y3 int, colr color.Color) {
+	dc := gg.NewContextForRGBA(c.rgba)
+	dc.DrawRectangle(float64(c.state.clipX), float64(c.state.clipY), float64(c.state.clipW), float64(c.state.clipH))
+	dc.Clip()
+	dc.Translate(float64(c.TranslatedX()), float64(c.TranslatedY()))
+
+	dc.SetColor(colr)
+	dc.MoveTo(float64(x1), float64(y1))
+	dc.LineTo(float64(x2), float64(y2))
+	dc.LineTo(float64(x3), float64(y3))
+	dc.ClosePath()
+	dc.Fill()
+}
+
 func (c *Canvas) DrawImage(x int, y int, img image.Image) {
 	bInner := image.Rectangle{}
 	bInner.Min.X = x + c.state.translateX

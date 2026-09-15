@@ -47,22 +47,34 @@ func (c *ContextMenuItem) ControlType() string {
 	return "PopupMenuItem"
 }
 
+// contextMenuItemPadding keeps the item's text and submenu arrow off its
+// edges - the item itself still spans the full menu width so the hover
+// highlight reaches border to border, as in standard menu styling.
+const contextMenuItemPadding = 10
+
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	backColor := c.BackgroundColor()
 	if c.IsHovered() {
 		backColor = c.BackgroundColorWithAddElevation(2)
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
+
+	textAreaWidth := c.Width() - contextMenuItemPadding*2
+	if c.innerMenu != nil {
+		textAreaWidth -= c.Height() + contextMenuItemPadding
+	}
+	displayText := truncateTextToWidth(c.FontFamily(), c.FontSize(), c.text, textAreaWidth)
+
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
 	ctx.SetColor(c.ForegroundColor())
 	ctx.SetFontFamily(c.FontFamily())
 	ctx.SetFontSize(c.FontSize())
-	ctx.DrawText(0, 0, c.Width(), c.Height(), c.text)
+	ctx.DrawText(contextMenuItemPadding, 0, c.Width()-contextMenuItemPadding*2, c.Height(), displayText)
 
 	if c.innerMenu != nil {
 		rectSize := c.Height()
-		x := c.Width() - c.Height()
+		x := c.Width() - rectSize - contextMenuItemPadding
 		y := 0
 		ctx.SetHAlign(HAlignLeft)
 		ctx.SetVAlign(VAlignCenter)
@@ -113,6 +125,18 @@ func (c *ContextMenuItem) MouseMove(x int, y int, mods nuikey.KeyModifiers) bool
 
 func (c *ContextMenuItem) SetInnerMenu(menu *ContextMenu) {
 	c.innerMenu = menu
+}
+
+// attachToForm also attaches innerMenu, which AddItemWithSubmenu stores
+// directly on the item rather than adding it as a child widget, so the
+// generic Widget.attachToForm cascade would otherwise never reach it -
+// leaving its form nil and crashing (nil c.form.Panel()) the first time
+// the submenu is opened.
+func (c *ContextMenuItem) attachToForm(self Widgeter, form *Form) {
+	c.Widget.attachToForm(self, form)
+	if c.innerMenu != nil {
+		c.innerMenu.attachToForm(c.innerMenu, form)
+	}
 }
 
 func (c *ContextMenuItem) timerShowInnerMenuHandler() {

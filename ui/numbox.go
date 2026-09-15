@@ -368,9 +368,8 @@ func (c *NumBox) draw(cnv *Canvas) {
 	cnv.FillRect(btnX, btnY, btnW, btnH, btnBack)
 	cnv.FillRect(btnX, btnY+btnH/2, btnW, 1, c.BackgroundColorWithAddElevation(8))
 
-	// Arrows
+	// Arrows - simple filled triangles.
 	arrowCol := c.ForegroundColor()
-	// Draw simple triangles with lines so it works with any font.
 	{
 		cx := btnX + btnW/2
 		midY := btnY + btnH/4
@@ -382,9 +381,7 @@ func (c *NumBox) draw(cnv *Canvas) {
 			size = 3
 		}
 		// Up triangle
-		cnv.DrawLine(cx, midY-size, cx-size, midY+size, 1, arrowCol)
-		cnv.DrawLine(cx, midY-size, cx+size, midY+size, 1, arrowCol)
-		cnv.DrawLine(cx-size, midY+size, cx+size, midY+size, 1, arrowCol)
+		cnv.FillTriangle(cx, midY-size, cx-size, midY+size, cx+size, midY+size, arrowCol)
 	}
 	{
 		cx := btnX + btnW/2
@@ -397,9 +394,7 @@ func (c *NumBox) draw(cnv *Canvas) {
 			size = 3
 		}
 		// Down triangle
-		cnv.DrawLine(cx, midY+size, cx-size, midY-size, 1, arrowCol)
-		cnv.DrawLine(cx, midY+size, cx+size, midY-size, 1, arrowCol)
-		cnv.DrawLine(cx-size, midY-size, cx+size, midY-size, 1, arrowCol)
+		cnv.FillTriangle(cx, midY+size, cx-size, midY-size, cx+size, midY-size, arrowCol)
 	}
 
 	// Text

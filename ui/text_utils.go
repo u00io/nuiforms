@@ -1,5 +1,42 @@
 package ui
 
+// truncateTextToWidth shortens text with a trailing "..." so its rendered
+// width fits within maxWidth pixels for the given font. Returns text
+// unchanged if it already fits, or if maxWidth/measurement isn't usable.
+func truncateTextToWidth(fontFamily string, fontSize float64, text string, maxWidth int) string {
+	if maxWidth <= 0 {
+		return text
+	}
+
+	width, _, err := MeasureText(fontFamily, fontSize, text)
+	if err != nil || width <= maxWidth {
+		return text
+	}
+
+	const ellipsis = "..."
+	ellipsisWidth, _, err := MeasureText(fontFamily, fontSize, ellipsis)
+	if err != nil {
+		return text
+	}
+	if ellipsisWidth > maxWidth {
+		return ellipsis
+	}
+
+	runes := []rune(text)
+	for len(runes) > 0 {
+		runes = runes[:len(runes)-1]
+		candidate := string(runes) + ellipsis
+		candidateWidth, _, err := MeasureText(fontFamily, fontSize, candidate)
+		if err != nil {
+			return candidate
+		}
+		if candidateWidth <= maxWidth {
+			return candidate
+		}
+	}
+	return ellipsis
+}
+
 func MakeLinesFromStringWithWordWrapping(text string, maxChars int) []string {
 	// Local helpers as closures to keep a single top-level function
 	splitOnNewlines := func(s string) []string {

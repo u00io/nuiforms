@@ -31,7 +31,7 @@ func NewContent() *Content {
 	menu.AddItem("456", nil)
 	c.panelRight.SetContextMenu(menu)
 
-	c.AddWidget(panel, 0, 0)
+	c.AddWidget(0, 0, panel)
 
 	return &c
 }
@@ -57,13 +57,13 @@ func (c *Content) SetMode(mode string) {
 		w = b
 	}
 	if w != nil {
-		c.panelRight.AddWidget(w, 0, 0)
+		c.panelRight.AddWidget(0, 0, w)
 		c.panelRight.AddVSpacer(1, 0)
 	}
 }
 
-func NewExample() *ui.Form {
+func NewExampleForm() *ui.Form {
 	form := ui.NewForm()
-	form.Panel().AddWidget(NewContent(), 0, 0)
+	form.Panel().AddWidget(0, 0, NewContent())
 	return form
 }

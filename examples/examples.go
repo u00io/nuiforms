@@ -1,9 +1,11 @@
 package examples
 
 import (
+	"github.com/u00io/nuiforms/examples/ex00gallery"
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02messagebox"
 	"github.com/u00io/nuiforms/examples/ex03customwidget"
+	"github.com/u00io/nuiforms/examples/ex04dialog"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -19,21 +21,17 @@ func Run() {
 				newForm := newFormFunc()
 				newForm.ShowModal(form)
 			})
-			form.Panel().AddWidget(btn, form.Panel().NextGridRow(), 0)
+			form.Panel().AddWidget(form.Panel().NextGridRow(), 0, btn)
 		}
 
+		addButton("Example 00 - Gallery", ex00gallery.NewExampleForm)
 		addButton("Example 01 - Base Form", ex01base.NewExampleForm)
-		addButton("Example 02 - MessageBox", ex02messagebox.NewExample)
-		addButton("Example 03 - Custom Widget", ex03customwidget.NewExample)
+		addButton("Example 02 - MessageBox", ex02messagebox.NewExampleForm)
+		addButton("Example 03 - Custom Widget", ex03customwidget.NewExampleForm)
+		addButton("Example 04 - Dialog", ex04dialog.NewExampleForm)
 
-		form.Panel().AddWidget(ui.NewVSpacer(), form.Panel().NextGridRow(), 0)
+		form.Panel().AddWidget(form.Panel().NextGridRow(), 0, ui.NewVSpacer())
 		form.Show()
 		form.Exec()
 	}
-}
-
-func RunSample() {
-	form := ex03customwidget.NewExample()
-	form.Show()
-	form.Exec()
 }
