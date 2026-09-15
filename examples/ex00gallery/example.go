@@ -21,6 +21,7 @@ func NewExample() *Example {
 	c.tabWidget.AddPage("Button", NewExamplePageButton())
 	c.tabWidget.AddPage("CheckBox", NewExamplePageCheckbox())
 	c.tabWidget.AddPage("ComboBox", NewExamplePageComboBox())
+	c.tabWidget.AddPage("ImageBox", NewExamplePageImageBox())
 
 	return &c
 }
