@@ -1309,13 +1309,9 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		processed = c.onMouseDown(button, x, y, mods)
 	}
 
-	f := c.GetPropFunction("onclick")
-	if f != nil {
-		if c.Enabled() || (!c.dontAllowOnClickIfDisabled) {
-			f()
-			processed = true
-		}
-	}
+	// "onclick" is fired on mouse-up (see Button.buttonProcessMouseUp), not
+	// here on mouse-down, so a press can still be cancelled by dragging off
+	// the widget before releasing - the standard button click semantics.
 
 	return processed
 }

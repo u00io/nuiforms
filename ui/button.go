@@ -34,6 +34,13 @@ func NewButton(text string) *Button {
 
 	c.SetText(text)
 	c.SetProp("padding", 6)
+	// SetProp only dispatches ProcessPropChange (which would normally grow
+	// the button to fit this text) once the button is attached to a form -
+	// c.form is still nil here, during construction, so that dispatch is a
+	// no-op. Size from the text directly so the very first, most natural
+	// construction path (NewButton(text) then AddWidget(...)) is sized
+	// correctly too, not just a later SetText call made after attaching.
+	c.updateSizeFromText()
 
 	return &c
 }
@@ -94,7 +101,6 @@ func (c *Button) draw(cnv *Canvas) {
 }
 
 func (c *Button) ProcessPropChange(key string, value interface{}) {
-	padding := c.GetPropInt("padding", 6)
 	if key == "enabled" {
 		if c.Enabled() {
 			c.SetMouseCursor(nuimouse.MouseCursorPointer)
@@ -103,6 +109,19 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 		}
 	}
 
+	c.updateSizeFromText()
+	c.form.UpdateLayout()
+}
+
+// updateSizeFromText grows the button's min size to fit its current text.
+// Compares against c.minWidth directly rather than the cached MinWidth()
+// getter, since SetMinWidth doesn't invalidate that cache - reading it here
+// (e.g. on the very first call, from NewButton before any layout pass has
+// run) would otherwise lock in a stale value once a real layout pass reads
+// MinWidth() later.
+func (c *Button) updateSizeFromText() {
+	padding := c.GetPropInt("padding", 6)
+
 	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
 		return
@@ -110,17 +129,12 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 	if textHeight < DefaultUiLineHeight {
 		textHeight = DefaultUiLineHeight
 	}
-	_ = textHeight
-	_ = textWidth
-	_ = padding
 
 	c.SetMinHeight(textHeight)
 
-	if textWidth+padding*2 > c.MinWidth() {
-		c.SetMinWidth(textWidth + padding*2)
+	if minWidth := textWidth + padding*2; minWidth > c.minWidth {
+		c.SetMinWidth(minWidth)
 	}
-
-	c.form.UpdateLayout()
 }
 
 func (c *Button) buttonProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
@@ -135,18 +149,20 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 	if !c.Enabled() {
 		return false
 	}
+
+	wasPressed := c.pressed
 	c.pressed = false
 
 	if x < 0 || x >= c.Width() || y < 0 || y >= c.Height() {
-		// MouseUp outside the button area, ignore
+		// Released outside the button - cancel the click.
 		return false
 	}
 
-	hoverWidgeter := c.form.hoverWidget
-	var localWidgeter Widgeter = c
-	if hoverWidgeter == localWidgeter {
-		//c.Press()
+	if wasPressed {
+		if f := c.GetPropFunction("onclick"); f != nil {
+			f()
+		}
 	}
 
-	return false
+	return true
 }
