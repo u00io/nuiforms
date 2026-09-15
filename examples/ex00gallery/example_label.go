@@ -12,32 +12,32 @@ func NewExamplePageLabel() *ExamplePageLabel {
 
 	row := 0
 
-	row = c.addSectionHeader(row, "Basic label")
+	row = addSectionHeader(&c.Widget, row, "Basic label")
 	c.AddLabel(row, 0, "This is a simple label")
-	row = c.addSectionGap(row + 1)
+	row = addSectionGap(&c.Widget, row+1)
 
-	row = c.addSectionHeader(row, "Text alignment")
+	row = addSectionHeader(&c.Widget, row, "Text alignment")
 	c.addAlignmentDemo(row)
-	row = c.addSectionGap(row + 1)
+	row = addSectionGap(&c.Widget, row+1)
 
-	row = c.addSectionHeader(row, "Underline")
+	row = addSectionHeader(&c.Widget, row, "Underline")
 	lblUnderline := c.AddLabel(row, 0, "This label is underlined")
 	lblUnderline.SetUnderline(true)
-	row = c.addSectionGap(row + 1)
+	row = addSectionGap(&c.Widget, row+1)
 
-	row = c.addSectionHeader(row, "Font size")
+	row = addSectionHeader(&c.Widget, row, "Font size")
 	c.addFontSizeDemo(row)
-	row = c.addSectionGap(row + 1)
+	row = addSectionGap(&c.Widget, row+1)
 
-	row = c.addSectionHeader(row, "Foreground color")
+	row = addSectionHeader(&c.Widget, row, "Foreground color")
 	c.addColorDemo(row)
-	row = c.addSectionGap(row + 1)
+	row = addSectionGap(&c.Widget, row+1)
 
-	row = c.addSectionHeader(row, "Background color")
+	row = addSectionHeader(&c.Widget, row, "Background color")
 	c.addBackgroundColorDemo(row)
-	row = c.addSectionGap(row + 1)
+	row = addSectionGap(&c.Widget, row+1)
 
-	row = c.addSectionHeader(row, "Multiline text")
+	row = addSectionHeader(&c.Widget, row, "Multiline text")
 	// Canvas.DrawText only breaks lines on "\r\n" (not plain "\n"), and Label
 	// does not grow its own height automatically, so the min height has to
 	// be set explicitly to fit all the lines.
@@ -48,22 +48,6 @@ func NewExamplePageLabel() *ExamplePageLabel {
 	c.AddVSpacer(row, 0)
 
 	return &c
-}
-
-// addSectionGap adds a fixed-height empty row so demo sections don't visually merge together.
-func (c *ExamplePageLabel) addSectionGap(row int) int {
-	gap := ui.NewSpace()
-	gap.SetSize(1, 20)
-	c.AddWidget(row, 0, gap)
-	return row + 1
-}
-
-// addSectionHeader adds a header label for a demo section and returns the row for its content.
-func (c *ExamplePageLabel) addSectionHeader(row int, text string) int {
-	header := c.AddLabel(row, 0, text)
-	header.SetUnderline(true)
-	header.SetFontSize(ui.DefaultFontSize * 1.1)
-	return row + 1
 }
 
 // addAlignmentDemo shows the same label text left, center and right aligned inside fixed-width boxes.
