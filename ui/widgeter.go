@@ -10,7 +10,7 @@ type Widgeter interface {
 	ParentWidgetId() string
 	SetParentWidgetId(id string)
 	setId(id string)
-	attachToForm(f *Form)
+	attachToForm(self Widgeter, f *Form)
 	FullPath() []string
 	TypeName() string
 	Name() string

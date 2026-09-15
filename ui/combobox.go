@@ -82,7 +82,7 @@ func (c *ComboBox) OpenPopup() {
 	// else ever attaches it to a form - ShowPopup's c.form.Panel() would
 	// nil-panic without this (the same class of bug as an unattached
 	// ContextMenu submenu).
-	popup.attachToForm(c.form)
+	popup.attachToForm(popup, c.form)
 	// The dropdown should never look narrower than the control it drops
 	// from, even though it's free to grow wider to fit long item text.
 	popup.triggerWidth = c.Width()

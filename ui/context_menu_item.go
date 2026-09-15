@@ -132,10 +132,10 @@ func (c *ContextMenuItem) SetInnerMenu(menu *ContextMenu) {
 // generic Widget.attachToForm cascade would otherwise never reach it -
 // leaving its form nil and crashing (nil c.form.Panel()) the first time
 // the submenu is opened.
-func (c *ContextMenuItem) attachToForm(form *Form) {
-	c.Widget.attachToForm(form)
+func (c *ContextMenuItem) attachToForm(self Widgeter, form *Form) {
+	c.Widget.attachToForm(self, form)
 	if c.innerMenu != nil {
-		c.innerMenu.attachToForm(form)
+		c.innerMenu.attachToForm(c.innerMenu, form)
 	}
 }
 
