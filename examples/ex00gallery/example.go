@@ -20,6 +20,7 @@ func NewExample() *Example {
 	c.tabWidget.AddPage("ContextMenu", NewExamplePageContextMenu())
 	c.tabWidget.AddPage("Button", NewExamplePageButton())
 	c.tabWidget.AddPage("CheckBox", NewExamplePageCheckbox())
+	c.tabWidget.AddPage("ComboBox", NewExamplePageComboBox())
 
 	return &c
 }

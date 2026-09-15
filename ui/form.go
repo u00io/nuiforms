@@ -259,6 +259,9 @@ func (c *Form) Show() {
 }
 
 func (c *Form) ShowModal(parent *Form) {
+	if parent == nil {
+		panic("parent form cannot be nil for ShowModal")
+	}
 	if parent != nil && c.posX < 0 && c.posY < 0 {
 		c.centerOnForm(parent)
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02messagebox"
 	"github.com/u00io/nuiforms/examples/ex03customwidget"
+	"github.com/u00io/nuiforms/examples/ex04dialog"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -27,6 +28,7 @@ func Run() {
 		addButton("Example 01 - Base Form", ex01base.NewExampleForm)
 		addButton("Example 02 - MessageBox", ex02messagebox.NewExampleForm)
 		addButton("Example 03 - Custom Widget", ex03customwidget.NewExampleForm)
+		addButton("Example 04 - Dialog", ex04dialog.NewExampleForm)
 
 		form.Panel().AddWidget(form.Panel().NextGridRow(), 0, ui.NewVSpacer())
 		form.Show()
