@@ -6,6 +6,12 @@ func NewExampleForm() *ui.Form {
 	form := ui.NewForm()
 	form.Panel().AddButton(0, 0, "Dialog New Item", func() {
 		dialog := NewDialogNewItem()
+		dialog.OnOK = func(name string) {
+			//ui.ShowMessageBox(form.Panel(), "OK", "OK clicked: "+name)
+		}
+		dialog.OnCancel = func() {
+			ui.ShowMessageBox(form.Panel(), "Cancel", "Cancel clicked")
+		}
 		form.Panel().ShowDialog("New Item Dialog", 400, 150, dialog)
 	})
 	form.Panel().AddButton(0, 1, "Dialog Edit Item", func() {
