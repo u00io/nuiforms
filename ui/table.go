@@ -745,6 +745,16 @@ func (c *Table) ScrollToCell2(row, col int) {
 }
 
 func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+	// The header is a separate child widget that isn't itself focusable, so
+	// a click landing on it (e.g. to glance at a column name) makes Form's
+	// generic pre-dispatch focus logic treat it as "clicked something
+	// unfocusable" and clear the table's focus entirely - after which arrow
+	// keys stop navigating cells until a data cell is clicked again. Header
+	// clicks are forwarded here too (see OnHeaderMouseDown below), so
+	// re-asserting focus on every click keeps the table keyboard-navigable
+	// no matter where within it the user clicks.
+	c.Focus()
+
 	c.form.LayoutingBlockPush()
 	defer c.form.LayoutingBlockPop()
 	c.form.UpdateBlockPush()
@@ -1501,6 +1511,7 @@ func (c *Table) EditCurrentCell(enteredText string) {
 	})
 	c.editorTextBox.SetOnFocusLost(func() {
 		if c.editorTextBox != nil {
+			c.SetCellText2(c.currentCellY, c.currentCellX, c.editorTextBox.Text())
 			c.RemoveWidget(c.editorTextBox)
 			c.editorTextBox = nil
 			c.form.Update()
