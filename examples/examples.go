@@ -31,6 +31,12 @@ func Run() {
 		addButton("Example 04 - Dialog", ex04dialog.NewExampleForm)
 
 		form.Panel().AddWidget(form.Panel().NextGridRow(), 0, ui.NewVSpacer())
+		form.Panel().AddButton(form.Panel().NextGridRow(), 0, "Light Theme", func() {
+			ui.ApplyLightTheme()
+		})
+		form.Panel().AddButton(form.Panel().NextGridRow(), 0, "Dark Theme", func() {
+			ui.ApplyDarkTheme()
+		})
 		form.Show()
 		form.Exec()
 	}
