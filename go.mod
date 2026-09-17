@@ -19,4 +19,4 @@ require (
 	golang.org/x/text v0.32.0 // indirect
 )
 
-replace github.com/u00io/nui => ../nui
+// replace github.com/u00io/nui => ../nui
