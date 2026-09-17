@@ -22,8 +22,12 @@ func ShowMessageBox(parentWidget Widgeter, title string, text string) {
 	c, buttonPanel := newMessageBoxForm(title, text)
 
 	buttonPanel.AddHSpacer(0, 0)
-	buttonPanel.AddButton(0, 1, "OK", func() { c.Close() })
+	okButton := buttonPanel.AddButton(0, 1, "OK", func() { c.Close() })
 	buttonPanel.AddHSpacer(0, 2)
+
+	c.SetAcceptButton(okButton)
+	c.SetCancelButton(okButton)
+	okButton.Focus()
 
 	showMessageBoxForm(c, parentWidget)
 }
@@ -32,20 +36,50 @@ func ShowQuestionMessageBoxYesNo(parentWidget Widgeter, title string, text strin
 	c, buttonPanel := newMessageBoxForm(title, text)
 
 	buttonPanel.AddHSpacer(0, 0)
-	buttonPanel.AddButton(0, 1, "Yes", func() {
+	yesButton := buttonPanel.AddButton(0, 1, "Yes", func() {
 		c.Close()
 		if onYes != nil {
 			onYes()
 		}
 	})
 	buttonPanel.AddHSpacer(0, 2)
-	buttonPanel.AddButton(0, 3, "No", func() {
+	noButton := buttonPanel.AddButton(0, 3, "No", func() {
 		c.Close()
 		if onNo != nil {
 			onNo()
 		}
 	})
 	buttonPanel.AddHSpacer(0, 4)
+
+	c.SetAcceptButton(yesButton)
+	c.SetCancelButton(noButton)
+	yesButton.Focus()
+
+	showMessageBoxForm(c, parentWidget)
+}
+
+func ShowQuestionMessageBoxOKCancel(parentWidget Widgeter, title string, text string, onOK func(), onCancel func()) {
+	c, buttonPanel := newMessageBoxForm(title, text)
+
+	buttonPanel.AddHSpacer(0, 0)
+	okButton := buttonPanel.AddButton(0, 1, "OK", func() {
+		c.Close()
+		if onOK != nil {
+			onOK()
+		}
+	})
+	buttonPanel.AddHSpacer(0, 2)
+	cancelButton := buttonPanel.AddButton(0, 3, "Cancel", func() {
+		c.Close()
+		if onCancel != nil {
+			onCancel()
+		}
+	})
+	buttonPanel.AddHSpacer(0, 4)
+
+	c.SetAcceptButton(okButton)
+	c.SetCancelButton(cancelButton)
+	okButton.Focus()
 
 	showMessageBoxForm(c, parentWidget)
 }

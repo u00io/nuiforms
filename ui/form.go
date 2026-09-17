@@ -55,6 +55,9 @@ type Form struct {
 	// OnDialogShow resizes the dialog to fit its actual content.
 	parentForm *Form
 
+	acceptButton *Button // The button that is triggered when the user accepts the form (e.g., presses Enter)
+	cancelButton *Button // The button that is triggered when the user cancels the form (e.g., presses Esc)
+
 	OnClose func() bool
 }
 
@@ -164,8 +167,9 @@ func (c *Form) CloseTopPopup() {
 
 func (c *Form) Close() {
 	if c.wnd != nil {
-		c.wnd.Close()
-		c.wnd = nil
+		if c.wnd.Close() {
+			c.wnd = nil
+		}
 	}
 }
 
@@ -501,7 +505,9 @@ func (c *Form) processMouseMove(x int, y int) {
 
 	if c.lastMouseCursor != newCursor {
 		// fmt.Println("Set mouse cursor:", newCursor)
-		c.wnd.SetMouseCursor(newCursor)
+		if c.wnd != nil {
+			c.wnd.SetMouseCursor(newCursor)
+		}
 		c.lastMouseCursor = newCursor
 	}
 
@@ -599,6 +605,19 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
 			}
 		}
 	}
+
+	if keyCode == nuikey.KeyEsc {
+		if c.cancelButton != nil {
+			c.cancelButton.Push()
+		}
+	}
+
+	if keyCode == nuikey.KeyEnter {
+		if c.acceptButton != nil {
+			c.acceptButton.Push()
+		}
+	}
+
 	c.Update()
 	return false
 }
@@ -658,6 +677,9 @@ func (c *Form) processWindowMove(x, y int) {
 }
 
 func (c *Form) Move(x, y int) {
+	if c == nil {
+		return
+	}
 	c.posX = x
 	c.posY = y
 	if c.wnd != nil {
@@ -671,10 +693,16 @@ func (c *Form) freeMemory() {
 }
 
 func (c *Form) UpdateBlockPush() {
+	if c == nil {
+		return
+	}
 	c.updateBlockStack++
 }
 
 func (c *Form) UpdateBlockPop() {
+	if c == nil {
+		return
+	}
 	if c.updateBlockStack <= 0 {
 		return
 	}
@@ -685,10 +713,17 @@ func (c *Form) UpdateBlockPop() {
 }
 
 func (c *Form) LayoutingBlockPush() {
+	if c == nil {
+		return
+	}
 	c.layoutingBlockStack++
 }
 
 func (c *Form) LayoutingBlockPop() {
+	if c == nil {
+		return
+	}
+
 	if c.layoutingBlockStack <= 0 {
 		return
 	}
@@ -696,4 +731,12 @@ func (c *Form) LayoutingBlockPop() {
 	if c.layoutingBlockStack == 0 {
 		c.UpdateLayout()
 	}
+}
+
+func (c *Form) SetAcceptButton(button *Button) {
+	c.acceptButton = button
+}
+
+func (c *Form) SetCancelButton(button *Button) {
+	c.cancelButton = button
 }

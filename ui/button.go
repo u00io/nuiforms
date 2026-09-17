@@ -54,6 +54,17 @@ func (c *Button) SetText(text string) {
 	c.form.Update()
 }
 
+// Push simulates a click on the button, triggering the "onclick" handler
+// programmatically (used e.g. by Form's accept/cancel buttons on Enter/Esc).
+func (c *Button) Push() {
+	if !c.Enabled() {
+		return
+	}
+	if f := c.GetPropFunction("onclick"); f != nil {
+		f()
+	}
+}
+
 func (c *Button) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 	return c.onKeyDown(key, mods)
 }

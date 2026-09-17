@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"image/draw"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/image/font"
@@ -28,6 +29,7 @@ type renderedText struct {
 	textImage    *image.RGBA
 }
 
+var renderedTextsMu sync.Mutex
 var renderedTexts = make(map[string]*renderedText)
 var renderedTextLastClearDT time.Time
 
@@ -36,6 +38,7 @@ func init() {
 	loadedFonts["robotomono"] = fontRobotoMono
 }
 
+// clearRenderedTexts must be called with renderedTextsMu held.
 func clearRenderedTexts() {
 	if renderedTextLastClearDT.IsZero() {
 		renderedTextLastClearDT = time.Now()
@@ -56,9 +59,15 @@ func DrawText(rgba *image.RGBA, text string, textColor color.Color, fontFamily s
 	var textImage *image.RGBA
 	key := fontFamily + "_" + fmt.Sprint(fontSize) + "_" + fmt.Sprintf("%v", textColor) + "_" + text
 
-	if img, ok := renderedTexts[key]; ok {
-		textImage = img.textImage
+	renderedTextsMu.Lock()
+	img, ok := renderedTexts[key]
+	if ok {
 		img.lastAccessDT = time.Now()
+	}
+	renderedTextsMu.Unlock()
+
+	if ok {
+		textImage = img.textImage
 	} else {
 		textImage = renderText(text, textColor, fontFamily, fontSize)
 		if textImage == nil {
@@ -68,8 +77,11 @@ func DrawText(rgba *image.RGBA, text string, textColor color.Color, fontFamily s
 		img.key = key
 		img.lastAccessDT = time.Now()
 		img.textImage = textImage
+
+		renderedTextsMu.Lock()
 		renderedTexts[key] = &img
 		clearRenderedTexts()
+		renderedTextsMu.Unlock()
 	}
 
 	textBounds := textImage.Bounds()
