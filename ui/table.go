@@ -711,6 +711,28 @@ func (c *Table) moveCurrentCellForSelection(row int, col int) {
 	}
 }
 
+// navigateTo moves the active cell for keyboard navigation. When extend is
+// true and multiselect is enabled, it extends the selection range from the
+// anchor instead of resetting it - the Shift+Arrow/Home/End/PageUp/PageDown
+// behavior, mirroring Shift+click.
+func (c *Table) navigateTo(row int, col int, extend bool) {
+	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
+		return
+	}
+	cellObj := c.getCellObj(row, col)
+	if cellObj.selectionDisabled {
+		return
+	}
+
+	if extend && c.multiselect {
+		c.applyRangeSelection(c.selectionAnchorRow, c.selectionAnchorCol, row, col, nil, nil)
+		c.moveCurrentCellForSelection(row, col)
+		return
+	}
+
+	c.SetCurrentCell2(row, col)
+}
+
 // clearSelectionSets empties the multi-selection (row and cell sets).
 func (c *Table) clearSelectionSets() {
 	c.selectedRows = make(map[int]bool)
@@ -841,13 +863,13 @@ func (c *Table) handleSelectionMouseDown(row int, col int, mods nuikey.KeyModifi
 	}
 
 	// Plain click: reset the selection to this single item; it becomes the
-	// drag anchor for a following Shift-click or mouse drag.
+	// drag anchor for a following Shift-click or mouse drag. Dragging is
+	// armed even without multiselect, so the single selection follows the
+	// mouse while the button is held.
 	c.SetCurrentCell2(row, col)
-	if c.multiselect {
-		c.selectionDragBaseRows = make(map[int]bool)
-		c.selectionDragBaseCells = make(map[TableCellPos]bool)
-		c.selectionDragging = true
-	}
+	c.selectionDragBaseRows = make(map[int]bool)
+	c.selectionDragBaseCells = make(map[TableCellPos]bool)
+	c.selectionDragging = true
 }
 
 // SelectAll selects every row (in row-selection mode) or every cell (in
@@ -1040,7 +1062,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 	}
 
 	col, row := c.cellByPosition(x, y)
-	if row >= 0 && col >= 0 {
+	if row >= 0 && col >= 0 && button == nuimouse.MouseButtonLeft {
 		c.handleSelectionMouseDown(row, col, mods)
 		//fmt.Println("Cell clicked:", col, row, " at ", x, y)
 	}
@@ -1128,7 +1150,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 	if key == nuikey.KeyArrowLeft {
 		if c.currentCellX > 0 {
-			c.SetCurrentCell2(c.currentCellY, c.currentCellX-1)
+			c.navigateTo(c.currentCellY, c.currentCellX-1, mods.Shift)
 			c.form.Update()
 		}
 		processed = true
@@ -1136,7 +1158,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 	if key == nuikey.KeyArrowRight {
 		if c.currentCellX < c.columnCount-1 {
-			c.SetCurrentCell2(c.currentCellY, c.currentCellX+1)
+			c.navigateTo(c.currentCellY, c.currentCellX+1, mods.Shift)
 			c.form.Update()
 		}
 		processed = true
@@ -1148,7 +1170,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			if selectRowIndex >= c.rowCount {
 				selectRowIndex = c.rowCount - 1
 			}
-			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
+			c.navigateTo(selectRowIndex, c.currentCellX, mods.Shift)
 			c.form.Update()
 		}
 		processed = true
@@ -1160,20 +1182,20 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			if selectRowIndex >= c.rowCount {
 				selectRowIndex = c.rowCount - 1
 			}
-			c.SetCurrentCell2(selectRowIndex, c.currentCellX)
+			c.navigateTo(selectRowIndex, c.currentCellX, mods.Shift)
 			c.form.Update()
 		}
 		processed = true
 	}
 
 	if key == nuikey.KeyHome {
-		c.SetCurrentCell2(0, c.currentCellX)
+		c.navigateTo(0, c.currentCellX, mods.Shift)
 		c.form.Update()
 		processed = true
 	}
 
 	if key == nuikey.KeyEnd {
-		c.SetCurrentCell2(c.rowCount-1, c.currentCellX)
+		c.navigateTo(c.rowCount-1, c.currentCellX, mods.Shift)
 		c.form.Update()
 		processed = true
 	}
@@ -1223,7 +1245,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			targetRow = 0
 		}
 		if targetRow != c.currentCellY {
-			c.SetCurrentCell2(targetRow, c.currentCellX)
+			c.navigateTo(targetRow, c.currentCellX, mods.Shift)
 			c.form.Update()
 		}
 		processed = true
@@ -1236,7 +1258,7 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 			targetRow = c.rowCount - 1
 		}
 		if targetRow != c.currentCellY {
-			c.SetCurrentCell2(targetRow, c.currentCellX)
+			c.navigateTo(targetRow, c.currentCellX, mods.Shift)
 			c.form.Update()
 		}
 		processed = true
@@ -1290,13 +1312,18 @@ func (c *Table) onMouseMoveHeader(x int, y int, _ nuikey.KeyModifiers) nuimouse.
 func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 	c.SetMouseCursor(nuimouse.MouseCursorArrow)
 
-	if c.multiselect && c.selectionDragging {
+	if c.selectionDragging {
 		col, row := c.cellByPositionClamped(x, y)
 		if row >= 0 && col >= 0 {
 			cellObj := c.getCellObj(row, col)
 			if !cellObj.selectionDisabled {
-				c.applyRangeSelection(c.selectionAnchorRow, c.selectionAnchorCol, row, col, c.selectionDragBaseRows, c.selectionDragBaseCells)
-				c.moveCurrentCellForSelection(row, col)
+				if c.multiselect {
+					c.applyRangeSelection(c.selectionAnchorRow, c.selectionAnchorCol, row, col, c.selectionDragBaseRows, c.selectionDragBaseCells)
+					c.moveCurrentCellForSelection(row, col)
+				} else {
+					// No multiselect: the single selection just follows the mouse.
+					c.SetCurrentCell2(row, col)
+				}
 			}
 		}
 	}
