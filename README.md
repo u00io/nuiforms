@@ -14,9 +14,6 @@ Doc: [NUIForms Documentation](doc)
     }
 
 
-
-
-
 # Platforms
 - Windows
 - MacOS
