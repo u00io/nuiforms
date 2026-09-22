@@ -17,11 +17,8 @@ import (
 
 var loadedFonts = make(map[string][]byte)
 
-//go:embed "fonts/Roboto_Regular.ttf"
-var fontRoboto []byte
-
-//go:embed "fonts/RobotoMono_Regular.ttf"
-var fontRobotoMono []byte
+//go:embed "fonts/JetBrainsMono-Regular.ttf"
+var fontJetBrainsMono []byte
 
 type renderedText struct {
 	key          string
@@ -34,8 +31,7 @@ var renderedTexts = make(map[string]*renderedText)
 var renderedTextLastClearDT time.Time
 
 func init() {
-	loadedFonts["roboto"] = fontRoboto
-	loadedFonts["robotomono"] = fontRobotoMono
+	loadedFonts["jetbrainsmono"] = fontJetBrainsMono
 }
 
 // clearRenderedTexts must be called with renderedTextsMu held.

@@ -76,7 +76,8 @@ func init() {
 
 	ApplyDarkTheme()
 
-	Theme["fontFamily"] = "robotomono"
+	//Theme["fontFamily"] = "robotomono"
+	Theme["fontFamily"] = "jetbrainsmono"
 	Theme["fontSize"] = DefaultFontSize
 }
 
