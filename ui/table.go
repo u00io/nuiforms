@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"sort"
 
 	"github.com/nfnt/resize"
 	"github.com/u00io/nui/nuikey"
@@ -35,12 +36,22 @@ type Table struct {
 	cellPadding int
 
 	showSelection bool
-	selectingRow  bool
-	selectingCell bool
+	multiselect   bool
+	selectingRows bool
 
 	// Selection
 	currentCellX int
 	currentCellY int
+
+	selectedRows  map[int]bool
+	selectedCells map[TableCellPos]bool
+
+	selectionAnchorRow int
+	selectionAnchorCol int
+
+	selectionDragging      bool
+	selectionDragBaseRows  map[int]bool
+	selectionDragBaseCells map[TableCellPos]bool
 
 	onSelectionChanged  func(row int, col int)
 	onCellChanged       func(row int, col int, text string, data interface{}) bool
@@ -64,6 +75,12 @@ type Table struct {
 
 	previousCurrentCellX int
 	previousCurrentCellY int
+}
+
+// TableCellPos identifies a single cell by row and column index.
+type TableCellPos struct {
+	Row int
+	Col int
 }
 
 type innerWidget struct {
@@ -181,8 +198,10 @@ func NewTable() *Table {
 	c.cellPadding = 3
 
 	c.showSelection = true
-	c.selectingRow = true
-	c.selectingCell = true
+	c.selectingRows = true
+	c.multiselect = false
+	c.selectedRows = make(map[int]bool)
+	c.selectedCells = make(map[TableCellPos]bool)
 
 	c.headerWidget = newTableHeader()
 	c.headerWidget.OnHeaderMouseDown = func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) bool {
@@ -441,6 +460,12 @@ func (c *Table) SetRowCount(count int) {
 	c.rowCount = count
 	c.updateInnerSize()
 	c.updateInnerWidgetsLayout()
+
+	// Preserve the historical default of the first cell/row being selected
+	// as soon as data exists, as long as nothing has been selected yet.
+	if len(c.selectedRows) == 0 && len(c.selectedCells) == 0 {
+		c.syncSelectionToCurrent()
+	}
 }
 
 func (c *Table) SetColumnCount(count int) {
@@ -648,12 +673,12 @@ func (c *Table) SetCurrentCell2(row int, col int) {
 	if row < 0 || row >= c.rowCount || col < 0 || col >= c.columnCount {
 		return
 	}
-	if c.selectingCell {
-		c.currentCellX = col
-	} else {
-		c.currentCellX = 0
-	}
+	c.currentCellX = col
 	c.currentCellY = row
+
+	c.selectionAnchorRow = row
+	c.selectionAnchorCol = col
+	c.syncSelectionToCurrent()
 
 	c.ScrollToCell2(c.currentCellY, c.currentCellX)
 
@@ -661,6 +686,244 @@ func (c *Table) SetCurrentCell2(row int, col int) {
 	if c.onSelectionChanged != nil {
 		c.onSelectionChanged(c.currentCellY, c.currentCellX)
 	}
+}
+
+// moveCurrentCellForSelection updates the active cell the same way SetCurrentCell2
+// does (position, scroll, onSelectionChanged), but without resetting the
+// multi-selection - used while extending a selection via Shift/Ctrl or drag.
+func (c *Table) moveCurrentCellForSelection(row int, col int) {
+	c.form.LayoutingBlockPush()
+	defer c.form.LayoutingBlockPop()
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
+
+	c.previousCurrentCellX = c.currentCellX
+	c.previousCurrentCellY = c.currentCellY
+
+	c.currentCellX = col
+	c.currentCellY = row
+
+	c.ScrollToCell2(row, col)
+
+	c.form.Update()
+	if c.onSelectionChanged != nil {
+		c.onSelectionChanged(row, col)
+	}
+}
+
+// clearSelectionSets empties the multi-selection (row and cell sets).
+func (c *Table) clearSelectionSets() {
+	c.selectedRows = make(map[int]bool)
+	c.selectedCells = make(map[TableCellPos]bool)
+}
+
+// syncSelectionToCurrent collapses the multi-selection down to the single
+// active cell/row - the standard behavior on a plain click or keyboard nav.
+func (c *Table) syncSelectionToCurrent() {
+	c.clearSelectionSets()
+	if c.currentCellY < 0 || c.currentCellY >= c.rowCount {
+		return
+	}
+	if c.selectingRows {
+		c.selectedRows[c.currentCellY] = true
+	} else if c.currentCellX >= 0 && c.currentCellX < c.columnCount {
+		c.selectedCells[TableCellPos{Row: c.currentCellY, Col: c.currentCellX}] = true
+	}
+}
+
+func (c *Table) cloneSelectedRows() map[int]bool {
+	result := make(map[int]bool, len(c.selectedRows))
+	for k, v := range c.selectedRows {
+		result[k] = v
+	}
+	return result
+}
+
+func (c *Table) cloneSelectedCells() map[TableCellPos]bool {
+	result := make(map[TableCellPos]bool, len(c.selectedCells))
+	for k, v := range c.selectedCells {
+		result[k] = v
+	}
+	return result
+}
+
+// applyRangeSelection sets the selection to baseRows/baseCells plus the
+// rectangular range between (fromRow,fromCol) and (toRow,toCol) - a row
+// range when selectingRows is on, a cell rectangle otherwise. The base maps
+// are copied, never mutated.
+func (c *Table) applyRangeSelection(fromRow int, fromCol int, toRow int, toCol int, baseRows map[int]bool, baseCells map[TableCellPos]bool) {
+	rowsSet := make(map[int]bool, len(baseRows))
+	for k, v := range baseRows {
+		rowsSet[k] = v
+	}
+	cellsSet := make(map[TableCellPos]bool, len(baseCells))
+	for k, v := range baseCells {
+		cellsSet[k] = v
+	}
+
+	r1, r2 := fromRow, toRow
+	if r1 > r2 {
+		r1, r2 = r2, r1
+	}
+
+	if c.selectingRows {
+		for r := r1; r <= r2; r++ {
+			rowsSet[r] = true
+		}
+	} else {
+		c1, c2 := fromCol, toCol
+		if c1 > c2 {
+			c1, c2 = c2, c1
+		}
+		for r := r1; r <= r2; r++ {
+			for cc := c1; cc <= c2; cc++ {
+				cellsSet[TableCellPos{Row: r, Col: cc}] = true
+			}
+		}
+	}
+
+	c.selectedRows = rowsSet
+	c.selectedCells = cellsSet
+}
+
+// toggleSelectionItem adds or removes the given row/cell from the selection.
+func (c *Table) toggleSelectionItem(row int, col int) {
+	if c.selectingRows {
+		if c.selectedRows[row] {
+			delete(c.selectedRows, row)
+		} else {
+			c.selectedRows[row] = true
+		}
+		return
+	}
+
+	pos := TableCellPos{Row: row, Col: col}
+	if c.selectedCells[pos] {
+		delete(c.selectedCells, pos)
+	} else {
+		c.selectedCells[pos] = true
+	}
+}
+
+// handleSelectionMouseDown applies standard multi-select click semantics:
+// plain click replaces the selection, Shift extends a range from the anchor,
+// Ctrl toggles a single item (and Ctrl+Shift extends additively), and any of
+// them arms drag-to-extend for the following mouse moves.
+func (c *Table) handleSelectionMouseDown(row int, col int, mods nuikey.KeyModifiers) {
+	cellObj := c.getCellObj(row, col)
+	if cellObj.selectionDisabled {
+		return
+	}
+
+	if c.multiselect && mods.Shift {
+		if mods.Ctrl {
+			c.selectionDragBaseRows = c.cloneSelectedRows()
+			c.selectionDragBaseCells = c.cloneSelectedCells()
+		} else {
+			c.selectionDragBaseRows = make(map[int]bool)
+			c.selectionDragBaseCells = make(map[TableCellPos]bool)
+		}
+		c.applyRangeSelection(c.selectionAnchorRow, c.selectionAnchorCol, row, col, c.selectionDragBaseRows, c.selectionDragBaseCells)
+		c.moveCurrentCellForSelection(row, col)
+		c.selectionDragging = true
+		return
+	}
+
+	if c.multiselect && mods.Ctrl {
+		c.toggleSelectionItem(row, col)
+		c.selectionAnchorRow = row
+		c.selectionAnchorCol = col
+		c.selectionDragBaseRows = c.cloneSelectedRows()
+		c.selectionDragBaseCells = c.cloneSelectedCells()
+		c.moveCurrentCellForSelection(row, col)
+		c.selectionDragging = true
+		return
+	}
+
+	// Plain click: reset the selection to this single item; it becomes the
+	// drag anchor for a following Shift-click or mouse drag.
+	c.SetCurrentCell2(row, col)
+	if c.multiselect {
+		c.selectionDragBaseRows = make(map[int]bool)
+		c.selectionDragBaseCells = make(map[TableCellPos]bool)
+		c.selectionDragging = true
+	}
+}
+
+// SelectAll selects every row (in row-selection mode) or every cell (in
+// cell-selection mode). No-op unless multiselect is enabled.
+func (c *Table) SelectAll() {
+	if !c.multiselect || c.rowCount <= 0 || c.columnCount <= 0 {
+		return
+	}
+
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
+
+	rows := make(map[int]bool)
+	cells := make(map[TableCellPos]bool)
+	if c.selectingRows {
+		for r := 0; r < c.rowCount; r++ {
+			rows[r] = true
+		}
+	} else {
+		for r := 0; r < c.rowCount; r++ {
+			for cc := 0; cc < c.columnCount; cc++ {
+				cells[TableCellPos{Row: r, Col: cc}] = true
+			}
+		}
+	}
+	c.selectedRows = rows
+	c.selectedCells = cells
+	c.form.Update()
+	if c.onSelectionChanged != nil {
+		c.onSelectionChanged(c.currentCellY, c.currentCellX)
+	}
+}
+
+// SelectedRows returns the sorted list of currently selected row indices.
+// Meaningful when SelectingRows() is true.
+func (c *Table) SelectedRows() []int {
+	result := make([]int, 0, len(c.selectedRows))
+	for r := range c.selectedRows {
+		if r < 0 || r >= c.rowCount {
+			continue
+		}
+		result = append(result, r)
+	}
+	sort.Ints(result)
+	return result
+}
+
+// SelectedCells returns the sorted list of currently selected cells.
+// Meaningful when SelectingRows() is false.
+func (c *Table) SelectedCells() []TableCellPos {
+	result := make([]TableCellPos, 0, len(c.selectedCells))
+	for pos := range c.selectedCells {
+		if pos.Row < 0 || pos.Row >= c.rowCount || pos.Col < 0 || pos.Col >= c.columnCount {
+			continue
+		}
+		result = append(result, pos)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Row != result[j].Row {
+			return result[i].Row < result[j].Row
+		}
+		return result[i].Col < result[j].Col
+	})
+	return result
+}
+
+// IsRowSelected reports whether the given row is selected. Only meaningful
+// when SelectingRows() is true.
+func (c *Table) IsRowSelected(row int) bool {
+	return c.selectingRows && c.selectedRows[row]
+}
+
+// IsCellSelected reports whether the given cell is selected. Only meaningful
+// when SelectingRows() is false.
+func (c *Table) IsCellSelected(row int, col int) bool {
+	return !c.selectingRows && c.selectedCells[TableCellPos{Row: row, Col: col}]
 }
 
 func (c *Table) SetHeaderRowCount(count int) {
@@ -778,7 +1041,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 
 	col, row := c.cellByPosition(x, y)
 	if row >= 0 && col >= 0 {
-		c.SetCurrentCell2(row, col)
+		c.handleSelectionMouseDown(row, col, mods)
 		//fmt.Println("Cell clicked:", col, row, " at ", x, y)
 	}
 
@@ -791,6 +1054,7 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 
 func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.columnResizingIndex = -1
+	c.selectionDragging = false
 	return true
 }
 
@@ -854,6 +1118,12 @@ func (c *Table) ProcessKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 
 	if processed {
 		return processed
+	}
+
+	if key == nuikey.KeyA && mods.Ctrl && c.multiselect {
+		c.SelectAll()
+		c.form.Update()
+		return true
 	}
 
 	if key == nuikey.KeyArrowLeft {
@@ -1019,6 +1289,18 @@ func (c *Table) onMouseMoveHeader(x int, y int, _ nuikey.KeyModifiers) nuimouse.
 
 func (c *Table) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 	c.SetMouseCursor(nuimouse.MouseCursorArrow)
+
+	if c.multiselect && c.selectionDragging {
+		col, row := c.cellByPositionClamped(x, y)
+		if row >= 0 && col >= 0 {
+			cellObj := c.getCellObj(row, col)
+			if !cellObj.selectionDisabled {
+				c.applyRangeSelection(c.selectionAnchorRow, c.selectionAnchorCol, row, col, c.selectionDragBaseRows, c.selectionDragBaseCells)
+				c.moveCurrentCellForSelection(row, col)
+			}
+		}
+	}
+
 	return true
 }
 
@@ -1026,12 +1308,43 @@ func (c *Table) SetShowSelection(show bool) {
 	c.showSelection = show
 }
 
-func (c *Table) SetSelectingRow(selecting bool) {
-	c.selectingRow = selecting
+func (c *Table) ShowSelection() bool {
+	return c.showSelection
 }
 
-func (c *Table) SetSelectingCell(selecting bool) {
-	c.selectingCell = selecting
+// SetMultiselect enables or disables selecting more than one row/cell at a
+// time (drag, Shift+click, Ctrl+click, Ctrl+A). Disabling it collapses any
+// existing multi-selection down to the current cell/row.
+func (c *Table) SetMultiselect(enabled bool) {
+	if c.multiselect == enabled {
+		return
+	}
+	c.multiselect = enabled
+	if !enabled {
+		c.selectionDragging = false
+		c.syncSelectionToCurrent()
+		c.form.Update()
+	}
+}
+
+func (c *Table) Multiselect() bool {
+	return c.multiselect
+}
+
+// SetSelectingRows chooses the selection unit: true selects whole rows,
+// false selects individual cells.
+func (c *Table) SetSelectingRows(selectingRows bool) {
+	if c.selectingRows == selectingRows {
+		return
+	}
+	c.selectingRows = selectingRows
+	c.selectionDragging = false
+	c.syncSelectionToCurrent()
+	c.form.Update()
+}
+
+func (c *Table) SelectingRows() bool {
+	return c.selectingRows
 }
 
 func (c *Table) draw(cnv *Canvas) {
@@ -1070,32 +1383,12 @@ func (c *Table) draw(cnv *Canvas) {
 
 					columnWidth := c.columnWidth(colIndex)
 
-					/*selected := c.currentCellX == colIndex && c.currentCellY == rowIndex
-					if c.selectingRow {
-						selected = c.currentCellY == rowIndex
-					}*/
-
-					rowIsSelected := c.currentCellY == rowIndex
-					if !c.selectingRow {
-						rowIsSelected = false
-					}
-
-					cellIsSelected := c.currentCellX == colIndex && c.currentCellY == rowIndex
-					if !c.selectingCell {
-						cellIsSelected = false
-					}
+					rowIsSelected := c.IsRowSelected(rowIndex)
+					cellIsSelected := c.IsCellSelected(rowIndex, colIndex)
 
 					backColor := c.BackgroundColor()
-					if c.showSelection {
-						if rowIsSelected {
-							backColor = c.BackgroundColorWithAddElevation(1)
-							if !c.selectingCell {
-								backColor = c.GetPropColor("background_selected_cell", ColorToHex(c.BackgroundColorForRole("primary")))
-							}
-						}
-						if cellIsSelected {
-							backColor = c.GetPropColor("background_selected_cell", ColorToHex(c.BackgroundColorForRole("primary")))
-						}
+					if c.showSelection && (rowIsSelected || cellIsSelected) {
+						backColor = c.GetPropColor("background_selected_cell", ColorToHex(c.BackgroundColorForRole("primary")))
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight1, backColor)
 
@@ -1442,6 +1735,35 @@ func (c *Table) cellByPosition(x, y int) (row int, col int) {
 		return -1, -1
 	}
 	return col, row
+}
+
+// cellByPositionClamped is like cellByPosition but clamps x/y into the
+// table's content area first, so a point beyond the last row/column (e.g.
+// while dragging a selection past the table's edge) still resolves to the
+// nearest valid cell instead of (-1, -1).
+func (c *Table) cellByPositionClamped(x, y int) (col int, row int) {
+	if c.columnCount <= 0 || c.rowCount <= 0 {
+		return -1, -1
+	}
+
+	if x < 0 {
+		x = 0
+	}
+	maxX := c.columnOffset(c.columnCount) - 1
+	if x > maxX {
+		x = maxX
+	}
+
+	minY := c.headerHeight()
+	if y < minY {
+		y = minY
+	}
+	maxY := c.headerHeight() + c.rowCount*c.rowHeight1 - 1
+	if y > maxY {
+		y = maxY
+	}
+
+	return c.cellByPosition(x, y)
 }
 
 func (c *Table) headerRowOffset(headerRowIndex int) int {
