@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 	"runtime"
 	"runtime/debug"
 	"sort"
@@ -17,6 +18,7 @@ import (
 type Form struct {
 	wnd   nui.Window
 	title string
+	icon  *image.RGBA
 
 	posX int
 	posY int
@@ -180,6 +182,41 @@ func (c *Form) SetTitle(title string) {
 	}
 }
 
+// appIcon is the icon every new form gets unless it has its own (see SetIcon).
+var appIcon *image.RGBA
+
+// SetAppIcon sets the default icon for all windows of the application.
+// Call it at startup, before showing any form - forms that are already shown
+// keep their current icon. A nil image is ignored.
+func SetAppIcon(img image.Image) {
+	if img == nil {
+		return
+	}
+	appIcon = toRGBA(img)
+}
+
+// SetIcon overrides the application icon (see SetAppIcon) for this form.
+// Can be called before or after the window is shown. A nil image is ignored.
+func (c *Form) SetIcon(img image.Image) {
+	if img == nil {
+		return
+	}
+	c.icon = toRGBA(img)
+	if c.wnd != nil {
+		c.wnd.SetAppIcon(c.icon)
+	}
+}
+
+func toRGBA(img image.Image) *image.RGBA {
+	if rgba, ok := img.(*image.RGBA); ok {
+		return rgba
+	}
+	b := img.Bounds()
+	rgba := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	draw.Draw(rgba, rgba.Bounds(), img, b.Min, draw.Src)
+	return rgba
+}
+
 func (c *Form) SetSize(width, height int) {
 	c.width = width
 	c.height = height
@@ -256,6 +293,11 @@ func (c *Form) createWindow(maximized bool) {
 	c.wnd.OnCloseRequest(c.processWindowClose)
 	c.wnd.SetAllowMinimize(c.allowMinimize)
 	c.wnd.SetAllowMaximize(c.allowMaximize)
+	if c.icon != nil {
+		c.wnd.SetAppIcon(c.icon)
+	} else if appIcon != nil {
+		c.wnd.SetAppIcon(appIcon)
+	}
 	if c.posX >= 0 && c.posY >= 0 {
 		c.wnd.Move(c.posX, c.posY)
 	}
