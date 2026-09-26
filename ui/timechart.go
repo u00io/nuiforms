@@ -20,10 +20,10 @@ import (
 // HasGood and HasBad describe data quality: HasBad means the point (or some
 // sample in the bucket) is bad - e.g. the sensor was disconnected - and
 // HasGood means at least one sample carries a valid value. First/Last/High/
-// Low only describe the good samples. A point with HasBad and no HasGood
-// has no value: the line breaks there. A point with neither flag (a plain
-// struct literal) counts as good. Bad spans are drawn as a light hatch in
-// the series color.
+// Low only describe the good samples. A point without HasGood has no value:
+// the line breaks there. Bad spans are drawn as a light hatch in the series
+// color. A point with neither flag is a gap - no data at all, e.g. the
+// acquisition was stopped: the line breaks without the hatch.
 type TimeChartPoint struct {
 	DT      time.Time
 	First   float64
@@ -36,7 +36,12 @@ type TimeChartPoint struct {
 
 // HasValue reports whether First/Last/High/Low are meaningful.
 func (p TimeChartPoint) HasValue() bool {
-	return p.HasGood || !p.HasBad
+	return p.HasGood
+}
+
+// IsGap reports whether the point marks a break in the data.
+func (p TimeChartPoint) IsGap() bool {
+	return !p.HasGood && !p.HasBad
 }
 
 func NewTimeChartValue(dt time.Time, value float64) TimeChartPoint {
@@ -46,6 +51,12 @@ func NewTimeChartValue(dt time.Time, value float64) TimeChartPoint {
 // NewTimeChartBad returns a point with no value, marking bad quality at dt.
 func NewTimeChartBad(dt time.Time) TimeChartPoint {
 	return TimeChartPoint{DT: dt, HasBad: true}
+}
+
+// NewTimeChartGap returns a point that breaks the line at dt without
+// marking bad quality - e.g. where data acquisition was stopped or started.
+func NewTimeChartGap(dt time.Time) TimeChartPoint {
+	return TimeChartPoint{DT: dt}
 }
 
 // TimeChartDataSource supplies the points of a series.

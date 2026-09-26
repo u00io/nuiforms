@@ -67,15 +67,20 @@ Data quality:
   color.
 - `HasGood` - at least one sample carries a valid value. `First`/`Last`/
   `High`/`Low` describe only the good samples.
-- A point with `HasBad` and without `HasGood` has no value: the line breaks
-  there and the point is ignored by Y auto-scaling.
-- A point with neither flag (a plain struct literal) counts as good.
+- A point without `HasGood` has no value: the line breaks there and the
+  point is ignored by Y auto-scaling. Set `HasGood` when building points
+  as struct literals.
+- A point with neither flag is a gap: no data at all, for example where data
+  acquisition was stopped or started. The line breaks there without the
+  hatch.
 
 Helpers:
 
 - `NewTimeChartValue(dt time.Time, value float64) TimeChartPoint` - a good raw sample.
 - `NewTimeChartBad(dt time.Time) TimeChartPoint` - a bad sample without a value.
-- `(p TimeChartPoint) HasValue() bool` - whether the values are meaningful.
+- `NewTimeChartGap(dt time.Time) TimeChartPoint` - a break in the data.
+- `(p TimeChartPoint) HasValue() bool` - whether the values are meaningful (`HasGood`).
+- `(p TimeChartPoint) IsGap() bool` - whether the point is a gap (neither flag).
 
 ## Data sources
 
@@ -120,6 +125,10 @@ each side and merges them into buckets of `groupDuration`:
 | only good samples    | yes     |        | from all samples        |
 | good and bad samples | yes     | yes    | from the good ones only |
 | only bad samples     |         | yes    | none                    |
+
+Gap points are not merged into buckets: each one stays a separate point and
+starts a new bucket after it, so a break in the data remains visible at any
+zoom level.
 
 Buckets are aligned to multiples of `groupDuration` since the Unix epoch, so
 panning does not change how points are grouped. It is the same aggregation a

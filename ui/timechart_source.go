@@ -43,7 +43,9 @@ func (c *TimeChartMemorySource) GetData(from, to time.Time, groupDuration time.D
 // groupDuration: First/Last of a bucket come from its first and last good
 // point, High/Low are the extremes of the good points, HasGood is set when
 // the bucket has any good point and HasBad when it has any bad one - so a
-// short outage stays visible however far the chart is zoomed out. Buckets
+// short outage stays visible however far the chart is zoomed out. Gap points
+// (neither flag) are never merged: each one is kept as a separate point and
+// closes the current bucket, so a break stays visible at any zoom. Buckets
 // are aligned to multiples of groupDuration since the Unix epoch, so panning
 // does not change how points are grouped. It is the same aggregation a server should do before sending
 // data to the chart.
@@ -67,14 +69,20 @@ func TimeChartDownsample(points []TimeChartPoint, from, to time.Time, groupDurat
 	g := int64(groupDuration)
 	res := make([]TimeChartPoint, 0, min(len(src), int(to.Sub(from)/groupDuration)+3))
 	var bucket int64
+	inBucket := false
 	for _, p := range src {
 		ns := p.DT.UnixNano()
 		b := ns / g
 		if ns < 0 && ns%g != 0 {
 			b--
 		}
+		if p.IsGap() {
+			res = append(res, NewTimeChartGap(time.Unix(0, b*g)))
+			inBucket = false
+			continue
+		}
 		good := p.HasValue()
-		if len(res) > 0 && b == bucket {
+		if inBucket && b == bucket {
 			last := &res[len(res)-1]
 			last.HasBad = last.HasBad || p.HasBad
 			switch {
@@ -90,6 +98,7 @@ func TimeChartDownsample(points []TimeChartPoint, from, to time.Time, groupDurat
 			continue
 		}
 		bucket = b
+		inBucket = true
 		q := TimeChartPoint{DT: time.Unix(0, b*g), HasBad: p.HasBad}
 		if good {
 			q.First, q.Last, q.High, q.Low = p.First, p.Last, p.High, p.Low
