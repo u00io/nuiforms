@@ -39,6 +39,8 @@ type Form struct {
 	hoverWidget   Widgeter
 	focusedWidget Widgeter
 
+	tooltip tooltipState
+
 	onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
 
 	needUpdate         bool
@@ -404,6 +406,7 @@ func (c *Form) processPaint(rgba *image.RGBA) {
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.width, c.height)
 	c.topWidget.ProcessPaint(cnv)
+	c.tooltipPaint(cnv)
 	if c.hoverWidget != nil {
 		//c.DrawWidgetDebugInfo(c.hoverWidget, cnv)
 	}
@@ -462,6 +465,7 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = true
 	}
+	c.tooltipSuppress()
 	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
 	if c.mouseLeftButtonPressed {
 		c.mouseLeftButtonPressedWidget = widgetAtCoords
@@ -536,6 +540,7 @@ func (c *Form) processMouseMove(x int, y int) {
 		if c.hoverWidget != nil {
 			c.hoverWidget.ProcessMouseEnter()
 		}
+		c.tooltipHoverChanged()
 	}
 
 	newCursor := nuimouse.MouseCursorArrow
@@ -558,6 +563,7 @@ func (c *Form) processMouseMove(x int, y int) {
 
 func (c *Form) processMouseLeave() {
 	c.topWidget.ProcessMouseLeave()
+	c.tooltipHide()
 
 	if c.hoverWidget != nil {
 		c.hoverWidget.ProcessMouseLeave()
@@ -576,6 +582,7 @@ func (c *Form) FocusedWidget() Widgeter {
 }
 
 func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool {
+	c.tooltipSuppress()
 
 	if c.lastKeyboardModifiers != mods {
 		c.lastKeyboardModifiers = mods
@@ -702,6 +709,7 @@ func (c *Form) processTimer() {
 	}
 
 	c.topWidget.ProcessTimer()
+	c.tooltipProcessTimer()
 
 	for _, popupWidget := range c.topWidget.PopupWidgets {
 		if popupWidget != nil {
