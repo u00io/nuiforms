@@ -76,19 +76,19 @@ func (c *Checkbox) draw(cnv *Canvas) {
 	boxAndTextSpace := 0
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(c.ForegroundColor())
+	cnv.SetColor(indicatorTextColor(&c.Widget))
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.Text())
 
-	padding := 5
+	padding := 6
 	boxSize := 30 - padding*2
 
-	cnv.SetColor(c.BackgroundColorWithAddElevation(-2))
-	cnv.FillRoundedRect(padding, padding, boxSize, boxSize, 3)
+	fill, border, mark := indicatorColors(&c.Widget, c.Checked())
+	cnv.FillFrame(padding, padding, boxSize, boxSize, themeControlRadius, fill, border)
 
 	if c.Checked() {
-		tickColor := c.ForegroundColor()
+		tickColor := mark
 		tickWidth := 2
 		// A short stroke down to the tick's low point, then a longer stroke
 		// up to its top-right end - the usual checkmark shape, sized as

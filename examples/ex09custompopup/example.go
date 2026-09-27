@@ -52,7 +52,7 @@ func newPalette(onPick func(name, hex string)) *palette {
 	var c palette
 	c.InitWidget()
 	c.SetAutoFillBackground(true)
-	c.SetElevation(3)
+	c.SetRole("popup")
 
 	for i, pc := range paletteColors {
 		btn := ui.NewButton(pc.name)

@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"image/color"
+
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
 )
@@ -80,35 +82,49 @@ func (c *Button) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Button) draw(cnv *Canvas) {
-	backColor := c.BackgroundColor()
+	p := CurrentPalette()
+	primary := c.Role() == "primary" || c.Role() == "secondary"
 
-	if c.IsHovered() && c.Enabled() {
-		backColor = c.BackgroundColorWithAddElevation(1)
+	fill, border := p.Button, p.Border
+	if primary {
+		fill, border = p.Highlight, p.Highlight
 	}
-	if c.pressed {
-		backColor = c.BackgroundColorWithAddElevation(2)
+	if c.backgroundColor != nil {
+		fill = colorToRGBA(c.backgroundColor)
 	}
-	_ = backColor
+	textColor := colorToRGBA(c.ForegroundColor())
 
-	cnv.SetColor(backColor)
-	cnv.FillRoundedRect(0, 0, c.Width(), c.Height(), 5)
-
-	foreColor := c.ForegroundColor()
-	if !c.Enabled() {
-		foreColor = c.ForegroundColorDisabled()
+	switch {
+	case !c.Enabled():
+		textColor = p.DisabledText
+		if primary {
+			fill = MixColors(fill, p.Window, 0.5)
+			border = fill
+		}
+	case c.pressed && primary:
+		// Towards the text would lighten the accent; a pressed accent darkens
+		fill = MixColors(fill, color.RGBA{A: 255}, 0.15)
+	case c.pressed:
+		fill = pressedColor(fill, textColor)
+	case c.IsHovered():
+		fill = hoverColor(fill, textColor)
 	}
+
+	if c.IsFocused() && c.Enabled() {
+		border = p.Highlight
+		if primary {
+			border = MixColors(p.Highlight, p.WindowText, 0.45)
+		}
+	}
+
+	cnv.FillFrame(0, 0, c.Width(), c.Height(), themeControlRadius, fill, border)
 
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(foreColor)
+	cnv.SetColor(textColor)
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(0, 0, c.Width(), c.Height(), c.Text())
-
-	if c.IsFocused() {
-		cnv.SetColor(ColorFromHex("#0088AA"))
-		cnv.DrawRoundedRect(1, 1, c.Width()-2, c.Height()-2, 4)
-	}
 }
 
 func (c *Button) ProcessPropChange(key string, value interface{}) {

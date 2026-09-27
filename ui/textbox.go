@@ -61,9 +61,6 @@ func NewTextBox() *TextBox {
 	c.InitWidget()
 	c.SetTypeName("TextBox")
 
-	c.SetAutoFillBackground(true)
-	c.SetElevation(-3)
-
 	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		return c.KeyDown(key, mods)
 	})
@@ -104,7 +101,7 @@ func NewTextBox() *TextBox {
 
 	//c.lines = make([]string, 1)
 	c.cursorWidth = 1
-	c.leftAndRightPadding = 0
+	c.leftAndRightPadding = themeTextInset
 	c.SetMultiline(false)
 	c.cursorVisible = true
 	c.ScrollToBegin()
@@ -284,6 +281,17 @@ func (c *TextBox) lineToPasswordChars(line string) string {
 }
 
 func (c *TextBox) Draw(ctx *Canvas, width, height int) {
+	p := CurrentPalette()
+
+	// The frame doesn't scroll with the text
+	fill, border := inputFrameColors(&c.Widget)
+	ctx.FillFrame(c.scrollX, c.scrollY, c.Width(), c.Height(), themeControlRadius, fill, border)
+
+	textColor := colorToRGBA(c.ForegroundColor())
+	if !c.Enabled() {
+		textColor = p.DisabledText
+	}
+
 	lines := c.Lines()
 
 	oneLineHeight := c.OneLineHeight()
@@ -329,7 +337,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 				rectY = yStaticOffset
 			}
 
-			ctx.FillRect(selXBegin, rectY, selXWidth, oneLineHeight, c.BackgroundColorWithAddElevation(10))
+			ctx.FillRect(selXBegin, rectY, selXWidth, oneLineHeight, p.Selection)
 		}
 	}
 
@@ -338,8 +346,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 
 	for _, line := range lines {
 		line = c.lineToPasswordChars(line)
-		//ctx.SetColor(color.RGBA{0x88, 0x88, 0x88, 0xff}) // c.foregroundColor.Color()
-		ctx.SetColor(c.ForegroundColor())
+		ctx.SetColor(textColor)
 		_, textHeightInLine, err := MeasureText(c.FontFamily(), c.FontSize(), line)
 		ctx.SetHAlign(HAlignLeft)
 		ctx.SetVAlign(VAlignCenter)
@@ -373,7 +380,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 			cursorPosInPixels := charPos[c.cursorPosX]
 			curX := cursorPosInPixels - (c.cursorWidth / 2)
 			curY := yStaticOffset + c.cursorPosY*oneLineHeight
-			ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight, c.ForegroundColor())
+			ctx.FillRect(curX, curY, c.cursorWidth, oneLineHeight, textColor)
 		}
 	}
 
@@ -384,7 +391,7 @@ func (c *TextBox) Draw(ctx *Canvas, width, height int) {
 		} else {
 			ctx.SetVAlign(VAlignCenter)
 		}
-		ctx.SetColor(ColorFromHex("#777777"))
+		ctx.SetColor(p.PlaceholderText)
 		ctx.DrawText(c.leftAndRightPadding, 0, c.w, c.h, c.Hint())
 	}
 }

@@ -21,10 +21,6 @@ type tabWidgetPage struct {
 	widget Widgeter
 }
 
-const (
-	tabWidgetBorderAlpha = 48
-)
-
 func NewTabWidget() *TabWidget {
 	var c TabWidget
 	c.InitWidget()
@@ -109,10 +105,7 @@ func (c *TabWidget) rebuildInterface() {
 
 func (c *TabWidget) drawPost(cnv *Canvas) {
 	// Draw border
-	cnv.SetColor(c.ForegroundColor())
-
-	borderColor := ThemeForegroundColor("")
-	borderColor.A = tabWidgetBorderAlpha
+	borderColor := CurrentPalette().Border
 
 	// Border left
 	cnv.DrawLine(0, c.headerHeight, 0, c.Height(), 1, borderColor)
@@ -207,8 +200,12 @@ func (c *tabWidgetHeader) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bo
 	return true
 }
 
+// draw: the current tab has the page's background and joins the page; the
+// other tabs are lower, shaded and have dimmer text
 func (c *tabWidgetHeader) draw(cnv *Canvas) {
-	cnv.SetColor(c.ForegroundColor())
+	p := CurrentPalette()
+	borderColor := p.Border
+	pageColor := colorToRGBA(c.BackgroundColor())
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 
@@ -229,17 +226,20 @@ func (c *tabWidgetHeader) draw(cnv *Canvas) {
 		c.itemsWidths[i] = width
 
 		x := xOffset
-		cnv.SetHAlign(HAlignCenter)
-		cnv.SetVAlign(VAlignCenter)
-		cnv.DrawText(x, 0, width, c.height, item)
-
 		yOffset := 2
+		textColor := p.WindowText
 		if i == c.currentIndex {
 			yOffset = 0
+			cnv.FillRect(x, yOffset, width, c.height-yOffset, pageColor)
+		} else {
+			cnv.FillRect(x, yOffset, width, c.height-yOffset, MixColors(pageColor, p.WindowText, 0.05))
+			textColor = MixColors(p.WindowText, pageColor, 0.35)
 		}
 
-		borderColor := ThemeForegroundColor("")
-		borderColor.A = tabWidgetBorderAlpha
+		cnv.SetHAlign(HAlignCenter)
+		cnv.SetVAlign(VAlignCenter)
+		cnv.SetColor(textColor)
+		cnv.DrawText(x, yOffset, width, c.height-yOffset, item)
 
 		// Left Border
 		cnv.DrawLine(x, yOffset, x, c.height, 1, borderColor)
@@ -258,8 +258,6 @@ func (c *tabWidgetHeader) draw(cnv *Canvas) {
 
 	// Fill remaining space with bottom border
 	if xOffset < c.Width() {
-		borderColor := ThemeForegroundColor("")
-		borderColor.A = tabWidgetBorderAlpha
 		cnv.DrawLine(xOffset, c.height-1, c.Width(), c.height-1, 1, borderColor)
 	}
 }

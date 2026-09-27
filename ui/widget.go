@@ -50,13 +50,11 @@ type Widget struct {
 	innerWidth     int
 	innerHeight    int
 
-	scrollBarXColor           color.RGBA
 	scrollBarXSize            int
 	scrollingX                bool
 	scrollingXInitial         int
 	scrollingXInitialMousePos int
 
-	scrollBarYColor           color.RGBA
 	scrollBarYSize            int
 	scrollingY                bool
 	scrollingYInitial         int
@@ -230,8 +228,6 @@ func (c *Widget) InitWidget() {
 	c.SetProp("spacing", 6)
 	c.scrollBarXSize = 10
 	c.scrollBarYSize = 10
-	c.scrollBarXColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
-	c.scrollBarYColor = color.RGBA{R: 150, G: 150, B: 150, A: 100}
 	c.innerWidth = 0
 	/*c.anchorLeft = true
 	c.anchorTop = true
@@ -1116,12 +1112,8 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		scrollBarWidth := c.w * c.w / c.innerWidth
 		scrollBarX := c.scrollX * (c.w - scrollBarWidth) / (c.innerWidth - c.w)
 
-		barColor := c.scrollBarXColor
-		if c.lastMouseAbsPosY >= c.h-c.scrollBarXSize && c.lastMouseAbsPosY < c.h {
-			barColor = color.RGBA{R: barColor.R, G: barColor.G, B: barColor.B, A: 200} // Darker color when hovered
-		}
-
-		cnv.FillRect(scrollBarX, c.h-c.scrollBarXSize, scrollBarWidth, c.scrollBarXSize, barColor)
+		hovered := c.lastMouseAbsPosY >= c.h-c.scrollBarXSize && c.lastMouseAbsPosY < c.h
+		drawScrollBarThumb(cnv, scrollBarX, c.h-c.scrollBarXSize, scrollBarWidth, c.scrollBarXSize, hovered)
 	}
 
 	// Draw ScrollBarY
@@ -1129,12 +1121,8 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		scrollBarHeight := c.h * c.h / c.innerHeight
 		scrollBarY := c.scrollY * (c.h - scrollBarHeight) / (c.innerHeight - c.h)
 
-		barColor := c.scrollBarYColor
-		if c.lastMouseAbsPosX >= c.w-c.scrollBarYSize && c.lastMouseAbsPosX < c.w {
-			barColor = color.RGBA{R: barColor.R, G: barColor.G, B: barColor.B, A: 200} // Darker color when hovered
-		}
-
-		cnv.FillRect(c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, barColor)
+		hovered := c.lastMouseAbsPosX >= c.w-c.scrollBarYSize && c.lastMouseAbsPosX < c.w
+		drawScrollBarThumb(cnv, c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, hovered)
 	}
 
 	/*if !c.Enabled() {

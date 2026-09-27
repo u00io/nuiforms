@@ -275,6 +275,7 @@ func (c *Form) CloseTopPopup() {
 }
 
 func (c *Form) Close() {
+	unregisterOpenForm(c)
 	c.tooltipClose()
 	c.destroyPopupWindows()
 	if c.wnd != nil {
@@ -426,6 +427,9 @@ func (c *Form) createWindow(maximized bool) {
 	if c.posX >= 0 && c.posY >= 0 {
 		c.wnd.Move(c.posX, c.posY)
 	}
+	c.wnd.SetDarkMode(IsDarkTheme)
+	c.wnd.SetBackgroundColor(currentPalette.Window)
+	registerOpenForm(c)
 }
 
 func (c *Form) Show() {
@@ -520,10 +524,21 @@ func (c *Form) forceUpdate() {
 }
 
 func (c *Form) processWindowClose() bool {
-	if c.OnClose != nil {
-		return c.OnClose()
+	if c.OnClose != nil && !c.OnClose() {
+		return false
 	}
+	unregisterOpenForm(c)
 	return true
+}
+
+// applyTheme repaints the form in the current theme, see ApplyPalette.
+func (c *Form) applyTheme() {
+	if c.wnd == nil {
+		return
+	}
+	c.wnd.SetDarkMode(IsDarkTheme)
+	c.wnd.SetBackgroundColor(currentPalette.Window)
+	c.forceUpdate()
 }
 
 func (c *Form) processPaint(rgba *image.RGBA) {

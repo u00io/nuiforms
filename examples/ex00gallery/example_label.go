@@ -65,7 +65,7 @@ func (c *ExamplePageLabel) addAlignmentDemo(row int) {
 		box := c.AddPanel(row, col)
 		box.SetMinWidth(160)
 		box.SetXExpandable(false)
-		box.SetBackgroundColor(ui.ColorFromHex("#333333"))
+		box.SetRole("base")
 		box.SetAutoFillBackground(true)
 
 		lbl := box.AddLabel(0, 0, a.name)

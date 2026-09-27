@@ -113,12 +113,13 @@ func (c *ButtonImage) Press() {
 }
 
 func (c *ButtonImage) draw(cnv *Canvas) {
-	backColor := c.BackgroundColor()
-	if c.IsHovered() {
-		backColor = c.BackgroundColorWithAddElevation(-1)
-	}
+	p := CurrentPalette()
+	backColor := colorToRGBA(c.BackgroundColor())
+	textColor := colorToRGBA(c.ForegroundColor())
 	if c.pressed {
-		backColor = c.BackgroundColorWithAddElevation(2)
+		backColor = pressedColor(backColor, textColor)
+	} else if c.IsHovered() {
+		backColor = hoverColor(backColor, textColor)
 	}
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 
@@ -127,7 +128,7 @@ func (c *ButtonImage) draw(cnv *Canvas) {
 		cnv.DrawImage(x, y, c.img)
 	}
 
-	cnv.SetColor(c.BackgroundColorWithAddElevation(2))
+	cnv.SetColor(p.Divider)
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 

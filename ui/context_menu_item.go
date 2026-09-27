@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image"
+	"image/color"
 	"time"
 
 	"github.com/nfnt/resize"
@@ -107,18 +108,18 @@ func (c *ContextMenuItem) textX() int {
 	return contextMenuItemPadding
 }
 
+// Draw: the hovered item in the accent color, like in the combo box dropdown
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
+	p := CurrentPalette()
 	if c.separator {
-		ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), c.BackgroundColor())
-		lineColor := ThemeForegroundColor("")
-		lineColor.A = contextMenuBorderAlpha
-		ctx.FillRect(contextMenuItemPadding, c.Height()/2, c.Width()-contextMenuItemPadding*2, 1, lineColor)
+		ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), p.PopupBase)
+		ctx.FillRect(contextMenuItemPadding, c.Height()/2, c.Width()-contextMenuItemPadding*2, 1, p.Divider)
 		return
 	}
 
-	backColor := c.BackgroundColor()
+	backColor, textColor := p.PopupBase, p.Text
 	if c.IsHovered() {
-		backColor = c.BackgroundColorWithAddElevation(2)
+		backColor, textColor = p.Highlight, p.HighlightedText
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 
@@ -136,13 +137,13 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
-	ctx.SetColor(c.ForegroundColor())
+	ctx.SetColor(textColor)
 	ctx.SetFontFamily(c.FontFamily())
 	ctx.SetFontSize(c.FontSize())
 	ctx.DrawText(textX, 0, textAreaWidth, c.Height(), displayText)
 
 	if c.innerMenu != nil {
-		c.drawSubmenuArrow(ctx)
+		c.drawSubmenuArrow(ctx, textColor)
 	}
 }
 
@@ -152,11 +153,11 @@ const contextMenuArrowWidth = 5
 
 // drawSubmenuArrow draws a small right-pointing triangle at the right edge
 // of an item that opens a submenu.
-func (c *ContextMenuItem) drawSubmenuArrow(ctx *Canvas) {
+func (c *ContextMenuItem) drawSubmenuArrow(ctx *Canvas, arrowColor color.Color) {
 	right := c.Width() - contextMenuItemPadding - 2
 	left := right - contextMenuArrowWidth
 	midY := c.Height() / 2
-	ctx.FillTriangle(left, midY-contextMenuArrowHalfHeight, left, midY+contextMenuArrowHalfHeight, right, midY, c.ForegroundColor())
+	ctx.FillTriangle(left, midY-contextMenuArrowHalfHeight, left, midY+contextMenuArrowHalfHeight, right, midY, arrowColor)
 }
 
 func (c *ContextMenuItem) mouseDownHandler(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

@@ -157,19 +157,18 @@ func (c *Form) tooltipShowPopup() bool {
 }
 
 func (c *Form) tooltipPopupPaint(rgba *image.RGBA) {
+	p := CurrentPalette()
 	cnv := NewCanvas(rgba)
 	cnv.SetDirectTranslateAndClip(0, 0, c.tooltip.popupW, c.tooltip.popupH)
 	// The popup is rectangular, so no rounded corners here
-	cnv.FillRect(0, 0, c.tooltip.popupW, c.tooltip.popupH, ThemeBackgroundColor(8, ""))
-	cnv.SetColor(ThemeBackgroundColor(14, ""))
-	cnv.DrawRect(0, 0, c.tooltip.popupW, c.tooltip.popupH)
+	cnv.FillFrame(0, 0, c.tooltip.popupW, c.tooltip.popupH, 0, p.ToolTipBase, p.Border)
 	tooltipDrawText(cnv, 0, 0, c.tooltip.popupW, c.tooltip.popupH, c.tooltip.popupText)
 }
 
 func tooltipDrawText(cnv *Canvas, x, y, w, h int, text string) {
 	cnv.SetHAlign(HAlignCenter)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(ThemeForegroundColor(""))
+	cnv.SetColor(CurrentPalette().ToolTipText)
 	cnv.SetFontFamily(ThemeFontFamily())
 	cnv.SetFontSize(ThemeFontSize())
 	cnv.DrawText(x, y, w, h, text)
@@ -206,10 +205,8 @@ func (c *Form) tooltipPaint(cnv *Canvas) {
 		y = 0
 	}
 
-	cnv.SetColor(ThemeBackgroundColor(8, ""))
-	cnv.FillRoundedRect(x, y, w, h, 4)
-	cnv.SetColor(ThemeBackgroundColor(14, ""))
-	cnv.DrawRoundedRect(x, y, w, h, 4)
+	p := CurrentPalette()
+	cnv.FillFrame(x, y, w, h, themeControlRadius, p.ToolTipBase, p.Border)
 
 	tooltipDrawText(cnv, x, y, w, h, text)
 }

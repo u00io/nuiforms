@@ -51,15 +51,13 @@ func NewNumBox() *NumBox {
 	var c NumBox
 	c.InitWidget()
 	c.SetTypeName("NumBox")
-	c.SetAutoFillBackground(true)
-	c.SetElevation(-3)
 	c.SetCanBeFocused(true)
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)
 	c.SetMinSize(120, DefaultUiLineHeight)
 	c.SetMouseCursor(nuimouse.MouseCursorIBeam)
 
-	c.padding = 4
+	c.padding = themeTextInset
 	c.min = math.Inf(-1)
 	c.max = math.Inf(1)
 	c.decimals = 2
@@ -373,30 +371,26 @@ func (c *NumBox) textRect() (x, y, w, h int) {
 }
 
 func (c *NumBox) draw(cnv *Canvas) {
+	p := CurrentPalette()
 	enabled := c.Enabled()
-	foreColor := c.ForegroundColor()
+	foreColor := colorToRGBA(c.ForegroundColor())
+	arrowCol := p.ButtonText
 	if !enabled {
-		foreColor = c.ForegroundColorDisabled()
+		foreColor = p.DisabledText
+		arrowCol = p.DisabledText
 	}
 
-	backColor := c.BackgroundColorWithAddElevation(-1)
-	if c.IsHovered() && enabled {
-		backColor = c.BackgroundColorWithAddElevation(2)
-	}
-	if c.IsFocused() && enabled {
-		backColor = c.BackgroundColorWithAddElevation(4)
-	}
+	fill, border := inputFrameColors(&c.Widget)
+	cnv.FillFrame(0, 0, c.Width(), c.Height(), themeControlRadius, fill, border)
 
-	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
-
-	// Spin buttons area
+	// Spin buttons area, inside the frame: a button background, a line
+	// separating it from the text and one between the two buttons
 	btnX, btnY, btnW, btnH := c.buttonRect()
-	btnBack := c.BackgroundColorWithAddElevation(1)
-	cnv.FillRect(btnX, btnY, btnW, btnH, btnBack)
-	cnv.FillRect(btnX, btnY+btnH/2, btnW, 1, c.BackgroundColorWithAddElevation(8))
+	cnv.FillRoundedRectAA(btnX, btnY+1, btnW-1, btnH-2, themeControlRadius-1, p.Button)
+	cnv.FillRect(btnX, btnY+1, 1, btnH-2, p.Divider)
+	cnv.FillRect(btnX+1, btnY+btnH/2, btnW-2, 1, p.Divider)
 
 	// Arrows - simple filled triangles.
-	arrowCol := foreColor
 	{
 		cx := btnX + btnW/2
 		midY := btnY + btnH/4
@@ -440,7 +434,7 @@ func (c *NumBox) draw(cnv *Canvas) {
 			}
 			_, lineH, _ := MeasureText(c.FontFamily(), c.FontSize(), "Q")
 			selY := (c.Height() - lineH) / 2
-			cnv.FillRect(x1, selY, x2-x1, lineH, c.BackgroundColorWithAddElevation(10))
+			cnv.FillRect(x1, selY, x2-x1, lineH, p.Selection)
 		}
 	}
 
@@ -465,7 +459,7 @@ func (c *NumBox) draw(cnv *Canvas) {
 			curX := tx + charPos[c.cursorPos]
 			_, lineH, _ := MeasureText(c.FontFamily(), c.FontSize(), "Q")
 			curY := (c.Height() - lineH) / 2
-			cnv.FillRect(curX, curY, 1, lineH, c.ForegroundColor())
+			cnv.FillRect(curX, curY, 1, lineH, foreColor)
 		}
 	}
 }

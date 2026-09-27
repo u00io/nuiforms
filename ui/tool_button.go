@@ -117,7 +117,7 @@ func (c *ToolButton) SetHighlight(col color.Color) {
 // drawBottomEdge draws the lighter bottom edge, or a bright bar when the button is checked or highlighted
 func (c *ToolButton) drawBottomEdge(cnv *Canvas) {
 	if c.checked {
-		cnv.FillRect(0, c.Height()-toolButtonCheckMarkWidth, c.Width(), toolButtonCheckMarkWidth, c.ForegroundColor())
+		cnv.FillRect(0, c.Height()-toolButtonCheckMarkWidth, c.Width(), toolButtonCheckMarkWidth, CurrentPalette().Highlight)
 		return
 	}
 	if c.highlight != nil {

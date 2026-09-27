@@ -72,23 +72,23 @@ func (c *RadioButton) Checked() bool {
 }
 
 func (c *RadioButton) draw(cnv *Canvas) {
-	backColor := c.BackgroundColor()
-	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
-
 	boxAndTextSpace := 0
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(c.ForegroundColor())
+	cnv.SetColor(indicatorTextColor(&c.Widget))
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.text)
 
-	padding := 5
-
-	cnv.SetColor(c.BackgroundColorWithAddElevation(-1))
-	cnv.DrawRect(padding, padding, 30-padding*2, 30-padding*2)
+	// A circle; checked - an accent circle with a dot in the middle
+	padding := 6
+	size := 30 - padding*2
+	fill, border, mark := indicatorColors(&c.Widget, c.checked)
+	cnv.FillFrame(padding, padding, size, size, size/2, fill, border)
 	if c.checked {
-		cnv.FillRect(padding*2, padding*2, 30-padding*4, 30-padding*4, c.ForegroundColor())
+		dot := size * 2 / 5
+		offset := padding + (size-dot)/2
+		cnv.FillRoundedRectAA(offset, offset, dot, dot, dot/2, mark)
 	}
 }
 

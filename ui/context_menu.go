@@ -13,8 +13,6 @@ type ContextMenu struct {
 	parentMenu *ContextMenu
 }
 
-const contextMenuBorderAlpha = 80
-
 // Adaptive width bounds: the menu shrinks to fit short item text and grows
 // for long item text, but never past these limits.
 const contextMenuMinWidth = 140
@@ -26,7 +24,7 @@ func NewContextMenu(parent Widgeter) *ContextMenu {
 	c.SetAbsolutePositioning(true)
 	c.SetTypeName("ContextMenu")
 	c.SetName("PopupMenuPanel")
-	c.SetElevation(3)
+	c.SetRole("popup")
 	c.SetAutoFillBackground(true)
 	c.SetOnPostPaint(c.drawBorder)
 	return &c
@@ -35,9 +33,7 @@ func NewContextMenu(parent Widgeter) *ContextMenu {
 // drawBorder gives the popup a subtle outline so it reads as a distinct
 // surface instead of blending into whatever is behind it.
 func (c *ContextMenu) drawBorder(cnv *Canvas) {
-	borderColor := ThemeForegroundColor("")
-	borderColor.A = contextMenuBorderAlpha
-	cnv.SetColor(borderColor)
+	cnv.SetColor(CurrentPalette().Border)
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }
 

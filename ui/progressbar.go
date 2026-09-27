@@ -69,12 +69,13 @@ func (c *ProgressBar) draw(cnv *Canvas) {
 		percents = 1
 	}
 
-	padding := 2
-	effectiveWidth := c.Width() - padding*2
-	effectiveHeight := c.Height() - padding*2
-
-	cnv.SetColor(c.ForegroundColor())
-	cnv.FillRect(padding, padding, int(float64(effectiveWidth)*percents), effectiveHeight, c.ForegroundColor())
+	// A sunken track with the accent bar inside
+	p := CurrentPalette()
+	cnv.FillFrame(0, 0, c.Width(), c.Height(), themeControlRadius, p.Base, p.Border)
+	barWidth := int(float64(c.Width()-2) * percents)
+	if barWidth > 0 {
+		cnv.FillRoundedRectAA(1, 1, barWidth, c.Height()-2, themeControlRadius-1, p.Highlight)
+	}
 
 	if len(c.text) > 0 {
 		cnv.SetHAlign(HAlignCenter)
@@ -84,7 +85,4 @@ func (c *ProgressBar) draw(cnv *Canvas) {
 		cnv.SetFontSize(c.FontSize())
 		cnv.DrawText(0, 0, c.Width(), c.Height(), c.text)
 	}
-
-	cnv.SetColor(c.ForegroundColor())
-	cnv.DrawRect(0, 0, c.Width(), c.Height())
 }

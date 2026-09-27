@@ -162,8 +162,10 @@ func (c *Chart) buildLayout() chartLayout {
 }
 
 func (c *Chart) draw(cnv *Canvas) {
-	cnv.FillRect(0, 0, c.Width(), c.Height(), ColorFromHex("#0d1117"))
-	cnv.SetColor(ColorFromHex("#30363d"))
+	// The same colors as the TimeChart
+	th := currentTimeChartTheme()
+	cnv.FillRect(0, 0, c.Width(), c.Height(), th.background)
+	cnv.SetColor(th.border)
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
 
 	ly := c.buildLayout()
@@ -174,9 +176,9 @@ func (c *Chart) draw(cnv *Canvas) {
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 
-	axis := ColorFromHex("#6e7681")
-	muted := ColorFromHex("#8b949e")
-	lineC := ColorFromHex("#4fc3f7")
+	axis := th.axis
+	muted := th.text
+	lineC := th.palette[0]
 
 	spanX := ly.spanX
 	spanY := ly.spanY

@@ -349,16 +349,17 @@ func (c *splitterHandle) processMouseUp(button nuimouse.MouseButton, x int, y in
 }
 
 func (c *splitterHandle) draw(cnv *Canvas) {
-	backColor := c.BackgroundColor()
+	p := CurrentPalette()
+	backColor := colorToRGBA(c.BackgroundColor())
 	if c.dragging {
-		backColor = c.BackgroundColorWithAddElevation(4)
+		backColor = pressedColor(backColor, p.WindowText)
 	} else if c.IsHovered() {
-		backColor = c.BackgroundColorWithAddElevation(2)
+		backColor = hoverColor(backColor, p.WindowText)
 	}
 	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 
 	// Grip: a short line in the middle of the handle
-	gripColor := c.BackgroundColorWithAddElevation(6)
+	gripColor := p.Border
 	const gripLength = 24
 	if c.splitter.vertical {
 		cnv.FillRect((c.Width()-gripLength)/2, c.Height()/2, gripLength, 1, gripColor)

@@ -2,9 +2,9 @@ package ui
 
 import "image/color"
 
-// timeChartTheme holds every color the TimeChart draws with. The chart picks
-// the dark or light one on each paint from IsDarkTheme, so switching the
-// application theme only needs a repaint.
+// timeChartTheme holds every color the TimeChart draws with. The chart gets
+// it on each paint (see currentTimeChartTheme), so switching the application
+// theme only needs a repaint.
 type timeChartTheme struct {
 	background color.Color
 	border     color.Color
@@ -34,11 +34,6 @@ type timeChartTheme struct {
 }
 
 var timeChartDarkTheme = timeChartTheme{
-	background: ColorFromHex("#0d1117"),
-	border:     ColorFromHex("#30363d"),
-	axis:       ColorFromHex("#6e7681"),
-	text:       ColorFromHex("#8b949e"),
-	grid:       ColorFromHex("#21262d"),
 	palette: []color.Color{
 		ColorFromHex("#4fc3f7"),
 		ColorFromHex("#f0883e"),
@@ -47,26 +42,15 @@ var timeChartDarkTheme = timeChartTheme{
 		ColorFromHex("#f778ba"),
 		ColorFromHex("#d29922"),
 	},
-	candleUp:        ColorFromHex("#3fb950"),
-	candleDown:      ColorFromHex("#f85149"),
-	marker:          ColorFromHex("#e3b341"),
-	markerLabelBg:   timeChartAlpha("#0d1117", 200),
-	selection:       timeChartAlpha("#58a6ff", 50),
-	selectionDrag:   timeChartAlpha("#58a6ff", 70),
-	selectionEdge:   timeChartAlpha("#58a6ff", 220),
-	selectionHeader: timeChartAlpha("#1f6feb", 170),
-	headerText:      ColorFromHex("#ffffff"),
-	closeHover:      timeChartAlpha("#ffffff", 60),
-	zoomBand:        timeChartAlpha("#ffffff", 40),
-	badHatch:        timeChartAlpha("#f85149", 110),
+	candleUp:   ColorFromHex("#3fb950"),
+	candleDown: ColorFromHex("#f85149"),
+	marker:     ColorFromHex("#e3b341"),
+	closeHover: timeChartAlpha("#ffffff", 60),
+	zoomBand:   timeChartAlpha("#ffffff", 40),
+	badHatch:   timeChartAlpha("#f85149", 110),
 }
 
 var timeChartLightTheme = timeChartTheme{
-	background: ColorFromHex("#ffffff"),
-	border:     ColorFromHex("#d0d7de"),
-	axis:       ColorFromHex("#8c959f"),
-	text:       ColorFromHex("#57606a"),
-	grid:       ColorFromHex("#eaeef2"),
 	palette: []color.Color{
 		ColorFromHex("#0969da"),
 		ColorFromHex("#d1570a"),
@@ -75,25 +59,36 @@ var timeChartLightTheme = timeChartTheme{
 		ColorFromHex("#bf3989"),
 		ColorFromHex("#9a6700"),
 	},
-	candleUp:        ColorFromHex("#1a7f37"),
-	candleDown:      ColorFromHex("#cf222e"),
-	marker:          ColorFromHex("#9a6700"),
-	markerLabelBg:   timeChartAlpha("#ffffff", 220),
-	selection:       timeChartAlpha("#0969da", 30),
-	selectionDrag:   timeChartAlpha("#0969da", 50),
-	selectionEdge:   timeChartAlpha("#0969da", 200),
-	selectionHeader: timeChartAlpha("#0969da", 190),
-	headerText:      ColorFromHex("#ffffff"),
-	closeHover:      timeChartAlpha("#ffffff", 70),
-	zoomBand:        timeChartAlpha("#000000", 25),
-	badHatch:        timeChartAlpha("#cf222e", 100),
+	candleUp:   ColorFromHex("#1a7f37"),
+	candleDown: ColorFromHex("#cf222e"),
+	marker:     ColorFromHex("#9a6700"),
+	closeHover: timeChartAlpha("#ffffff", 70),
+	zoomBand:   timeChartAlpha("#000000", 25),
+	badHatch:   timeChartAlpha("#cf222e", 100),
 }
 
+// currentTimeChartTheme returns the theme for the current palette: the
+// surfaces, lines and selection follow the application's palette, so the
+// chart matches the other widgets; the series colors are picked for each theme.
 func currentTimeChartTheme() *timeChartTheme {
+	th := timeChartLightTheme
 	if IsDarkTheme {
-		return &timeChartDarkTheme
+		th = timeChartDarkTheme
 	}
-	return &timeChartLightTheme
+
+	p := CurrentPalette()
+	th.background = p.Base
+	th.border = p.Border
+	th.axis = MixColors(p.Base, p.Text, 0.45)
+	th.text = MixColors(p.Base, p.Text, 0.65)
+	th.grid = MixColors(p.Base, p.Text, 0.08)
+	th.markerLabelBg = withAlpha(p.Base, 215)
+	th.selection = withAlpha(p.Highlight, 40)
+	th.selectionDrag = withAlpha(p.Highlight, 60)
+	th.selectionEdge = withAlpha(p.Highlight, 210)
+	th.selectionHeader = withAlpha(p.Highlight, 190)
+	th.headerText = p.HighlightedText
+	return &th
 }
 
 // timeChartAlpha returns a translucent color for Canvas.MixPixel (used by

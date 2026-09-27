@@ -107,23 +107,32 @@ const (
 	comboBoxArrowPadding = 10
 )
 
+// draw looks like a button: the same frame, with the text on the left
 func (c *ComboBox) draw(cnv *Canvas) {
-	backColor := c.BackgroundColorWithAddElevation(-1)
-	if c.IsHovered() {
-		backColor = c.BackgroundColorWithAddElevation(2)
+	p := CurrentPalette()
+	fill, border := p.Button, p.Border
+	if c.backgroundColor != nil {
+		fill = colorToRGBA(c.backgroundColor)
 	}
-	foreColor := c.ForegroundColor()
+	foreColor := colorToRGBA(c.ForegroundColor())
+	switch {
+	case !c.Enabled():
+		foreColor = p.DisabledText
+	case c.IsHovered():
+		fill = hoverColor(fill, foreColor)
+	}
+	if c.IsFocused() && c.Enabled() {
+		border = p.Highlight
+	}
+	cnv.FillFrame(0, 0, c.Width(), c.Height(), themeControlRadius, fill, border)
 
-	itemText := c.SelectedItemText()
-
-	cnv.FillRect(0, 0, c.Width(), c.Height(), backColor)
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(foreColor)
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
-	textAreaWidth := c.Width() - comboBoxArrowPadding*2 - comboBoxArrowWidth
-	cnv.DrawText(0, 0, textAreaWidth, c.Height(), itemText)
+	textAreaWidth := c.Width() - themeTextInset - comboBoxArrowPadding*2 - comboBoxArrowWidth
+	cnv.DrawText(themeTextInset, 0, textAreaWidth, c.Height(), c.SelectedItemText())
 
 	c.drawArrow(cnv, foreColor)
 }
@@ -167,7 +176,7 @@ func NewComboBoxPopup() *comboBoxPopup {
 	c.InitWidget()
 	c.SetTypeName("ComboBoxPopup")
 	c.SetAbsolutePositioning(true)
-	c.SetElevation(3)
+	c.SetRole("popup")
 	c.SetAutoFillBackground(true)
 	c.SetOnPostPaint(c.drawBorder)
 	c.SetOnMouseWheel(c.processWheel)
@@ -178,9 +187,7 @@ func NewComboBoxPopup() *comboBoxPopup {
 // dropdown reads as a distinct surface instead of blending into whatever is
 // behind it.
 func (c *comboBoxPopup) drawBorder(cnv *Canvas) {
-	borderColor := ThemeForegroundColor("")
-	borderColor.A = contextMenuBorderAlpha
-	cnv.SetColor(borderColor)
+	cnv.SetColor(CurrentPalette().Border)
 	// Post-paint is translated by the scroll offset; the border must not scroll
 	cnv.DrawRect(0, c.ScrollY(), c.Width(), c.Height())
 }
@@ -301,18 +308,20 @@ func newComboBoxPopupItem(index int, text string) *comboBoxPopupItem {
 	return &item
 }
 
+// Draw: the hovered item in the accent color, the current one softer
 func (c *comboBoxPopupItem) Draw(ctx *Canvas) {
-	backColor := c.BackgroundColorWithAddElevation(-1)
-	if c.selected {
-		backColor = c.BackgroundColorWithAddElevation(1)
-	}
-	if c.IsHovered() {
-		backColor = c.BackgroundColorWithAddElevation(2)
+	p := CurrentPalette()
+	backColor, textColor := p.PopupBase, p.Text
+	switch {
+	case c.IsHovered():
+		backColor, textColor = p.Highlight, p.HighlightedText
+	case c.selected:
+		backColor = p.Selection
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 	ctx.SetHAlign(HAlignLeft)
 	ctx.SetVAlign(VAlignCenter)
-	ctx.SetColor(c.ForegroundColor())
+	ctx.SetColor(textColor)
 	ctx.SetFontFamily(c.FontFamily())
 	ctx.SetFontSize(c.FontSize())
 	ctx.DrawText(comboBoxItemPadding, 0, c.Width()-comboBoxItemPadding*2, c.Height(), c.text)

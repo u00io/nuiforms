@@ -163,7 +163,7 @@ func NewTable() *Table {
 	c.SetAllowScroll(true, true)
 
 	c.SetAutoFillBackground(true)
-	c.SetElevation(-3)
+	c.SetRole("base")
 
 	// Events
 	c.SetOnPaint(c.draw)
@@ -297,7 +297,7 @@ func (c *Table) CellBorderColor() color.Color {
 	if c.cellBorderColorOverrided != nil {
 		return *c.cellBorderColorOverrided
 	}
-	return c.BackgroundColorWithAddElevation(4)
+	return CurrentPalette().Divider
 }
 
 func (c *Table) SetCellBorderWidth(width int) {
@@ -1437,6 +1437,15 @@ func (c *Table) draw(cnv *Canvas) {
 
 	yOffset += visibleRow1 * c.rowHeight1
 
+	// Every other row a shade darker (lighter in the dark theme), unless
+	// the table has its own background
+	p := CurrentPalette()
+	rowBackColor := colorToRGBA(c.BackgroundColor())
+	altRowBackColor := rowBackColor
+	if c.backgroundColor == nil {
+		altRowBackColor = MixColors(rowBackColor, p.Text, 0.035)
+	}
+
 	for rowIndex := visibleRow1; rowIndex < visibleRow2; rowIndex++ {
 		rowObj1, rowExists := c.rows[rowIndex]
 		{
@@ -1457,9 +1466,13 @@ func (c *Table) draw(cnv *Canvas) {
 					rowIsSelected := c.IsRowSelected(rowIndex)
 					cellIsSelected := c.IsCellSelected(rowIndex, colIndex)
 
-					backColor := c.BackgroundColor()
-					if c.showSelection && (rowIsSelected || cellIsSelected) {
-						backColor = c.GetPropColor("background_selected_cell", ColorToHex(c.BackgroundColorForRole("primary")))
+					selected := c.showSelection && (rowIsSelected || cellIsSelected)
+					var backColor color.Color = rowBackColor
+					if rowIndex%2 == 1 {
+						backColor = altRowBackColor
+					}
+					if selected {
+						backColor = c.GetPropColor("background_selected_cell", ColorToHex(p.Highlight))
 					}
 					cnv.FillRect(x, y, columnWidth, c.rowHeight1, backColor)
 
@@ -1521,6 +1534,9 @@ func (c *Table) draw(cnv *Canvas) {
 					cnv.SetFontFamily(c.FontFamily())
 					cnv.SetFontSize(c.FontSize())
 					col := c.ForegroundColor()
+					if selected {
+						col = p.HighlightedText
+					}
 					if cellObj != nil {
 						if cellObj.color != nil {
 							col = cellObj.color
@@ -1634,7 +1650,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 			y := headerRowOffset + c.scrollY
 
 			// Header Background
-			cnv.FillRect(x, y, cellWidth, cellHeight, c.BackgroundColorWithAddElevation(3))
+			cnv.FillRect(x, y, cellWidth, cellHeight, CurrentPalette().Button)
 
 			imgWidth := 0
 			imgHeight := c.rowHeight1 - c.cellPadding*2
@@ -1662,7 +1678,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 
 			cnv.SetHAlign(HAlignLeft)
 			cnv.SetVAlign(VAlignCenter)
-			cnv.SetColor(c.ForegroundColor())
+			cnv.SetColor(CurrentPalette().ButtonText)
 			cnv.SetFontFamily(c.FontFamily())
 			cnv.SetFontSize(c.FontSize())
 			cnv.DrawText(x+c.cellPadding+imgWidth, y+c.cellPadding, cellWidth-c.cellPadding*2-imgWidth, cellHeight-c.cellPadding*2, headerCell.name)
@@ -1691,7 +1707,7 @@ func (c *Table) drawPost(cnv *Canvas) {
 	}*/
 
 	// Draw table border
-	cnv.SetColor(c.BackgroundColorWithAddElevation(2))
+	cnv.SetColor(CurrentPalette().Border)
 	cnv.DrawRect(c.scrollX, c.scrollY, c.Width(), c.Height())
 }
 
