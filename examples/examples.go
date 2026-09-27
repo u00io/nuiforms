@@ -4,7 +4,6 @@ import (
 	"github.com/u00io/nuiforms/examples/ex00gallery"
 	"github.com/u00io/nuiforms/examples/ex01base"
 	"github.com/u00io/nuiforms/examples/ex02messagebox"
-	"github.com/u00io/nuiforms/examples/ex03customwidget"
 	"github.com/u00io/nuiforms/examples/ex04dialog"
 	"github.com/u00io/nuiforms/examples/ex05chart"
 	"github.com/u00io/nuiforms/examples/ex06timechart"
@@ -31,7 +30,6 @@ func Run() {
 		addButton("Example 00 - Gallery", ex00gallery.NewExampleForm)
 		addButton("Example 01 - Base Form", ex01base.NewExampleForm)
 		addButton("Example 02 - MessageBox", ex02messagebox.NewExampleForm)
-		addButton("Example 03 - Custom Widget", ex03customwidget.NewExampleForm)
 		addButton("Example 04 - Dialog", ex04dialog.NewExampleForm)
 		addButton("Example 05 - Chart", ex05chart.NewExampleForm)
 		addButton("Example 06 - TimeChart", ex06timechart.NewExampleForm)

@@ -141,6 +141,12 @@ func (c *ComboBox) drawArrow(cnv *Canvas, arrowColor color.Color) {
 const comboBoxPopupMaxWidth = 420
 const comboBoxItemPadding = 10
 
+// comboBoxPopupMaxVisibleItems limits the dropdown's height; longer lists scroll
+const comboBoxPopupMaxVisibleItems = 12
+
+// comboBoxPopupWheelItems is how many items one mouse wheel step scrolls
+const comboBoxPopupWheelItems = 3
+
 type comboBoxPopup struct {
 	Widget
 
@@ -164,6 +170,7 @@ func NewComboBoxPopup() *comboBoxPopup {
 	c.SetElevation(3)
 	c.SetAutoFillBackground(true)
 	c.SetOnPostPaint(c.drawBorder)
+	c.SetOnMouseWheel(c.processWheel)
 	return &c
 }
 
@@ -174,7 +181,8 @@ func (c *comboBoxPopup) drawBorder(cnv *Canvas) {
 	borderColor := ThemeForegroundColor("")
 	borderColor.A = contextMenuBorderAlpha
 	cnv.SetColor(borderColor)
-	cnv.DrawRect(0, 0, c.Width(), c.Height())
+	// Post-paint is translated by the scroll offset; the border must not scroll
+	cnv.DrawRect(0, c.ScrollY(), c.Width(), c.Height())
 }
 
 // nativePopup: the dropdown is shown in its own window, so it can extend
@@ -209,14 +217,48 @@ func (c *comboBoxPopup) AddItem(text string, onClick func(index int)) {
 
 func (c *comboBoxPopup) rebuildVisualElements() {
 	width := c.contentWidth()
+	contentHeight := len(c.items) * ContextMenuItemHeight
+	height := min(contentHeight, comboBoxPopupMaxVisibleItems*ContextMenuItemHeight)
+
+	itemWidth := width
+	if contentHeight > height {
+		// Keep the items from under the scroll bar
+		itemWidth -= c.scrollBarYSize
+	}
 
 	yOffset := 0
 	for _, item := range c.items {
 		item.SetPosition(0, yOffset)
-		item.SetSize(width, ContextMenuItemHeight)
+		item.SetSize(itemWidth, ContextMenuItemHeight)
 		yOffset += ContextMenuItemHeight
 	}
-	c.SetSize(width, yOffset)
+	c.SetSize(width, height)
+	c.SetAllowScroll(false, true)
+	c.SetInnerSize(width, contentHeight)
+	c.scrollToSelected()
+}
+
+// scrollToSelected scrolls the selected item to the middle of the dropdown.
+func (c *comboBoxPopup) scrollToSelected() {
+	if c.selectedIndex < 0 || c.selectedIndex >= len(c.items) {
+		return
+	}
+	visibleItems := c.Height() / ContextMenuItemHeight
+	c.scrollToItem(c.selectedIndex - visibleItems/2)
+}
+
+// processWheel scrolls by whole items, so no item is cut at the top.
+func (c *comboBoxPopup) processWheel(deltaX, deltaY int) bool {
+	c.scrollToItem(c.ScrollY()/ContextMenuItemHeight - deltaY*comboBoxPopupWheelItems)
+	return true
+}
+
+// scrollToItem makes the item with the given index the first visible one,
+// as far as the list allows.
+func (c *comboBoxPopup) scrollToItem(index int) {
+	c.setScrollY(index * ContextMenuItemHeight)
+	c.checkScrolls()
+	c.form.Update()
 }
 
 // contentWidth is never narrower than triggerWidth (the owning ComboBox's

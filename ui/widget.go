@@ -1530,6 +1530,16 @@ func (c *Widget) ProcessChar(char rune, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Widget) ProcessMouseWheel(deltaX, deltaY int) bool {
+	// The top popup scrolls when the mouse is over it. Popups belong to the
+	// form's top widget, so the form's mouse position is in their coordinates.
+	if len(c.PopupWidgets) > 0 && c.form != nil {
+		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
+		x, y := c.form.lastMouseX, c.form.lastMouseY
+		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
+			return topWidget.ProcessMouseWheel(deltaX, deltaY)
+		}
+	}
+
 	hoverWidget := c.getWidgetAt(c.lastMouseX, c.lastMouseY)
 	if hoverWidget != nil {
 		processed := hoverWidget.ProcessMouseWheel(deltaX, deltaY)

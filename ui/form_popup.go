@@ -149,6 +149,12 @@ func (c *Form) bindPopupWindow(h *popupHost) {
 		}
 		c.processMouseUp(btn, x+h.widget.X(), y+h.widget.Y())
 	})
+	h.wnd.OnMouseWheel(func(deltaX, deltaY int) {
+		if !c.isPopupHostOpen(h) {
+			return
+		}
+		c.processMouseWheel(deltaX, deltaY)
+	})
 	h.wnd.OnMouseLeave(func() {
 		if c.popupUnderMouse == h {
 			c.popupUnderMouse = nil

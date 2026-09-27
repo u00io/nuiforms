@@ -701,6 +701,14 @@ func (c *Form) processKeyDown(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
 		}
 	}
 
+	// Escape closes the top popup (a submenu closes before its menu) instead
+	// of reaching the widgets or the form's cancel button
+	if keyCode == nuikey.KeyEsc && len(c.topWidget.PopupWidgets) > 0 {
+		c.topWidget.CloseTopPopup()
+		c.Update()
+		return true
+	}
+
 	if c.focusedWidget != nil {
 		if c.focusedWidget.ProcessKeyDown(keyCode, mods) {
 			c.Update()
@@ -804,6 +812,8 @@ func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 		deltaX, deltaY = deltaY, deltaX // Swap for horizontal scrolling
 	}
 	c.topWidget.ProcessMouseWheel(deltaX, deltaY)
+	// The content under the mouse may have scrolled
+	c.updateHover()
 	c.Update()
 }
 
