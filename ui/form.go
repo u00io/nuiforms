@@ -245,6 +245,7 @@ func (c *Form) CloseTopPopup() {
 }
 
 func (c *Form) Close() {
+	c.tooltipClose()
 	if c.wnd != nil {
 		if c.wnd.Close() {
 			c.wnd = nil
@@ -841,6 +842,7 @@ func (c *Form) processTimer() {
 }
 
 func (c *Form) processWindowMove(x, y int) {
+	c.tooltipHide()
 	c.forceUpdate()
 }
 

@@ -1,6 +1,11 @@
 package ui
 
-import "time"
+import (
+	"image"
+	"time"
+
+	"github.com/u00io/nui/nui"
+)
 
 const (
 	tooltipDelay   = 600 * time.Millisecond
@@ -11,11 +16,21 @@ const (
 // The tooltip appears after the mouse rests on a widget for tooltipDelay,
 // and is hidden when the hovered widget changes, the mouse leaves the
 // window or a mouse button is pressed (until the hover changes again).
+//
+// The tooltip is shown in a native popup window, so it isn't clipped by the
+// form's bounds. Where the platform has no popups yet, it's drawn inside
+// the form instead.
 type tooltipState struct {
 	hoverStart time.Time
 	visible    bool
 	suppressed bool
 	x, y       int
+
+	popup          nui.PopupWindow
+	popupFailed    bool
+	popupVisible   bool
+	popupText      string
+	popupW, popupH int
 }
 
 // SetTooltip sets the text shown when the mouse rests on the widget.
@@ -49,9 +64,24 @@ func (c *Form) tooltipSuppress() {
 }
 
 func (c *Form) tooltipHide() {
-	if c.tooltip.visible {
-		c.tooltip.visible = false
+	if !c.tooltip.visible {
+		return
+	}
+	c.tooltip.visible = false
+	if c.tooltip.popupVisible {
+		c.tooltip.popupVisible = false
+		c.tooltip.popup.Hide()
+	} else {
 		c.Update()
+	}
+}
+
+// tooltipClose destroys the popup before the form's window goes away.
+func (c *Form) tooltipClose() {
+	c.tooltipHide()
+	if c.tooltip.popup != nil {
+		c.tooltip.popup.Close()
+		c.tooltip.popup = nil
 	}
 }
 
@@ -65,11 +95,89 @@ func (c *Form) tooltipProcessTimer() {
 	c.tooltip.visible = true
 	c.tooltip.x = c.lastMouseX
 	c.tooltip.y = c.lastMouseY
-	c.Update()
+	if !c.tooltipShowPopup() {
+		c.Update()
+	}
 }
 
+func (c *Form) tooltipSize(text string) (w, h int, ok bool) {
+	textWidth, textHeight, err := MeasureText(ThemeFontFamily(), ThemeFontSize(), text)
+	if err != nil {
+		return 0, 0, false
+	}
+	return textWidth + tooltipPadding*4, textHeight + tooltipPadding*2, true
+}
+
+// tooltipShowPopup shows the tooltip in a native popup window below-right
+// of the cursor, kept inside the monitor's work area. Returns false when
+// popups are unavailable and the tooltip must be drawn inside the form.
+func (c *Form) tooltipShowPopup() bool {
+	if c.wnd == nil || c.tooltip.popupFailed {
+		return false
+	}
+	if c.tooltip.popup == nil {
+		c.tooltip.popup = nui.CreatePopupWindow(c.wnd)
+		if c.tooltip.popup == nil {
+			c.tooltip.popupFailed = true
+			return false
+		}
+		c.tooltip.popup.OnPaint(c.tooltipPopupPaint)
+	}
+
+	text := c.tooltipText()
+	w, h, ok := c.tooltipSize(text)
+	if !ok {
+		return true
+	}
+
+	cursorX, cursorY := c.wnd.ClientToScreen(c.tooltip.x, c.tooltip.y)
+	areaX, areaY, areaW, areaH := c.wnd.ScreenWorkArea(cursorX, cursorY)
+
+	x := cursorX + 12
+	y := cursorY + 20
+	if x+w > areaX+areaW {
+		x = areaX + areaW - w
+	}
+	if y+h > areaY+areaH {
+		y = cursorY - h - 4
+	}
+	if x < areaX {
+		x = areaX
+	}
+	if y < areaY {
+		y = areaY
+	}
+
+	c.tooltip.popupText = text
+	c.tooltip.popupW = w
+	c.tooltip.popupH = h
+	c.tooltip.popupVisible = true
+	c.tooltip.popup.ShowAt(x, y, w, h)
+	return true
+}
+
+func (c *Form) tooltipPopupPaint(rgba *image.RGBA) {
+	cnv := NewCanvas(rgba)
+	cnv.SetDirectTranslateAndClip(0, 0, c.tooltip.popupW, c.tooltip.popupH)
+	// The popup is rectangular, so no rounded corners here
+	cnv.FillRect(0, 0, c.tooltip.popupW, c.tooltip.popupH, ThemeBackgroundColor(8, ""))
+	cnv.SetColor(ThemeBackgroundColor(14, ""))
+	cnv.DrawRect(0, 0, c.tooltip.popupW, c.tooltip.popupH)
+	tooltipDrawText(cnv, 0, 0, c.tooltip.popupW, c.tooltip.popupH, c.tooltip.popupText)
+}
+
+func tooltipDrawText(cnv *Canvas, x, y, w, h int, text string) {
+	cnv.SetHAlign(HAlignCenter)
+	cnv.SetVAlign(VAlignCenter)
+	cnv.SetColor(ThemeForegroundColor(""))
+	cnv.SetFontFamily(ThemeFontFamily())
+	cnv.SetFontSize(ThemeFontSize())
+	cnv.DrawText(x, y, w, h, text)
+}
+
+// tooltipPaint draws the tooltip inside the form when there's no popup.
 func (c *Form) tooltipPaint(cnv *Canvas) {
-	if !c.tooltip.visible {
+	if !c.tooltip.visible || c.tooltip.popupVisible {
 		return
 	}
 	text := c.tooltipText()
@@ -77,14 +185,10 @@ func (c *Form) tooltipPaint(cnv *Canvas) {
 		return
 	}
 
-	fontFamily := ThemeFontFamily()
-	fontSize := ThemeFontSize()
-	textWidth, textHeight, err := MeasureText(fontFamily, fontSize, text)
-	if err != nil {
+	w, h, ok := c.tooltipSize(text)
+	if !ok {
 		return
 	}
-	w := textWidth + tooltipPadding*4
-	h := textHeight + tooltipPadding*2
 
 	// Below-right of the cursor, kept inside the window
 	x := c.tooltip.x + 12
@@ -107,10 +211,5 @@ func (c *Form) tooltipPaint(cnv *Canvas) {
 	cnv.SetColor(ThemeBackgroundColor(14, ""))
 	cnv.DrawRoundedRect(x, y, w, h, 4)
 
-	cnv.SetHAlign(HAlignCenter)
-	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(ThemeForegroundColor(""))
-	cnv.SetFontFamily(fontFamily)
-	cnv.SetFontSize(fontSize)
-	cnv.DrawText(x, y, w, h, text)
+	tooltipDrawText(cnv, x, y, w, h, text)
 }
