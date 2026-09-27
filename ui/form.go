@@ -148,6 +148,36 @@ func (c *Form) Minimize() {
 	}
 }
 
+// SetAlwaysOnTop keeps the window above the other windows; call it once the form is shown
+func (c *Form) SetAlwaysOnTop(onTop bool) {
+	if c.wnd != nil {
+		c.wnd.SetAlwaysOnTop(onTop)
+	}
+}
+
+// RequestAttention marks the window in the taskbar/dock until the user looks at it
+func (c *Form) RequestAttention() {
+	if c.wnd != nil {
+		c.wnd.RequestAttention()
+	}
+}
+
+// Beep plays the system alert sound
+func (c *Form) Beep() {
+	if c.wnd != nil {
+		c.wnd.Beep()
+	}
+}
+
+// ShowSaveFileDialog shows the system "Save File" dialog without blocking the form
+// and calls onResult on the form's goroutine: path is "" when the user cancelled.
+func (c *Form) ShowSaveFileDialog(opts nui.SaveFileDialogOptions, onResult func(path string, err error)) {
+	go func() {
+		path, err := nui.SaveFileDialog(c.wnd, opts)
+		c.Invoke(func() { onResult(path, err) })
+	}()
+}
+
 func (c *Form) UpdateLayout() {
 	if c != nil && c.Panel() != nil {
 		c.Panel().ClearLayoutCache()

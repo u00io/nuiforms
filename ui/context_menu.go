@@ -1,5 +1,7 @@
 package ui
 
+import "github.com/u00io/nui/nuimouse"
+
 const ContextMenuItemHeight = 32
 
 type ContextMenu struct {
@@ -73,6 +75,18 @@ func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 	return item
 }
 
+// AddSeparator adds a line that separates groups of items
+func (c *ContextMenu) AddSeparator() *ContextMenuItem {
+	item := NewContextMenuItem()
+	item.parentWidgetId = c.Id()
+	item.parentMenu = c
+	item.separator = true
+	item.SetMouseCursor(nuimouse.MouseCursorArrow)
+	c.items = append(c.items, item)
+	c.AddWidget(0, 0, item)
+	return item
+}
+
 func (c *ContextMenu) AddItemWithSubmenu(text string, innerMenu *ContextMenu) *ContextMenuItem {
 	item := NewContextMenuItem()
 	item.parentWidgetId = c.Id()
@@ -109,8 +123,8 @@ func (c *ContextMenu) rebuildVisualElements() {
 		item.needToClosePopupMenu = c.needToClose
 		item.parentMenu = c
 		item.SetPosition(0, yOffset)
-		item.SetSize(menuWidth, ContextMenuItemHeight)
-		yOffset += ContextMenuItemHeight
+		item.SetSize(menuWidth, item.height())
+		yOffset += item.height()
 	}
 	c.SetSize(menuWidth, yOffset)
 	c.menuWidth = menuWidth
@@ -133,6 +147,9 @@ func (c *ContextMenu) hasImages() bool {
 func (c *ContextMenu) contentWidth() int {
 	width := contextMenuMinWidth
 	for _, item := range c.items {
+		if item.separator {
+			continue
+		}
 		textWidth, _, err := MeasureText(item.FontFamily(), item.FontSize(), item.text)
 		if err != nil {
 			continue

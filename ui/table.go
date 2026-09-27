@@ -903,6 +903,37 @@ func (c *Table) SelectAll() {
 	}
 }
 
+// SetSelectedRows selects the rows (in row-selection mode), e.g. to keep a
+// selection after the rows were reloaded; the first one becomes the current row.
+// Rows out of range are skipped. Without multiselect only the first row is selected.
+func (c *Table) SetSelectedRows(rows []int) {
+	valid := make([]int, 0, len(rows))
+	for _, r := range rows {
+		if r >= 0 && r < c.rowCount {
+			valid = append(valid, r)
+		}
+	}
+	if len(valid) == 0 {
+		return
+	}
+	sort.Ints(valid)
+	c.SetCurrentCell2(valid[0], max(c.currentCellX, 0))
+	if !c.multiselect || !c.selectingRows {
+		return
+	}
+	c.form.UpdateBlockPush()
+	defer c.form.UpdateBlockPop()
+	selected := make(map[int]bool, len(valid))
+	for _, r := range valid {
+		selected[r] = true
+	}
+	c.selectedRows = selected
+	c.form.Update()
+	if c.onSelectionChanged != nil {
+		c.onSelectionChanged(c.currentCellY, c.currentCellX)
+	}
+}
+
 // SelectedRows returns the sorted list of currently selected row indices.
 // Meaningful when SelectingRows() is true.
 func (c *Table) SelectedRows() []int {

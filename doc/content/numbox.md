@@ -42,3 +42,9 @@ nb.SetOnChanged(func() {
 })
 ```
 
+
+## Disabled
+
+```go
+nb.SetEnabled(false) // grayed out: ignores the mouse, the keyboard and focus, keeps its value
+```

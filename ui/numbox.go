@@ -68,7 +68,7 @@ func NewNumBox() *NumBox {
 	c.SetOnPaint(func(cnv *Canvas) { c.draw(cnv) })
 
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x, y int, mods nuikey.KeyModifiers) bool {
-		if button != nuimouse.MouseButtonLeft {
+		if button != nuimouse.MouseButtonLeft || !c.Enabled() {
 			return false
 		}
 		c.Focus()
@@ -96,16 +96,19 @@ func NewNumBox() *NumBox {
 
 	c.SetOnMouseWheel(func(deltaX, deltaY int) bool {
 		_ = deltaX
+		if !c.Enabled() {
+			return false
+		}
 		c.onMouseWheel(deltaY)
 		return true
 	})
 
 	c.SetOnKeyDown(func(key nuikey.Key, mods nuikey.KeyModifiers) bool {
-		return c.onKeyDown(key, mods)
+		return c.Enabled() && c.onKeyDown(key, mods)
 	})
 
 	c.SetOnChar(func(ch rune, mods nuikey.KeyModifiers) bool {
-		return c.onChar(ch, mods)
+		return c.Enabled() && c.onChar(ch, mods)
 	})
 
 	c.SetOnFocusLost(func() {
@@ -115,6 +118,19 @@ func NewNumBox() *NumBox {
 
 	c.SetValue(0)
 	return &c
+}
+
+// IsCanBeFocused: a disabled box is skipped, e.g. by Tab
+func (c *NumBox) IsCanBeFocused() bool {
+	return c.Widget.IsCanBeFocused() && c.Enabled()
+}
+
+// MouseCursor: no text cursor over a disabled box
+func (c *NumBox) MouseCursor() nuimouse.MouseCursor {
+	if !c.Enabled() {
+		return nuimouse.MouseCursorArrow
+	}
+	return c.Widget.MouseCursor()
 }
 
 func (c *NumBox) SetOnValueChanged(f func()) {
@@ -311,6 +327,11 @@ func (c *NumBox) ProcessPropChange(key string, value interface{}) {
 	defer func() { c.propIsProcessing = false }()
 
 	switch key {
+	case "enabled":
+		if !c.Enabled() && c.IsFocused() {
+			c.ClearFocus()
+		}
+		c.form.Update()
 	case "decimals":
 		c.SetDecimals(c.GetPropInt("decimals", c.decimals))
 	case "min":
@@ -352,11 +373,17 @@ func (c *NumBox) textRect() (x, y, w, h int) {
 }
 
 func (c *NumBox) draw(cnv *Canvas) {
+	enabled := c.Enabled()
+	foreColor := c.ForegroundColor()
+	if !enabled {
+		foreColor = c.ForegroundColorDisabled()
+	}
+
 	backColor := c.BackgroundColorWithAddElevation(-1)
-	if c.IsHovered() {
+	if c.IsHovered() && enabled {
 		backColor = c.BackgroundColorWithAddElevation(2)
 	}
-	if c.IsFocused() {
+	if c.IsFocused() && enabled {
 		backColor = c.BackgroundColorWithAddElevation(4)
 	}
 
@@ -369,7 +396,7 @@ func (c *NumBox) draw(cnv *Canvas) {
 	cnv.FillRect(btnX, btnY+btnH/2, btnW, 1, c.BackgroundColorWithAddElevation(8))
 
 	// Arrows - simple filled triangles.
-	arrowCol := c.ForegroundColor()
+	arrowCol := foreColor
 	{
 		cx := btnX + btnW/2
 		midY := btnY + btnH/4
@@ -419,7 +446,7 @@ func (c *NumBox) draw(cnv *Canvas) {
 
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
-	cnv.SetColor(c.ForegroundColor())
+	cnv.SetColor(foreColor)
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
 	cnv.DrawText(tx, ty, tw, th, c.text)
@@ -620,8 +647,10 @@ func (c *NumBox) onKeyDown(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 		c.stepBy(-c.Step())
 		return true
 	case nuikey.KeyEnter:
+		// Commit and let Enter through, like a single-line TextBox,
+		// so the form's accept button (e.g. OK of a dialog) is pressed
 		c.commitText(true)
-		return true
+		return false
 	}
 	return false
 }

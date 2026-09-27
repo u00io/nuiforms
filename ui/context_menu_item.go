@@ -23,6 +23,25 @@ type ContextMenuItem struct {
 	timerLastElapsedDTMSec int64
 
 	innerMenu *ContextMenu
+
+	// separator: a line between groups of items, not an item to click
+	separator bool
+}
+
+// ContextMenuSeparatorHeight is the height of a separator line between groups of items
+const ContextMenuSeparatorHeight = 9
+
+// IsSeparator reports whether the item is a separator line
+func (c *ContextMenuItem) IsSeparator() bool {
+	return c.separator
+}
+
+// height is the height the item takes in the menu
+func (c *ContextMenuItem) height() int {
+	if c.separator {
+		return ContextMenuSeparatorHeight
+	}
+	return ContextMenuItemHeight
 }
 
 func NewContextMenuItem() *ContextMenuItem {
@@ -89,6 +108,14 @@ func (c *ContextMenuItem) textX() int {
 }
 
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
+	if c.separator {
+		ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), c.BackgroundColor())
+		lineColor := ThemeForegroundColor("")
+		lineColor.A = contextMenuBorderAlpha
+		ctx.FillRect(contextMenuItemPadding, c.Height()/2, c.Width()-contextMenuItemPadding*2, 1, lineColor)
+		return
+	}
+
 	backColor := c.BackgroundColor()
 	if c.IsHovered() {
 		backColor = c.BackgroundColorWithAddElevation(2)
@@ -129,6 +156,9 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 
 func (c *ContextMenuItem) mouseDownHandler(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.timerEnabled = false
+	if c.separator {
+		return true // a click on a separator does nothing and keeps the menu open
+	}
 
 	if c.innerMenu != nil {
 		x, y := c.RectClientAreaOnWindow()

@@ -55,11 +55,12 @@ func (c *Widget) ShowDialog(centralWidget Widgeter) {
 		}
 		return true
 	}
-	form.ShowModal(c.form)
-
-	// Once shown, the dialog is handled by its own goroutine,
-	// so its show handler runs there (see Form.Invoke)
+	// The show handler sets the size, title and focus: it runs before the window
+	// is created, so the dialog appears at once as it should, without resizing
+	// (and no other goroutine handles the dialog yet)
+	form.parentForm = c.form
 	if w, ok := centralWidget.(Dialoger); ok {
-		form.Invoke(w.onDialogShow)
+		w.onDialogShow()
 	}
+	form.ShowModal(c.form)
 }
