@@ -63,9 +63,7 @@ func NewExampleForm() *ui.Form {
 	return form
 }
 
-// newArea is a label to right-click, stretched to fill its row. A label and
-// not a panel with a label inside: a right-click on a child widget doesn't
-// open the parent's menu.
+// newArea is a label to right-click, stretched to fill its row.
 func newArea(hint string) *ui.Label {
 	area := ui.NewLabel(hint)
 	area.SetTextAlign(ui.HAlignCenter)

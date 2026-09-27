@@ -158,7 +158,7 @@ type comboBoxPopup struct {
 	// ComboBox.OpenPopup, so the matching item can be highlighted.
 	selectedIndex int
 	// triggerTop is the owning ComboBox's top in client coordinates, where
-	// the dropdown ends when it opens upwards (see popupFlipped).
+	// the dropdown ends when it opens upwards (see PopupFlipped).
 	triggerTop int
 }
 
@@ -185,16 +185,16 @@ func (c *comboBoxPopup) drawBorder(cnv *Canvas) {
 	cnv.DrawRect(0, c.ScrollY(), c.Width(), c.Height())
 }
 
-// nativePopup: the dropdown is shown in its own window, so it can extend
+// NativePopup: the dropdown is shown in its own window, so it can extend
 // beyond the form
-func (c *comboBoxPopup) nativePopup() bool {
+func (c *comboBoxPopup) NativePopup() bool {
 	return true
 }
 
-// popupFlipped opens the dropdown above the ComboBox when it doesn't fit
+// PopupFlipped opens the dropdown above the ComboBox when it doesn't fit
 // below, and aligns it to the ComboBox's right edge when it doesn't fit to
 // the right.
-func (c *comboBoxPopup) popupFlipped() (int, int) {
+func (c *comboBoxPopup) PopupFlipped() (int, int) {
 	return c.X() + c.triggerWidth - c.Width(), c.triggerTop - c.Height()
 }
 

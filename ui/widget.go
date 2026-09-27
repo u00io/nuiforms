@@ -1276,19 +1276,20 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 
 	// Delegate the mouse down event to the widgets
 	processed := false
+	childHit := false
 
-	if !processed {
-		for _, w := range c.widgets {
-			if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
-				processed = w.ProcessMouseDown(button, x-w.X(), y-w.Y(), mods)
-				if processed {
-					break
-				}
-				processed = true
+	for _, w := range c.widgets {
+		if x >= w.X() && x < w.X()+w.Width() && y >= w.Y() && y < w.Y()+w.Height() {
+			processed = w.ProcessMouseDown(button, x-w.X(), y-w.Y(), mods)
+			if processed {
+				break
 			}
+			childHit = true
 		}
 	}
 
+	// A right click on a child that didn't handle it opens this widget's
+	// context menu: the click goes up to the nearest parent with a menu
 	if !processed {
 		contextMenuFound := false
 		//if event.Button == nuimouse.MouseButtonRight {
@@ -1310,6 +1311,11 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 		if contextMenuFound {
 			processed = true
 		}
+	}
+
+	// Other clicks on a child don't reach this widget's own handler
+	if childHit {
+		processed = true
 	}
 
 	if !processed && c.onMouseDown != nil {

@@ -236,7 +236,29 @@ func newWidgetId() string {
 	return id
 }
 
+// OpenPopup shows w above the form's widgets, e.g. a dropdown of your own
+// widget. Before calling it, give w its size and its position in the form's
+// client coordinates - RectClientAreaOnWindow tells where a widget is:
+//
+//	x, y := field.RectClientAreaOnWindow()
+//	picker.SetSize(200, 150)
+//	picker.SetPosition(x, y+field.Height())
+//	form.OpenPopup(picker)
+//
+// Its children are laid out on the grid like in any panel.
+//
+// The popup closes on a click outside it (see SetCloseByClickOutside), on
+// Escape, when the form loses activation or is moved, and by CloseTopPopup.
+//
+// By default the popup is drawn inside the form and clipped by it. Implement
+// NativePopupWidget to show it in its own window that can extend beyond the
+// form and is kept on the screen, and PopupPlacer to choose where it goes
+// when it doesn't fit.
 func (c *Form) OpenPopup(w Widgeter) {
+	// A new widget isn't attached to any form yet, and without a form its
+	// children weren't laid out when its size was set
+	w.attachToForm(w, c)
+	w.updateLayout(w.Width(), w.Height(), w.Width(), w.Height())
 	c.topWidget.AppendPopupWidget(w)
 	c.Update()
 }

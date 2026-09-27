@@ -7,18 +7,20 @@ import (
 	"github.com/u00io/nui/nuimouse"
 )
 
-// nativePopupWidget is implemented by popup widgets that are shown in their
-// own native window, so they aren't clipped by the form's bounds.
-type nativePopupWidget interface {
-	nativePopup() bool
+// NativePopupWidget is implemented by popup widgets (see Form.OpenPopup)
+// that are shown in their own native window, so they aren't clipped by the
+// form's bounds. Popups without it are drawn inside the form.
+type NativePopupWidget interface {
+	NativePopup() bool
 }
 
-// popupPlacer is implemented by popup widgets that know a better position
-// than being pushed back onto the screen when they don't fit on it.
-type popupPlacer interface {
-	// popupFlipped returns, in client coordinates, the X to use when the
-	// popup doesn't fit to the right and the Y to use when it doesn't fit below
-	popupFlipped() (x, y int)
+// PopupPlacer is implemented by native popup widgets that know a better
+// position than being pushed back onto the screen when they don't fit on it.
+type PopupPlacer interface {
+	// PopupFlipped returns, in the form's client coordinates, the X to use
+	// when the popup doesn't fit to the right and the Y to use when it
+	// doesn't fit below
+	PopupFlipped() (x, y int)
 }
 
 // popupHost is the native window of an open popup widget. The widget keeps
@@ -33,8 +35,8 @@ type popupHost struct {
 }
 
 func wantsPopupWindow(w Widgeter) bool {
-	n, ok := w.(nativePopupWidget)
-	return ok && n.nativePopup()
+	n, ok := w.(NativePopupWidget)
+	return ok && n.NativePopup()
 }
 
 // syncPopupWindows shows windows for newly opened popup widgets and hides
@@ -173,8 +175,8 @@ func (c *Form) placePopupWindow(h *popupHost) {
 	x, y := originX+w.X(), originY+w.Y()
 	areaX, areaY, areaW, areaH := c.wnd.ScreenWorkArea(x, y)
 
-	if placer, ok := w.(popupPlacer); ok {
-		flippedX, flippedY := placer.popupFlipped()
+	if placer, ok := w.(PopupPlacer); ok {
+		flippedX, flippedY := placer.PopupFlipped()
 		if x+width > areaX+areaW {
 			x = originX + flippedX
 		}

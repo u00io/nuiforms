@@ -57,16 +57,16 @@ func (c *ContextMenu) showMenu(x int, y int, parentMenu *ContextMenu) {
 	c.form.Panel().AppendPopupWidget(c)
 }
 
-// nativePopup: context menus are shown in their own window, so they can
+// NativePopup: context menus are shown in their own window, so they can
 // extend beyond the form
-func (c *ContextMenu) nativePopup() bool {
+func (c *ContextMenu) NativePopup() bool {
 	return true
 }
 
-// popupFlipped opens a menu that doesn't fit on the screen to the left of
+// PopupFlipped opens a menu that doesn't fit on the screen to the left of
 // (or above) the point it was opened at, and a submenu to the left of its
 // parent menu.
-func (c *ContextMenu) popupFlipped() (int, int) {
+func (c *ContextMenu) PopupFlipped() (int, int) {
 	if c.parentMenu != nil {
 		return c.parentMenu.X() - c.Width(), c.Y()
 	}
