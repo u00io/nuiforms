@@ -63,8 +63,7 @@ average line.
 Data quality:
 
 - `HasBad` - the point (or some sample in the bucket) is bad, for example a
-  sensor was disconnected. Bad spans are drawn as a light hatch in the series
-  color.
+  sensor was disconnected. Bad spans are drawn as a light reddish hatch.
 - `HasGood` - at least one sample carries a valid value. `First`/`Last`/
   `High`/`Low` describe only the good samples.
 - A point without `HasGood` has no value: the line breaks there and the

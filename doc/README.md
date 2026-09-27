@@ -14,6 +14,7 @@ Short reference for `ui` controls. Code snippets are intentionally minimal—see
 - [Frame](content/frame.md)
 - [ScrollArea](content/scrollarea.md)
 - [TabWidget](content/tabwidget.md)
+- [Splitter](content/splitter.md)
 - [Space](content/space.md)
 - [HSpacer](content/hspacer.md)
 - [VSpacer](content/vspacer.md)

@@ -29,7 +29,8 @@ type timeChartTheme struct {
 	closeHover      color.Color
 	zoomBand        color.Color
 
-	badHatchAlpha uint8
+	// Hatch over the spans of bad quality
+	badHatch color.Color
 }
 
 var timeChartDarkTheme = timeChartTheme{
@@ -57,7 +58,7 @@ var timeChartDarkTheme = timeChartTheme{
 	headerText:      ColorFromHex("#ffffff"),
 	closeHover:      timeChartAlpha("#ffffff", 60),
 	zoomBand:        timeChartAlpha("#ffffff", 40),
-	badHatchAlpha:   80,
+	badHatch:        timeChartAlpha("#f85149", 110),
 }
 
 var timeChartLightTheme = timeChartTheme{
@@ -85,7 +86,7 @@ var timeChartLightTheme = timeChartTheme{
 	headerText:      ColorFromHex("#ffffff"),
 	closeHover:      timeChartAlpha("#ffffff", 70),
 	zoomBand:        timeChartAlpha("#000000", 25),
-	badHatchAlpha:   90,
+	badHatch:        timeChartAlpha("#cf222e", 100),
 }
 
 func currentTimeChartTheme() *timeChartTheme {
@@ -104,10 +105,4 @@ func timeChartAlpha(hex string, a uint8) color.RGBA {
 	c := ColorFromHex(hex)
 	c.A = a
 	return c
-}
-
-// timeChartStraightAlpha is timeChartAlpha for an arbitrary color.
-func timeChartStraightAlpha(col color.Color, a uint8) color.RGBA {
-	n := color.NRGBAModel.Convert(col).(color.NRGBA)
-	return color.RGBA{R: n.R, G: n.G, B: n.B, A: a}
 }

@@ -28,6 +28,7 @@ Doc: [NUIForms Documentation](doc)
 - HSpacer
 - Label
 - Panel
+- Splitter
 - Table
 - TabWidget
 - TextBox

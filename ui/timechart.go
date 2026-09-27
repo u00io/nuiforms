@@ -21,8 +21,8 @@ import (
 // sample in the bucket) is bad - e.g. the sensor was disconnected - and
 // HasGood means at least one sample carries a valid value. First/Last/High/
 // Low only describe the good samples. A point without HasGood has no value:
-// the line breaks there. Bad spans are drawn as a light hatch in the series
-// color. A point with neither flag is a gap - no data at all, e.g. the
+// the line breaks there. Bad spans are drawn as a light reddish hatch.
+// A point with neither flag is a gap - no data at all, e.g. the
 // acquisition was stopped: the line breaks without the hatch.
 type TimeChartPoint struct {
 	DT      time.Time
@@ -1094,7 +1094,7 @@ func (c *TimeChart) drawDateRibbon(cnv *Canvas, unit timeChartRibbon, y int, lin
 }
 
 func (c *TimeChart) drawLine(cnv *Canvas, al *timeChartAreaLayout, points []TimeChartPoint, col color.Color) {
-	c.drawBadHatch(cnv, al, points, col)
+	c.drawBadHatch(cnv, al, points)
 	havePrev := false
 	prevX, prevY := 0, 0
 	for _, p := range points {
@@ -1121,8 +1121,8 @@ func (c *TimeChart) drawLine(cnv *Canvas, al *timeChartAreaLayout, points []Time
 // drawBadHatch hatches, over the full height of the area, every span of
 // points with HasBad. A span runs from its first bad point to the next point
 // without HasBad; a span at the end of the data is one point interval wide.
-func (c *TimeChart) drawBadHatch(cnv *Canvas, al *timeChartAreaLayout, points []TimeChartPoint, col color.Color) {
-	hatch := timeChartStraightAlpha(col, c.theme.badHatchAlpha)
+func (c *TimeChart) drawBadHatch(cnv *Canvas, al *timeChartAreaLayout, points []TimeChartPoint) {
+	hatch := c.theme.badHatch
 	for i := 0; i < len(points); {
 		if !points[i].HasBad {
 			i++
@@ -1161,7 +1161,7 @@ func (c *TimeChart) hatchRect(cnv *Canvas, x1, x2, height int, col color.Color) 
 }
 
 func (c *TimeChart) drawCandles(cnv *Canvas, al *timeChartAreaLayout, points []TimeChartPoint, seriesColor color.Color) {
-	c.drawBadHatch(cnv, al, points, seriesColor)
+	c.drawBadHatch(cnv, al, points)
 
 	up := c.theme.candleUp
 	down := c.theme.candleDown
