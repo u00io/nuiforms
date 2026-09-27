@@ -12,8 +12,9 @@ func NewProgressBar(minValue, maxValue, initValue float64) *ProgressBar {
 	var c ProgressBar
 	c.InitWidget()
 	c.SetTypeName("ProgressBar")
-	c.SetMinSize(100, 30)
-	c.SetMaxSize(10000, 30)
+	c.SetMinWidth(100)
+	c.SetMaxWidth(10000)
+	c.setThemeHeight(ThemeControlHeight, true)
 	c.SetOnPaint(c.draw)
 
 	c.minValue = minValue

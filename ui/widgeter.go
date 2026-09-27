@@ -34,6 +34,7 @@ type Widgeter interface {
 	CloseByClickOutside() bool
 
 	Widgets() []Widgeter
+	applyThemeMetrics()
 
 	Elevation() int
 

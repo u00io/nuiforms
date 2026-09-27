@@ -16,8 +16,9 @@ func NewRadioButton(text string) *RadioButton {
 	var c RadioButton
 	c.InitWidget()
 	c.SetTypeName("RadioButton")
-	c.SetMinSize(150, 30)
-	c.SetMaxSize(10000, 30)
+	c.SetMinWidth(150)
+	c.SetMaxWidth(10000)
+	c.setThemeHeight(ThemeControlHeight, true)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("RadioButton")
 	c.SetCanBeFocused(true)
@@ -72,17 +73,18 @@ func (c *RadioButton) Checked() bool {
 }
 
 func (c *RadioButton) draw(cnv *Canvas) {
-	boxAndTextSpace := 0
+	size := ThemeIndicatorSize()
+	padding := (c.Height() - size) / 2
+	textX := padding + size + indicatorTextGap
+
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(indicatorTextColor(&c.Widget))
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
-	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.text)
+	cnv.DrawText(textX, 0, c.Width()-textX, c.Height(), c.text)
 
 	// A circle; checked - an accent circle with a dot in the middle
-	padding := 6
-	size := 30 - padding*2
 	fill, border, mark := indicatorColors(&c.Widget, c.checked)
 	cnv.FillFrame(padding, padding, size, size, size/2, fill, border)
 	if c.checked {

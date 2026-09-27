@@ -10,6 +10,10 @@ import (
 type Button struct {
 	Widget
 	pressed bool
+
+	// textMinWidth is the minimum width updateSizeFromText set last, to
+	// tell it from a minimum width set explicitly
+	textMinWidth int
 }
 
 const (
@@ -23,7 +27,8 @@ func NewButton(text string) *Button {
 	c.dontAllowOnClickIfDisabled = true
 
 	c.SetTypeName("Button")
-	c.SetMinSize(DefaultButtonMinWidth, DefaultUiLineHeight)
+	c.SetMinWidth(DefaultButtonMinWidth)
+	c.setThemeHeight(c.heightForText, false)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 	c.SetCanBeFocused(true)
@@ -149,18 +154,18 @@ func (c *Button) ProcessPropChange(key string, value interface{}) {
 func (c *Button) updateSizeFromText() {
 	padding := c.GetPropInt("padding", 6)
 
-	textWidth, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
+	textWidth, _, err := MeasureText(c.FontFamily(), c.FontSize(), c.Text())
 	if err != nil {
 		return
 	}
-	if textHeight < DefaultUiLineHeight {
-		textHeight = DefaultUiLineHeight
-	}
 
-	c.SetMinHeight(textHeight)
+	c.applyThemeHeight()
 
-	if minWidth := textWidth + padding*2; minWidth > c.minWidth {
+	// Fit the text; a minimum width set explicitly can only grow
+	minWidth := max(DefaultButtonMinWidth, textWidth+padding*2)
+	if c.minWidth == c.textMinWidth || minWidth > c.minWidth {
 		c.SetMinWidth(minWidth)
+		c.textMinWidth = minWidth
 	}
 }
 
@@ -192,4 +197,19 @@ func (c *Button) buttonProcessMouseUp(button nuimouse.MouseButton, x int, y int,
 	}
 
 	return true
+}
+
+// heightForText is the button's height: a control's height, or more for a
+// larger font set on the button.
+func (c *Button) heightForText() int {
+	_, textHeight, err := MeasureText(c.FontFamily(), c.FontSize(), "Ag")
+	if err != nil {
+		return ThemeControlHeight()
+	}
+	return max(ThemeControlHeight(), textHeight+controlPaddingY*2)
+}
+
+func (c *Button) applyThemeMetrics() {
+	c.Widget.applyThemeMetrics()
+	c.updateSizeFromText()
 }

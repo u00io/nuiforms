@@ -42,7 +42,7 @@ func (c *ContextMenuItem) height() int {
 	if c.separator {
 		return ContextMenuSeparatorHeight
 	}
-	return ContextMenuItemHeight
+	return ThemeRowHeight()
 }
 
 func NewContextMenuItem() *ContextMenuItem {

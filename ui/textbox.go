@@ -96,7 +96,8 @@ func NewTextBox() *TextBox {
 	c.SetCanBeFocused(true)
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)
-	c.SetMinSize(100, DefaultUiLineHeight)
+	c.SetMinWidth(100)
+	c.setThemeHeight(ThemeControlHeight, false)
 	//c.SetMaxSize(2000, DefaultUiLineHeight)
 
 	//c.lines = make([]string, 1)
@@ -984,3 +985,8 @@ func (c *TextBox) AcceptsReturn() bool {
 func (c *TextBox) FontSize() float64 {
 	return 16
 }*/
+
+func (c *TextBox) applyThemeMetrics() {
+	c.Widget.applyThemeMetrics()
+	c.updateInnerSize()
+}

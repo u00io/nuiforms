@@ -114,7 +114,7 @@ const themeTextInset = 8
 
 var Theme map[string]interface{}
 
-const DefaultFontSize = 17.0
+const DefaultFontSize = 14.0
 
 var IsDarkTheme = true
 
@@ -153,10 +153,14 @@ func ApplyPalette(palette ThemePalette, dark bool) {
 	}
 }
 
+// ApplyBaseFontSize sets the size of the theme font and lays out the open
+// forms again: the heights of controls follow the font (see ThemeControlHeight).
 func ApplyBaseFontSize(fontSize float64) {
 	Theme["fontSize"] = fontSize
-	//UpdateMainFormLayout()
-	//UpdateMainForm()
+	DefaultUiLineHeight = ThemeControlHeight()
+	for _, form := range openForms() {
+		form.Invoke(form.applyFontSize)
+	}
 }
 
 func ColorFromHex(hexStr string) color.RGBA {
@@ -228,9 +232,9 @@ func init() {
 
 	ApplyDarkTheme()
 
-	//Theme["fontFamily"] = "robotomono"
-	Theme["fontFamily"] = "jetbrainsmono"
+	Theme["fontFamily"] = FontFamilySans
 	Theme["fontSize"] = DefaultFontSize
+	DefaultUiLineHeight = ThemeControlHeight()
 }
 
 // ThemeBackgroundColorDarkTheme is ThemeBackgroundColor for the dark palette.
@@ -325,7 +329,7 @@ func ThemeFontFamily() string {
 			return fontFamily
 		}
 	}
-	return "robotomono" // Default font family
+	return FontFamilySans
 }
 
 func ThemeFontSize() float64 {

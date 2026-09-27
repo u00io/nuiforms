@@ -21,8 +21,9 @@ type Table struct {
 	columnsWidths    map[int]int
 	rows             map[int]*tableRow
 
-	rowHeight1         int // Can be changed
-	defaultColumnWidth int // Default width for columns if not set
+	rowHeight1         int  // Can be changed
+	customRowHeight    bool // set by SetRowHeight, else rowHeight1 follows the theme font
+	defaultColumnWidth int  // Default width for columns if not set
 
 	rowCount    int
 	columnCount int
@@ -183,7 +184,7 @@ func NewTable() *Table {
 	// Init runtime
 	c.SetCanBeFocused(true)
 	c.rows = make(map[int]*tableRow)
-	c.rowHeight1 = 30
+	c.rowHeight1 = ThemeRowHeight()
 	c.headerRows = make(map[int]*tableHeaderRow)
 	c.columnsWidths = make(map[int]int)
 	c.headerRowHeights = make(map[int]int)
@@ -277,6 +278,7 @@ func (c *Table) PreviousCurrentCellY() int {
 }
 
 func (c *Table) SetRowHeight(height int) {
+	c.customRowHeight = true
 	c.rowHeight1 = height
 	c.updateInnerSize()
 	c.form.UpdateLayout()
@@ -1985,4 +1987,12 @@ func (c *tableHeader) onMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 		c.SetMouseCursor(cursor)
 	}
 	return true
+}
+
+func (c *Table) applyThemeMetrics() {
+	c.Widget.applyThemeMetrics()
+	if !c.customRowHeight {
+		c.rowHeight1 = ThemeRowHeight()
+		c.updateInnerSize()
+	}
 }

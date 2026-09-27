@@ -29,6 +29,13 @@ func NewExamplePageLabel() *ExamplePageLabel {
 	c.addFontSizeDemo(row)
 	row = addSectionGap(&c.Widget, row+1)
 
+	row = addSectionHeader(&c.Widget, row, "Font family")
+	c.AddLabel(row, 0, "Noto Sans (default): 0123456789 Illegal1 WWW iii")
+	row++
+	lblMono := c.AddLabel(row, 0, "JetBrains Mono: 0123456789 Illegal1 WWW iii")
+	lblMono.SetFontFamily(ui.FontFamilyMono)
+	row = addSectionGap(&c.Widget, row+1)
+
 	row = addSectionHeader(&c.Widget, row, "Foreground color")
 	c.addColorDemo(row)
 	row = addSectionGap(&c.Widget, row+1)

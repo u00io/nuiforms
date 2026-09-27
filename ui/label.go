@@ -23,8 +23,8 @@ func NewLabel(text string) *Label {
 	c.SetTypeName("Label")
 	c.SetOnPaint(c.onPaint)
 	c.SetText(text)
-	c.innerHeight = DefaultUiLineHeight
-	c.SetMinHeight(c.innerHeight)
+	c.innerHeight = ThemeControlHeight()
+	c.setThemeHeight(ThemeControlHeight, false)
 	c.updateInnerSize()
 	return &c
 }
@@ -124,4 +124,10 @@ func (c *Label) updateInnerSize() {
 		c.innerWidth = labelMaxWidth
 		c.SetMinWidth(10)
 	}
+}
+
+func (c *Label) applyThemeMetrics() {
+	c.Widget.applyThemeMetrics()
+	c.innerHeight = ThemeControlHeight()
+	c.updateInnerSize()
 }

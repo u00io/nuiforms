@@ -30,8 +30,9 @@ func NewComboBox() *ComboBox {
 	// all leftover vertical space via the layout's "grow every row"
 	// fallback, ballooning into a huge empty box instead of a compact
 	// dropdown trigger.
-	c.SetMinSize(DefaultComboBoxMinWidth, 32)
-	c.SetMaxSize(10000, 32)
+	c.SetMinWidth(DefaultComboBoxMinWidth)
+	c.SetMaxWidth(10000)
+	c.setThemeHeight(ThemeControlHeight, true)
 
 	c.SetOnMouseDown(func(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 		if button == nuimouse.MouseButtonLeft {
@@ -218,8 +219,9 @@ func (c *comboBoxPopup) AddItem(text string, onClick func(index int)) {
 
 func (c *comboBoxPopup) rebuildVisualElements() {
 	width := c.contentWidth()
-	contentHeight := len(c.items) * ContextMenuItemHeight
-	height := min(contentHeight, comboBoxPopupMaxVisibleItems*ContextMenuItemHeight)
+	itemHeight := ThemeRowHeight()
+	contentHeight := len(c.items) * itemHeight
+	height := min(contentHeight, comboBoxPopupMaxVisibleItems*itemHeight)
 
 	itemWidth := width
 	if contentHeight > height {
@@ -230,8 +232,8 @@ func (c *comboBoxPopup) rebuildVisualElements() {
 	yOffset := 0
 	for _, item := range c.items {
 		item.SetPosition(0, yOffset)
-		item.SetSize(itemWidth, ContextMenuItemHeight)
-		yOffset += ContextMenuItemHeight
+		item.SetSize(itemWidth, itemHeight)
+		yOffset += itemHeight
 	}
 	c.SetSize(width, height)
 	c.SetAllowScroll(false, true)
@@ -244,20 +246,20 @@ func (c *comboBoxPopup) scrollToSelected() {
 	if c.selectedIndex < 0 || c.selectedIndex >= len(c.items) {
 		return
 	}
-	visibleItems := c.Height() / ContextMenuItemHeight
+	visibleItems := c.Height() / ThemeRowHeight()
 	c.scrollToItem(c.selectedIndex - visibleItems/2)
 }
 
 // processWheel scrolls by whole items, so no item is cut at the top.
 func (c *comboBoxPopup) processWheel(deltaX, deltaY int) bool {
-	c.scrollToItem(c.ScrollY()/ContextMenuItemHeight - deltaY*comboBoxPopupWheelItems)
+	c.scrollToItem(c.ScrollY()/ThemeRowHeight() - deltaY*comboBoxPopupWheelItems)
 	return true
 }
 
 // scrollToItem makes the item with the given index the first visible one,
 // as far as the list allows.
 func (c *comboBoxPopup) scrollToItem(index int) {
-	c.setScrollY(index * ContextMenuItemHeight)
+	c.setScrollY(index * ThemeRowHeight())
 	c.checkScrolls()
 	c.form.Update()
 }

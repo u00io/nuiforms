@@ -31,8 +31,9 @@ func NewButtonImage(img image.Image) *ButtonImage {
 func (c *ButtonImage) initButtonImage(img image.Image) {
 	c.InitWidget()
 	c.SetTypeName("Button")
-	c.SetMinSize(100, 30)
-	c.SetMaxSize(10000, 30)
+	c.SetMinWidth(100)
+	c.SetMaxWidth(10000)
+	c.setThemeHeight(ThemeControlHeight, true)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetImage(img)
 	c.SetCanBeFocused(true)

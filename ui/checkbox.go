@@ -16,8 +16,9 @@ func NewCheckbox(text string) *Checkbox {
 	var c Checkbox
 	c.InitWidget()
 	c.SetTypeName("Checkbox")
-	c.SetMinSize(150, 30)
-	c.SetMaxSize(10000, 30)
+	c.SetMinWidth(150)
+	c.SetMaxWidth(10000)
+	c.setThemeHeight(ThemeControlHeight, true)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Checkbox")
 	c.SetCanBeFocused(true)
@@ -73,16 +74,16 @@ func (c *Checkbox) Checked() bool {
 func (c *Checkbox) draw(cnv *Canvas) {
 	//cnv.FillRect(0, 0, c.Width(), c.Height())
 
-	boxAndTextSpace := 0
+	boxSize := ThemeIndicatorSize()
+	padding := (c.Height() - boxSize) / 2
+	textX := padding + boxSize + indicatorTextGap
+
 	cnv.SetHAlign(HAlignLeft)
 	cnv.SetVAlign(VAlignCenter)
 	cnv.SetColor(indicatorTextColor(&c.Widget))
 	cnv.SetFontFamily(c.FontFamily())
 	cnv.SetFontSize(c.FontSize())
-	cnv.DrawText(30+boxAndTextSpace, 0, c.Width()-30-boxAndTextSpace, c.Height(), c.Text())
-
-	padding := 6
-	boxSize := 30 - padding*2
+	cnv.DrawText(textX, 0, c.Width()-textX, c.Height(), c.Text())
 
 	fill, border, mark := indicatorColors(&c.Widget, c.Checked())
 	cnv.FillFrame(padding, padding, boxSize, boxSize, themeControlRadius, fill, border)

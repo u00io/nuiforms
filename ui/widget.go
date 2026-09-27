@@ -41,6 +41,11 @@ type Widget struct {
 	minHeight int // Minimum height
 	maxHeight int // Maximum height
 
+	// themeHeight, when set, gives the height from the theme font (see
+	// setThemeHeight); setting a height explicitly turns it off
+	themeHeight      func() int
+	themeHeightFixed bool
+
 	allowScrollX   bool
 	allowScrollY   bool
 	hideScrollbarX bool
@@ -140,9 +145,9 @@ type Widget struct {
 	- onclick: function - Callback function for mouse click events.
 */
 
-const (
-	DefaultUiLineHeight = 30
-)
+// DefaultUiLineHeight is the height of a single-line control at the theme
+// font size (see ThemeControlHeight); ApplyBaseFontSize updates it.
+var DefaultUiLineHeight = 30
 
 type Event struct {
 	Parameter any
@@ -485,6 +490,9 @@ func (c *Widget) attachToForm(self Widgeter, form *Form) {
 	c.form = form
 	if form != nil {
 		registerWidget(self)
+		// Sizes measured before the widget had a form missed the property
+		// changes made meanwhile, e.g. SetFontFamily on a label
+		self.applyThemeMetrics()
 	} else {
 		unregisterWidget(c.id)
 	}
@@ -918,12 +926,14 @@ func (c *Widget) SetSize(w, h int) {
 }
 
 func (c *Widget) SetMinSize(minWidth, minHeight int) {
+	c.themeHeight = nil
 	c.minWidth = minWidth
 	c.minHeight = minHeight
 	c.checkScrolls()
 }
 
 func (c *Widget) SetMaxSize(maxWidth, maxHeight int) {
+	c.themeHeight = nil
 	c.maxWidth = maxWidth
 	c.maxHeight = maxHeight
 	c.checkScrolls()
@@ -1554,6 +1564,7 @@ func (c *Widget) SetMinWidth(minWidth int) {
 }
 
 func (c *Widget) SetMinHeight(minHeight int) {
+	c.themeHeight = nil
 	c.minHeight = minHeight
 }
 
@@ -1562,6 +1573,7 @@ func (c *Widget) SetMaxWidth(maxWidth int) {
 }
 
 func (c *Widget) SetMaxHeight(maxHeight int) {
+	c.themeHeight = nil
 	c.maxHeight = maxHeight
 }
 
@@ -2204,7 +2216,16 @@ func (c *Widget) YExpandable() bool {
 	return false
 }
 
+// SetFontFamily sets the font of the widget, e.g. FontFamilyMono; an empty
+// family returns the theme font.
+func (c *Widget) SetFontFamily(family string) {
+	c.SetProp("fontfamily", family)
+}
+
 func (c *Widget) FontFamily() string {
+	if family, ok := c.GetProp("fontfamily").(string); ok && family != "" {
+		return family
+	}
 	return ThemeFontFamily()
 }
 

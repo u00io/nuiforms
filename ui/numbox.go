@@ -54,7 +54,8 @@ func NewNumBox() *NumBox {
 	c.SetCanBeFocused(true)
 	c.SetXExpandable(true)
 	c.SetYExpandable(false)
-	c.SetMinSize(120, DefaultUiLineHeight)
+	c.SetMinWidth(120)
+	c.setThemeHeight(ThemeControlHeight, false)
 	c.SetMouseCursor(nuimouse.MouseCursorIBeam)
 
 	c.padding = themeTextInset

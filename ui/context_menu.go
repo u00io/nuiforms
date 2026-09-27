@@ -2,8 +2,6 @@ package ui
 
 import "github.com/u00io/nui/nuimouse"
 
-const ContextMenuItemHeight = 32
-
 type ContextMenu struct {
 	Widget
 	menuWidth  int
@@ -162,7 +160,7 @@ func (c *ContextMenu) contentWidth() int {
 		}
 		itemWidth := item.textX() + textWidth + contextMenuItemPadding
 		if item.innerMenu != nil {
-			itemWidth += ContextMenuItemHeight + contextMenuItemPadding
+			itemWidth += ThemeRowHeight() + contextMenuItemPadding
 		}
 		if itemWidth > width {
 			width = itemWidth

@@ -27,7 +27,7 @@ func NewTabWidget() *TabWidget {
 	c.SetPanelPadding(0)
 	c.SetCellPadding(0)
 
-	c.headerHeight = 30
+	c.headerHeight = ThemeControlHeight()
 	c.headerItemMinWidth = 100
 
 	c.SetTypeName("TabWidget")
@@ -38,8 +38,7 @@ func NewTabWidget() *TabWidget {
 	c.pages = make([]tabWidgetPage, 0)
 
 	c.panelTop = newTabWidgetHeader(c.headerItemMinWidth, c.headerHeight)
-	c.panelTop.SetMinHeight(c.headerHeight)
-	c.panelTop.SetMaxHeight(c.headerHeight)
+	c.panelTop.setThemeHeight(ThemeControlHeight, true)
 	c.panelTop.onTabChanged = c.onTabChanged
 	c.AddWidget(0, 0, c.panelTop)
 
@@ -259,5 +258,16 @@ func (c *tabWidgetHeader) draw(cnv *Canvas) {
 	// Fill remaining space with bottom border
 	if xOffset < c.Width() {
 		cnv.DrawLine(xOffset, c.height-1, c.Width(), c.height-1, 1, borderColor)
+	}
+}
+
+// applyThemeMetrics also updates the pages that aren't shown, which aren't
+// among the tab widget's children
+func (c *TabWidget) applyThemeMetrics() {
+	c.Widget.applyThemeMetrics()
+	c.headerHeight = ThemeControlHeight()
+	c.panelTop.height = c.headerHeight
+	for _, page := range c.pages {
+		applyThemeMetricsTree(page.widget)
 	}
 }

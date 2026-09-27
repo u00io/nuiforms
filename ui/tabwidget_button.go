@@ -17,8 +17,9 @@ func NewTabWidgetButton(text string) *tabWidgetButton {
 	var c tabWidgetButton
 	c.InitWidget()
 	c.SetTypeName("TabWidgetButton")
-	c.SetMinSize(100, 30)
-	c.SetMaxSize(10000, 30)
+	c.SetMinWidth(100)
+	c.SetMaxWidth(10000)
+	c.setThemeHeight(ThemeControlHeight, true)
 	c.SetMouseCursor(nuimouse.MouseCursorPointer)
 	c.SetText("Button")
 
