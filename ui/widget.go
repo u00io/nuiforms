@@ -46,6 +46,11 @@ type Widget struct {
 	themeHeight      func() int
 	themeHeightFixed bool
 
+	// Texts that follow the language, see setTextFunc
+	textFunc    func() string
+	textSetter  func(string)
+	tooltipFunc func() string
+
 	allowScrollX   bool
 	allowScrollY   bool
 	hideScrollbarX bool

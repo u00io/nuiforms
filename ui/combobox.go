@@ -55,6 +55,16 @@ func (c *ComboBox) AddItem(text string, data interface{}) {
 	c.items = append(c.items, &item)
 }
 
+// SetItemText changes the text of the item, e.g. for another language;
+// the item keeps its data and the selection doesn't change.
+func (c *ComboBox) SetItemText(index int, text string) {
+	if index < 0 || index >= len(c.items) {
+		return
+	}
+	c.items[index].text = text
+	c.form.Update()
+}
+
 func (c *ComboBox) SetSelectedIndex(index int) {
 	if index < 0 || index >= len(c.items) {
 		return

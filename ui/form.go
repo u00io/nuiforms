@@ -80,6 +80,10 @@ type Form struct {
 	cancelButton *Button // The button that is triggered when the user cancels the form (e.g., presses Esc)
 
 	OnClose func() bool
+
+	// See SetTitleFunc and SetOnLanguageChanged
+	titleFunc         func() string
+	onLanguageChanged func()
 }
 
 var nextWidgetId int64

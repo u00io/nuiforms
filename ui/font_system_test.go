@@ -62,3 +62,23 @@ func TestHasCJK(t *testing.T) {
 		}
 	}
 }
+
+// The language picks the variant of the system CJK font
+func TestCJKFontVariantFollowsLanguage(t *testing.T) {
+	t.Cleanup(func() { setCJKVariant("sc") })
+	var buf sfnt.Buffer
+	for variant, family := range map[string]string{"jp": "Noto Sans CJK JP", "tc": "Noto Sans CJK TC", "sc": "Noto Sans CJK SC"} {
+		setCJKVariant(variant)
+		MeasureText(FontFamilySans, 14, "中文")
+		fontsMu.RLock()
+		f, ok := fonts[FontFamilyCJK]
+		fontsMu.RUnlock()
+		if !ok {
+			t.Skip("no system CJK font")
+		}
+		name := fontName(f, &buf, sfnt.NameIDTypographicFamily, sfnt.NameIDFamily)
+		if name != family && name[:min(len(name), 13)] == "Noto Sans CJK" {
+			t.Errorf("%s: %q, want %q", variant, name, family)
+		}
+	}
+}

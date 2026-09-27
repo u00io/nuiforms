@@ -10,6 +10,8 @@ import (
 	"sync"
 
 	"golang.org/x/image/font/sfnt"
+
+	"github.com/u00io/nuiforms/ui/i18n"
 )
 
 // Chinese text is drawn with a font of the system: CJK fonts are too large
@@ -30,14 +32,60 @@ type systemFontCandidate struct {
 	families []string
 }
 
-var systemFallbackOnce sync.Once
+// The CJK variant the language wants and the one loaded: "sc" (Simplified
+// Chinese), "tc" (Traditional, Taiwan), "hk" (Hong Kong), "jp", "kr". The
+// same ideograph is drawn differently in each (see cjkVariantFor).
+var (
+	cjkMu            sync.Mutex
+	cjkVariantWanted = "sc"
+	cjkVariantTried  string // the variant loaded, or looked up in vain
+)
 
 // ensureFallbackFonts loads the system CJK font the first time text has
-// CJK characters. Call it before taking a face: loading resets the faces.
+// CJK characters, and again after the language wants another variant. Call
+// it before taking a face: loading resets the faces.
 func ensureFallbackFonts(text string) {
-	if hasCJK(text) {
-		systemFallbackOnce.Do(loadSystemCJKFont)
+	if !hasCJK(text) {
+		return
 	}
+	cjkMu.Lock()
+	defer cjkMu.Unlock()
+	if cjkVariantTried == cjkVariantWanted {
+		return
+	}
+	cjkVariantTried = cjkVariantWanted
+	loadSystemCJKFont(cjkVariantWanted)
+}
+
+// setCJKVariant sets the variant for the language; the font is (re)loaded
+// with the next CJK text.
+func setCJKVariant(variant string) {
+	cjkMu.Lock()
+	cjkVariantWanted = variant
+	cjkMu.Unlock()
+	// Texts drawn with the previous variant
+	clearAllRenderedTexts()
+}
+
+// cjkVariantFor returns the CJK font variant for the language: Unicode gives
+// the Chinese, Japanese and Korean forms of an ideograph one code, so the
+// font decides the form.
+func cjkVariantFor(lang string) string {
+	lang = i18n.Normalize(lang)
+	switch i18n.Base(lang) {
+	case "ja":
+		return "jp"
+	case "ko":
+		return "kr"
+	case "zh":
+		switch lang {
+		case "zh-TW":
+			return "tc"
+		case "zh-HK", "zh-MO":
+			return "hk"
+		}
+	}
+	return "sc"
 }
 
 // hasCJK reports whether text has characters from the CJK blocks: radicals,
@@ -51,11 +99,11 @@ func hasCJK(text string) bool {
 	return false
 }
 
-func loadSystemCJKFont() {
+func loadSystemCJKFont(variant string) {
 	if !SystemFallbackFonts {
 		return
 	}
-	for _, candidate := range systemCJKFontCandidates() {
+	for _, candidate := range systemCJKFontCandidates(variant) {
 		paths, _ := filepath.Glob(candidate.pattern)
 		for _, path := range paths {
 			if f, err := openSystemFont(path, candidate.families); err == nil {
@@ -66,7 +114,8 @@ func loadSystemCJKFont() {
 		}
 	}
 	// Any other Unix: ask fontconfig
-	if path := fontconfigMatch(":lang=zh-cn"); path != "" {
+	lang := map[string]string{"sc": "zh-cn", "tc": "zh-tw", "hk": "zh-hk", "jp": "ja", "kr": "ko"}[variant]
+	if path := fontconfigMatch(":lang=" + lang); path != "" {
 		if f, err := openSystemFont(path, nil); err == nil {
 			setFont(FontFamilyCJK, f)
 			AddFallbackFont(FontFamilyCJK)
@@ -74,37 +123,69 @@ func loadSystemCJKFont() {
 	}
 }
 
-func systemCJKFontCandidates() []systemFontCandidate {
+// systemCJKFontCandidates returns the fonts to try for the variant: its own
+// fonts first, then the Simplified Chinese ones, which also have kana and
+// the traditional characters (drawn in the mainland forms).
+func systemCJKFontCandidates(variant string) []systemFontCandidate {
 	switch runtime.GOOS {
 	case "windows":
 		dir := filepath.Join(os.Getenv("WINDIR"), "Fonts")
 		if os.Getenv("WINDIR") == "" {
 			dir = `C:\Windows\Fonts`
 		}
-		return []systemFontCandidate{
-			{filepath.Join(dir, "msyh.ttc"), []string{"Microsoft YaHei UI", "Microsoft YaHei"}},
-			{filepath.Join(dir, "msyh.ttf"), []string{"Microsoft YaHei"}},
-			{filepath.Join(dir, "Deng.ttf"), []string{"DengXian"}},
-			{filepath.Join(dir, "simhei.ttf"), []string{"SimHei"}},
-			{filepath.Join(dir, "simsun.ttc"), []string{"SimSun"}},
-		}
+		own := map[string][]systemFontCandidate{
+			"tc": {{filepath.Join(dir, "msjh.ttc"), []string{"Microsoft JhengHei UI", "Microsoft JhengHei"}}},
+			"hk": {
+				{filepath.Join(dir, "msjh.ttc"), []string{"Microsoft JhengHei UI", "Microsoft JhengHei"}},
+				{filepath.Join(dir, "mingliub.ttc"), []string{"MingLiU_HKSCS"}},
+			},
+			"jp": {
+				{filepath.Join(dir, "YuGothR.ttc"), []string{"Yu Gothic UI", "Yu Gothic"}},
+				{filepath.Join(dir, "meiryo.ttc"), []string{"Meiryo UI", "Meiryo"}},
+				{filepath.Join(dir, "msgothic.ttc"), []string{"MS UI Gothic", "MS Gothic"}},
+			},
+			"kr": {
+				{filepath.Join(dir, "malgun.ttf"), []string{"Malgun Gothic"}},
+				{filepath.Join(dir, "gulim.ttc"), []string{"Gulim"}},
+			},
+		}[variant]
+		return append(own,
+			systemFontCandidate{filepath.Join(dir, "msyh.ttc"), []string{"Microsoft YaHei UI", "Microsoft YaHei"}},
+			systemFontCandidate{filepath.Join(dir, "msyh.ttf"), []string{"Microsoft YaHei"}},
+			systemFontCandidate{filepath.Join(dir, "Deng.ttf"), []string{"DengXian"}},
+			systemFontCandidate{filepath.Join(dir, "simhei.ttf"), []string{"SimHei"}},
+			systemFontCandidate{filepath.Join(dir, "simsun.ttc"), []string{"SimSun"}},
+		)
 	case "darwin":
-		return []systemFontCandidate{
-			{"/System/Library/Fonts/PingFang.ttc", []string{"PingFang SC"}},
-			// Since macOS 13 PingFang is a downloadable asset
-			{"/System/Library/AssetsV2/com_apple_MobileAsset_Font*/*/AssetData/PingFang.ttc", []string{"PingFang SC"}},
-			{"/System/Library/Fonts/Hiragino Sans GB.ttc", []string{"Hiragino Sans GB"}},
-			{"/System/Library/Fonts/STHeiti Light.ttc", []string{"Heiti SC", "STHeiti"}},
-			{"/System/Library/Fonts/STHeiti Medium.ttc", []string{"Heiti SC", "STHeiti"}},
-			{"/System/Library/Fonts/Supplemental/Arial Unicode.ttf", nil},
-			{"/Library/Fonts/Arial Unicode.ttf", nil},
+		pingFang := map[string]string{"tc": "PingFang TC", "hk": "PingFang HK"}[variant]
+		if pingFang == "" {
+			pingFang = "PingFang SC"
 		}
+		own := map[string][]systemFontCandidate{
+			"jp": {{"/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc", []string{"Hiragino Sans"}}},
+			"kr": {{"/System/Library/Fonts/AppleSDGothicNeo.ttc", []string{"Apple SD Gothic Neo"}}},
+		}[variant]
+		return append(own,
+			systemFontCandidate{"/System/Library/Fonts/PingFang.ttc", []string{pingFang, "PingFang SC"}},
+			// Since macOS 13 PingFang is a downloadable asset
+			systemFontCandidate{"/System/Library/AssetsV2/com_apple_MobileAsset_Font*/*/AssetData/PingFang.ttc", []string{pingFang, "PingFang SC"}},
+			systemFontCandidate{"/System/Library/Fonts/Hiragino Sans GB.ttc", []string{"Hiragino Sans GB"}},
+			systemFontCandidate{"/System/Library/Fonts/STHeiti Light.ttc", []string{"Heiti SC", "STHeiti"}},
+			systemFontCandidate{"/System/Library/Fonts/STHeiti Medium.ttc", []string{"Heiti SC", "STHeiti"}},
+			systemFontCandidate{"/System/Library/Fonts/Supplemental/Arial Unicode.ttf", nil},
+			systemFontCandidate{"/Library/Fonts/Arial Unicode.ttf", nil},
+		)
 	}
-	notoCJK := []string{"Noto Sans CJK SC"}
-	sourceHan := []string{"Source Han Sans SC", "Source Han Sans CN"}
+
+	// Noto Sans CJK and Source Han Sans have every variant in one family
+	suffix := map[string]string{"sc": "SC", "tc": "TC", "hk": "HK", "jp": "JP", "kr": "KR"}[variant]
+	notoCJK := []string{"Noto Sans CJK " + suffix, "Noto Sans CJK SC"}
+	sourceHan := []string{"Source Han Sans " + suffix, "Source Han Sans SC", "Source Han Sans CN"}
 	return []systemFontCandidate{
 		{"/usr/share/fonts/*/NotoSansCJK-Regular.ttc", notoCJK},
 		{"/usr/share/fonts/*/*/NotoSansCJK-Regular.ttc", notoCJK},
+		{"/usr/share/fonts/*/NotoSansCJK" + strings.ToLower(suffix) + "-Regular.otf", notoCJK},
+		{"/usr/share/fonts/*/*/NotoSansCJK" + strings.ToLower(suffix) + "-Regular.otf", notoCJK},
 		{"/usr/share/fonts/*/NotoSansCJKsc-Regular.otf", notoCJK},
 		{"/usr/share/fonts/*/*/NotoSansCJKsc-Regular.otf", notoCJK},
 		{"/usr/share/fonts/*/SourceHanSans*-Regular.tt?", sourceHan},

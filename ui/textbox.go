@@ -11,6 +11,8 @@ import (
 type TextBox struct {
 	Widget
 
+	hintFunc func() string // see SetHintFunc
+
 	cursorPosX          int
 	cursorPosY          int
 	selectionLeftX      int

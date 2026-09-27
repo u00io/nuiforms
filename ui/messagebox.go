@@ -35,7 +35,8 @@ func ShowMessageBox(parentWidget Widgeter, title string, text string) {
 	c, buttonPanel := newMessageBoxForm(title, text)
 
 	buttonPanel.AddHSpacer(0, 0)
-	okButton := buttonPanel.AddButton(0, 1, "OK", func() { c.Close() })
+	okButton := buttonPanel.AddButton(0, 1, "", func() { c.Close() })
+	okButton.SetTextFunc(func() string { return UIText().OK })
 	buttonPanel.AddHSpacer(0, 2)
 
 	c.SetAcceptButton(okButton)
@@ -49,15 +50,17 @@ func ShowQuestionMessageBoxYesNo(parentWidget Widgeter, title string, text strin
 	c, buttonPanel := newMessageBoxForm(title, text)
 
 	buttonPanel.AddHSpacer(0, 0)
-	yesButton := buttonPanel.AddButton(0, 1, "Yes", func() {
+	yesButton := buttonPanel.AddButton(0, 1, "", func() {
 		c.Close()
 		runOnParent(parentWidget, onYes)
 	})
+	yesButton.SetTextFunc(func() string { return UIText().Yes })
 	buttonPanel.AddHSpacer(0, 2)
-	noButton := buttonPanel.AddButton(0, 3, "No", func() {
+	noButton := buttonPanel.AddButton(0, 3, "", func() {
 		c.Close()
 		runOnParent(parentWidget, onNo)
 	})
+	noButton.SetTextFunc(func() string { return UIText().No })
 	buttonPanel.AddHSpacer(0, 4)
 
 	c.SetAcceptButton(yesButton)
@@ -71,15 +74,17 @@ func ShowQuestionMessageBoxOKCancel(parentWidget Widgeter, title string, text st
 	c, buttonPanel := newMessageBoxForm(title, text)
 
 	buttonPanel.AddHSpacer(0, 0)
-	okButton := buttonPanel.AddButton(0, 1, "OK", func() {
+	okButton := buttonPanel.AddButton(0, 1, "", func() {
 		c.Close()
 		runOnParent(parentWidget, onOK)
 	})
+	okButton.SetTextFunc(func() string { return UIText().OK })
 	buttonPanel.AddHSpacer(0, 2)
-	cancelButton := buttonPanel.AddButton(0, 3, "Cancel", func() {
+	cancelButton := buttonPanel.AddButton(0, 3, "", func() {
 		c.Close()
 		runOnParent(parentWidget, onCancel)
 	})
+	cancelButton.SetTextFunc(func() string { return UIText().Cancel })
 	buttonPanel.AddHSpacer(0, 4)
 
 	c.SetAcceptButton(okButton)

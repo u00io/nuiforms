@@ -35,6 +35,7 @@ type Widgeter interface {
 
 	Widgets() []Widgeter
 	applyThemeMetrics()
+	applyLanguage()
 
 	Elevation() int
 

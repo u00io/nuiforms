@@ -17,8 +17,9 @@ type TabWidget struct {
 }
 
 type tabWidgetPage struct {
-	name   string
-	widget Widgeter
+	name     string
+	nameFunc func() string // see SetPageNameFunc
+	widget   Widgeter
 }
 
 func NewTabWidget() *TabWidget {

@@ -11,6 +11,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex08contextmenu"
 	"github.com/u00io/nuiforms/examples/ex09custompopup"
 	"github.com/u00io/nuiforms/examples/ex10languages"
+	"github.com/u00io/nuiforms/examples/ex11i18n"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -39,6 +40,7 @@ func Run() {
 		addButton("Example 08 - Context Menus", ex08contextmenu.NewExampleForm)
 		addButton("Example 09 - Custom Popup", ex09custompopup.NewExampleForm)
 		addButton("Example 10 - Languages", ex10languages.NewExampleForm)
+		addButton("Example 11 - Translations", ex11i18n.NewExampleForm)
 
 		form.Panel().AddWidget(form.Panel().NextGridRow(), 0, ui.NewVSpacer())
 		form.Panel().AddButton(form.Panel().NextGridRow(), 0, "Light Theme", func() {
