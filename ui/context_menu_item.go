@@ -1,7 +1,10 @@
 package ui
 
 import (
+	"image"
 	"time"
+
+	"github.com/nfnt/resize"
 
 	"github.com/u00io/nui/nuikey"
 	"github.com/u00io/nui/nuimouse"
@@ -10,6 +13,7 @@ import (
 type ContextMenuItem struct {
 	Widget
 	text                 string
+	image                image.Image
 	OnClick              func()
 	parentMenu           *ContextMenu
 	needToClosePopupMenu func()
@@ -43,6 +47,26 @@ func (c *ContextMenuItem) SetText(text string) {
 	c.form.Update()
 }
 
+// SetImage sets the icon shown left of the text; a larger image is scaled down
+// to ContextMenuItemIconSize. nil removes the icon. Returns the item for chaining:
+//
+//	menu.AddItem("Edit", onEdit).SetImage(editIcon)
+func (c *ContextMenuItem) SetImage(img image.Image) *ContextMenuItem {
+	if img != nil {
+		b := img.Bounds()
+		if b.Dx() > ContextMenuItemIconSize || b.Dy() > ContextMenuItemIconSize {
+			img = resize.Thumbnail(ContextMenuItemIconSize, ContextMenuItemIconSize, img, resize.Lanczos3)
+		}
+	}
+	c.image = img
+	c.form.Update()
+	return c
+}
+
+func (c *ContextMenuItem) Image() image.Image {
+	return c.image
+}
+
 func (c *ContextMenuItem) ControlType() string {
 	return "PopupMenuItem"
 }
@@ -52,6 +76,18 @@ func (c *ContextMenuItem) ControlType() string {
 // highlight reaches border to border, as in standard menu styling.
 const contextMenuItemPadding = 10
 
+// ContextMenuItemIconSize is the size of the item icons
+const ContextMenuItemIconSize = 16
+
+// textX returns where the text starts: after the icon column when any item of the menu has an icon,
+// so the texts of all the items stay aligned
+func (c *ContextMenuItem) textX() int {
+	if c.parentMenu != nil && c.parentMenu.hasImages() {
+		return contextMenuItemPadding*2 + ContextMenuItemIconSize
+	}
+	return contextMenuItemPadding
+}
+
 func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	backColor := c.BackgroundColor()
 	if c.IsHovered() {
@@ -59,7 +95,13 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	}
 	ctx.FillRect(0, 0, c.InnerWidth(), c.InnerHeight(), backColor)
 
-	textAreaWidth := c.Width() - contextMenuItemPadding*2
+	if c.image != nil {
+		b := c.image.Bounds()
+		ctx.DrawImage(contextMenuItemPadding+(ContextMenuItemIconSize-b.Dx())/2, (c.Height()-b.Dy())/2, c.image)
+	}
+
+	textX := c.textX()
+	textAreaWidth := c.Width() - textX - contextMenuItemPadding
 	if c.innerMenu != nil {
 		textAreaWidth -= c.Height() + contextMenuItemPadding
 	}
@@ -70,7 +112,7 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	ctx.SetColor(c.ForegroundColor())
 	ctx.SetFontFamily(c.FontFamily())
 	ctx.SetFontSize(c.FontSize())
-	ctx.DrawText(contextMenuItemPadding, 0, c.Width()-contextMenuItemPadding*2, c.Height(), displayText)
+	ctx.DrawText(textX, 0, textAreaWidth, c.Height(), displayText)
 
 	if c.innerMenu != nil {
 		rectSize := c.Height()

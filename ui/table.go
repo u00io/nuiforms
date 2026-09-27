@@ -1074,6 +1074,19 @@ func (c *Table) onMouseDown(button nuimouse.MouseButton, x int, y int, mods nuik
 	return true
 }
 
+// ProcessMouseDown selects the row (cell) under a right click before the
+// context menu is shown, so the menu acts on what was clicked. An already
+// selected row keeps the selection, so a menu over a multi-selection acts on all of it.
+func (c *Table) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
+	if button == nuimouse.MouseButtonRight && c.ContextMenu() != nil && len(c.PopupWidgets) == 0 && y >= c.headerHeight() {
+		col, row := c.cellByPosition(x+c.scrollX, y+c.scrollY)
+		if row >= 0 && col >= 0 && !c.IsRowSelected(row) && !c.IsCellSelected(row, col) {
+			c.SetCurrentCell2(row, col)
+		}
+	}
+	return c.Widget.ProcessMouseDown(button, x, y, mods)
+}
+
 func (c *Table) onMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	c.columnResizingIndex = -1
 	c.selectionDragging = false

@@ -64,6 +64,7 @@ func (c *ContextMenu) ClosePopup() {
 func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 	item := NewContextMenuItem()
 	item.parentWidgetId = c.Id()
+	item.parentMenu = c
 	item.SetText(text)
 	item.OnClick = onClick
 
@@ -75,6 +76,7 @@ func (c *ContextMenu) AddItem(text string, onClick func()) *ContextMenuItem {
 func (c *ContextMenu) AddItemWithSubmenu(text string, innerMenu *ContextMenu) *ContextMenuItem {
 	item := NewContextMenuItem()
 	item.parentWidgetId = c.Id()
+	item.parentMenu = c
 	item.SetText(text)
 	item.innerMenu = innerMenu
 	c.items = append(c.items, item)
@@ -115,6 +117,16 @@ func (c *ContextMenu) rebuildVisualElements() {
 	c.menuHeight = yOffset
 }
 
+// hasImages reports whether any item has an icon, so the menu reserves the icon column
+func (c *ContextMenu) hasImages() bool {
+	for _, item := range c.items {
+		if item.image != nil {
+			return true
+		}
+	}
+	return false
+}
+
 // contentWidth measures the widest item text (reserving room for the
 // submenu arrow on items that have one) and clamps the result between
 // contextMenuMinWidth and contextMenuMaxWidth.
@@ -125,7 +137,7 @@ func (c *ContextMenu) contentWidth() int {
 		if err != nil {
 			continue
 		}
-		itemWidth := contextMenuItemPadding*2 + textWidth
+		itemWidth := item.textX() + textWidth + contextMenuItemPadding
 		if item.innerMenu != nil {
 			itemWidth += ContextMenuItemHeight + contextMenuItemPadding
 		}

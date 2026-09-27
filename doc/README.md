@@ -25,6 +25,7 @@ Short reference for `ui` controls. Code snippets are intentionally minimal—see
 - [NumBox](content/numbox.md)
 - [Button](content/button.md)
 - [ButtonImage](content/button_image.md)
+- [ToolButton](content/tool_button.md)
 - [Checkbox](content/checkbox.md)
 - [RadioButton](content/radiobutton.md)
 - [ComboBox](content/combobox.md)

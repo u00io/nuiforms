@@ -23,6 +23,12 @@ Properties:
 
 func NewButtonImage(img image.Image) *ButtonImage {
 	var c ButtonImage
+	c.initButtonImage(img)
+	return &c
+}
+
+// initButtonImage initializes c in place, so widgets embedding ButtonImage can reuse it
+func (c *ButtonImage) initButtonImage(img image.Image) {
 	c.InitWidget()
 	c.SetTypeName("Button")
 	c.SetMinSize(100, 30)
@@ -34,8 +40,6 @@ func NewButtonImage(img image.Image) *ButtonImage {
 	c.SetOnPaint(c.draw)
 	c.SetOnMouseDown(c.buttonProcessMouseDown)
 	c.SetOnMouseUp(c.buttonProcessMouseUp)
-
-	return &c
 }
 
 func (c *ButtonImage) Image() image.Image {

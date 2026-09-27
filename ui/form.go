@@ -527,7 +527,19 @@ func (c *Form) processMouseMove(x int, y int) {
 
 	c.lastMouseX = x
 	c.lastMouseY = y
-	hoverWidget := c.topWidget.findWidgetAt(x, y)
+	c.updateHover()
+
+	c.Update()
+}
+
+// updateHover finds the widget under the mouse and sets its cursor.
+// Called on mouse moves and when the widgets under the mouse change
+// without a move, e.g. a popup menu is closed by a click.
+func (c *Form) updateHover() {
+	if c == nil || c.topWidget == nil {
+		return
+	}
+	hoverWidget := c.topWidget.findWidgetAt(c.lastMouseX, c.lastMouseY)
 	if hoverWidget == nil {
 		hoverWidget = c.topWidget
 	}
@@ -557,8 +569,6 @@ func (c *Form) processMouseMove(x int, y int) {
 		}
 		c.lastMouseCursor = newCursor
 	}
-
-	c.Update()
 }
 
 func (c *Form) processMouseLeave() {

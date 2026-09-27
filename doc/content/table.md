@@ -67,6 +67,7 @@ See `examples/ex00gallery` (Table page, "Selection" tab) for a full demo.
 - `SetOnCellMouseDblClick(func())` - inspect `ui.CurrentEvent().Parameter.(*ui.EventTableCellMouseDblClick)` for `Row`/`Col`/`Table`, and set `.Processed = true` to suppress the default double-click edit trigger.
 - `SetOnColumnClick(func(col int))` - fired when a header column is clicked.
 - `SetOnColumnResize(func(col, newWidth int))` - fired while a header column border is dragged to resize it.
+- `SetContextMenu(menu *ContextMenu)` - shown on a right click. The click first selects the row (cell) under the mouse, unless it is already selected, so the menu acts on what was clicked and a multi-selection is kept.
 
 ## Appearance
 

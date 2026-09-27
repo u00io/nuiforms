@@ -1674,6 +1674,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 			c.PopupWidgets = append(c.PopupWidgets[:foundIndex], c.PopupWidgets[foundIndex+1:]...)
 		}
 		c.ClearFocus()
+		c.form.updateHover()
 		c.form.Update()
 	}
 }
@@ -1690,6 +1691,7 @@ func (c *Widget) CloseAllPopup() {
 	c.ClearFocus()
 
 	c.PopupWidgets = make([]Widgeter, 0)
+	c.form.updateHover()
 	c.form.Update()
 }
 
@@ -1707,6 +1709,8 @@ func (c *Widget) CloseTopPopup() {
 	if previousFocusedWidget != nil {
 		previousFocusedWidget.Focus()
 	}
+	// The mouse is now over what was under the popup
+	c.form.updateHover()
 }
 
 func (c *Widget) ProcessClosePopup() {
