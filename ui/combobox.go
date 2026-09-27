@@ -95,13 +95,15 @@ func (c *ComboBox) OpenPopup() {
 		})
 	}
 	x, y := c.RectClientAreaOnWindow()
+	popup.triggerTop = y
 	popup.ShowPopup(x, y+c.Height())
 }
 
-// Size and placement of the dropdown arrow drawn at the right of the control.
+// Size and placement of the dropdown arrow drawn at the right of the control:
+// the submenu arrow of ContextMenuItem, turned downwards.
 const (
-	comboBoxArrowWidth   = 10
-	comboBoxArrowHeight  = 5
+	comboBoxArrowWidth   = contextMenuArrowHalfHeight * 2
+	comboBoxArrowHeight  = contextMenuArrowWidth
 	comboBoxArrowPadding = 10
 )
 
@@ -127,18 +129,11 @@ func (c *ComboBox) draw(cnv *Canvas) {
 }
 
 // drawArrow paints a small downward-pointing triangle - the usual dropdown
-// indicator - at the right edge of the control. Canvas has no filled-polygon
-// primitive, so it's built from one DrawLine per row, narrowing symmetrically
-// until the last row is a single point.
+// indicator - at the right edge of the control.
 func (c *ComboBox) drawArrow(cnv *Canvas, arrowColor color.Color) {
 	x := c.Width() - comboBoxArrowPadding - comboBoxArrowWidth
 	y := (c.Height() - comboBoxArrowHeight) / 2
-	halfWidth := comboBoxArrowWidth / 2
-
-	for row := 0; row < comboBoxArrowHeight; row++ {
-		inset := row * halfWidth / (comboBoxArrowHeight - 1)
-		cnv.DrawLine(x+inset, y+row, x+comboBoxArrowWidth-inset, y+row, 1, arrowColor)
-	}
+	cnv.FillTriangle(x, y, x+comboBoxArrowWidth, y, x+comboBoxArrowWidth/2, y+comboBoxArrowHeight, arrowColor)
 }
 
 // Adaptive popup width bounds: never wider than this, regardless of how
@@ -156,6 +151,9 @@ type comboBoxPopup struct {
 	// selectedIndex is the owning ComboBox's current selection, also set by
 	// ComboBox.OpenPopup, so the matching item can be highlighted.
 	selectedIndex int
+	// triggerTop is the owning ComboBox's top in client coordinates, where
+	// the dropdown ends when it opens upwards (see popupFlipped).
+	triggerTop int
 }
 
 func NewComboBoxPopup() *comboBoxPopup {
@@ -177,6 +175,19 @@ func (c *comboBoxPopup) drawBorder(cnv *Canvas) {
 	borderColor.A = contextMenuBorderAlpha
 	cnv.SetColor(borderColor)
 	cnv.DrawRect(0, 0, c.Width(), c.Height())
+}
+
+// nativePopup: the dropdown is shown in its own window, so it can extend
+// beyond the form
+func (c *comboBoxPopup) nativePopup() bool {
+	return true
+}
+
+// popupFlipped opens the dropdown above the ComboBox when it doesn't fit
+// below, and aligns it to the ComboBox's right edge when it doesn't fit to
+// the right.
+func (c *comboBoxPopup) popupFlipped() (int, int) {
+	return c.X() + c.triggerWidth - c.Width(), c.triggerTop - c.Height()
 }
 
 func (c *comboBoxPopup) ShowPopup(x int, y int) {

@@ -142,16 +142,21 @@ func (c *ContextMenuItem) Draw(ctx *Canvas) {
 	ctx.DrawText(textX, 0, textAreaWidth, c.Height(), displayText)
 
 	if c.innerMenu != nil {
-		rectSize := c.Height()
-		x := c.Width() - rectSize - contextMenuItemPadding
-		y := 0
-		ctx.SetHAlign(HAlignLeft)
-		ctx.SetVAlign(VAlignCenter)
-		ctx.SetColor(c.ForegroundColor())
-		ctx.SetFontFamily(c.FontFamily())
-		ctx.SetFontSize(c.FontSize())
-		ctx.DrawText(x, y, rectSize, rectSize, "\u00BB")
+		c.drawSubmenuArrow(ctx)
 	}
+}
+
+// contextMenuArrowHalfHeight and contextMenuArrowWidth size the submenu arrow
+const contextMenuArrowHalfHeight = 4
+const contextMenuArrowWidth = 5
+
+// drawSubmenuArrow draws a small right-pointing triangle at the right edge
+// of an item that opens a submenu.
+func (c *ContextMenuItem) drawSubmenuArrow(ctx *Canvas) {
+	right := c.Width() - contextMenuItemPadding - 2
+	left := right - contextMenuArrowWidth
+	midY := c.Height() / 2
+	ctx.FillTriangle(left, midY-contextMenuArrowHalfHeight, left, midY+contextMenuArrowHalfHeight, right, midY, c.ForegroundColor())
 }
 
 func (c *ContextMenuItem) mouseDownHandler(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {

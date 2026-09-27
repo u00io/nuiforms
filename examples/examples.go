@@ -9,6 +9,7 @@ import (
 	"github.com/u00io/nuiforms/examples/ex05chart"
 	"github.com/u00io/nuiforms/examples/ex06timechart"
 	"github.com/u00io/nuiforms/examples/ex07tooltip"
+	"github.com/u00io/nuiforms/examples/ex08contextmenu"
 	"github.com/u00io/nuiforms/ui"
 )
 
@@ -35,6 +36,7 @@ func Run() {
 		addButton("Example 05 - Chart", ex05chart.NewExampleForm)
 		addButton("Example 06 - TimeChart", ex06timechart.NewExampleForm)
 		addButton("Example 07 - Tooltips", ex07tooltip.NewExampleForm)
+		addButton("Example 08 - Context Menus", ex08contextmenu.NewExampleForm)
 
 		form.Panel().AddWidget(form.Panel().NextGridRow(), 0, ui.NewVSpacer())
 		form.Panel().AddButton(form.Panel().NextGridRow(), 0, "Light Theme", func() {

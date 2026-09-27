@@ -43,6 +43,14 @@ type Form struct {
 
 	tooltip tooltipState
 
+	// Native windows of the open popup widgets, see form_popup.go
+	popupHosts              []*popupHost
+	freePopupWindows        []nui.PopupWindow
+	popupWindowsUnavailable bool
+	// popupUnderMouse is the popup window the last mouse event came from,
+	// nil when it came from the form's own window
+	popupUnderMouse *popupHost
+
 	onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
 
 	needUpdate         bool
@@ -246,6 +254,7 @@ func (c *Form) CloseTopPopup() {
 
 func (c *Form) Close() {
 	c.tooltipClose()
+	c.destroyPopupWindows()
 	if c.wnd != nil {
 		if c.wnd.Close() {
 			c.wnd = nil
@@ -359,15 +368,25 @@ func (c *Form) createWindow(maximized bool) {
 	c.wnd.OnMouseButtonDown(c.processMouseDown)
 	c.wnd.OnMouseButtonUp(c.processMouseUp)
 	c.wnd.OnMouseButtonDblClick(c.processMouseDblClick)
-	c.wnd.OnMouseMove(c.processMouseMove)
+	c.wnd.OnMouseMove(func(x, y int) {
+		c.popupUnderMouse = nil
+		c.processMouseMove(x, y)
+	})
 	c.wnd.OnMouseWheel(c.processMouseWheel)
-	c.wnd.OnMouseLeave(c.processMouseLeave)
+	c.wnd.OnMouseLeave(func() {
+		// The mouse went into a popup window: it's still over the form's
+		// widgets. Popup windows report their own leave.
+		if c.popupUnderMouse == nil {
+			c.processMouseLeave()
+		}
+	})
 	c.wnd.OnMouseEnter(c.processMouseEnter)
 	c.wnd.OnKeyDown(c.processKeyDown)
 	c.wnd.OnKeyUp(c.processKeyUp)
 	c.wnd.OnChar(c.processChar)
 	c.wnd.OnTimer(c.processTimer)
 	c.wnd.OnMove(c.processWindowMove)
+	c.wnd.OnDeactivate(c.processDeactivate)
 	c.wnd.OnCloseRequest(c.processWindowClose)
 	c.wnd.SetAllowMinimize(c.allowMinimize)
 	c.wnd.SetAllowMaximize(c.allowMaximize)
@@ -444,6 +463,7 @@ func (c *Form) Exec() {
 func (c *Form) realUpdate() {
 	if c.wnd != nil && c.needUpdate {
 		c.wnd.Update()
+		c.updatePopupWindows()
 		c.needUpdate = false
 		c.lastUpdateTime = time.Now()
 	}
@@ -843,6 +863,8 @@ func (c *Form) processTimer() {
 
 func (c *Form) processWindowMove(x, y int) {
 	c.tooltipHide()
+	// Popup windows don't move with the form
+	c.closePopups()
 	c.forceUpdate()
 }
 

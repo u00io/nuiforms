@@ -116,7 +116,7 @@ func (c *Form) tooltipShowPopup() bool {
 		return false
 	}
 	if c.tooltip.popup == nil {
-		c.tooltip.popup = nui.CreatePopupWindow(c.wnd)
+		c.tooltip.popup = nui.CreatePopupWindow(c.wnd, false)
 		if c.tooltip.popup == nil {
 			c.tooltip.popupFailed = true
 			return false

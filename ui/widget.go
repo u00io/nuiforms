@@ -1153,6 +1153,9 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 	}
 
 	for _, popupWidget := range c.PopupWidgets {
+		if c.form != nil && c.form.popupHostOf(popupWidget) != nil {
+			continue // painted in its own window
+		}
 		cnv.Save()
 		cnv.SetDirectTranslateAndClip(popupWidget.X(), popupWidget.Y(), popupWidget.Width(), popupWidget.Height())
 		popupWidget.ProcessPaint(cnv)
@@ -1646,6 +1649,7 @@ func (c *Widget) AppendPopupWidget(w Widgeter) {
 		registerWidget(w)
 		w.attachToForm(w, w.Form())
 	}
+	c.form.syncPopupWindows()
 	c.form.Update()
 }
 
@@ -1674,6 +1678,7 @@ func (c *Widget) CloseAfterPopupWidget(w Widgeter) {
 			c.PopupWidgets = append(c.PopupWidgets[:foundIndex], c.PopupWidgets[foundIndex+1:]...)
 		}
 		c.ClearFocus()
+		c.form.syncPopupWindows()
 		c.form.updateHover()
 		c.form.Update()
 	}
@@ -1691,6 +1696,7 @@ func (c *Widget) CloseAllPopup() {
 	c.ClearFocus()
 
 	c.PopupWidgets = make([]Widgeter, 0)
+	c.form.syncPopupWindows()
 	c.form.updateHover()
 	c.form.Update()
 }
@@ -1706,6 +1712,7 @@ func (c *Widget) CloseTopPopup() {
 	previousFocusedWidget := c.PopupWidgets[len(c.PopupWidgets)-1].getPreviousFocusedWidget()
 	c.PopupWidgets[len(c.PopupWidgets)-1].ProcessClosePopup()
 	c.PopupWidgets = c.PopupWidgets[:len(c.PopupWidgets)-1]
+	c.form.syncPopupWindows()
 	if previousFocusedWidget != nil {
 		previousFocusedWidget.Focus()
 	}
