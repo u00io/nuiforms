@@ -1055,21 +1055,6 @@ func (c *Widget) getWidgetAt(x, y int) Widgeter {
 }
 
 func (c *Widget) findWidgetAt(x, y int) Widgeter {
-	if len(c.PopupWidgets) > 0 {
-		for i := len(c.PopupWidgets) - 1; i >= 0; i-- {
-			popupWidget := c.PopupWidgets[i]
-			if x > popupWidget.X() && x < popupWidget.X()+popupWidget.Width() && y > popupWidget.Y() && y < popupWidget.Y()+popupWidget.Height() && popupWidget.IsVisible() {
-				innerW := popupWidget.findWidgetAt(x-popupWidget.X(), y-popupWidget.Y())
-				if innerW != nil {
-					return innerW
-				} else {
-					return popupWidget
-				}
-			}
-		}
-		return nil
-	}
-
 	// if it is the bar area, return self
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
 		return c
@@ -1152,16 +1137,6 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 		cnv.FillRect(c.w-c.scrollBarYSize, scrollBarY, c.scrollBarYSize, scrollBarHeight, barColor)
 	}
 
-	for _, popupWidget := range c.PopupWidgets {
-		if c.form != nil && c.form.popupHostOf(popupWidget) != nil {
-			continue // painted in its own window
-		}
-		cnv.Save()
-		cnv.SetDirectTranslateAndClip(popupWidget.X(), popupWidget.Y(), popupWidget.Width(), popupWidget.Height())
-		popupWidget.ProcessPaint(cnv)
-		cnv.Restore()
-	}
-
 	/*if !c.Enabled() {
 		backgroundColor := color.RGBA{R: 55, G: 55, B: 55, A: 55}
 		_, _, _, a := backgroundColor.RGBA()
@@ -1173,27 +1148,6 @@ func (c *Widget) ProcessPaint(cnv *Canvas) {
 }
 
 func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
-
-	popupWidgetsBefore := len(c.PopupWidgets)
-
-	for len(c.PopupWidgets) > 0 {
-		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
-		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
-			topWidget.ProcessMouseDown(button, x-topWidget.X(), y-topWidget.Y(), mods)
-			return true
-		} else {
-			if !topWidget.CloseByClickOutside() {
-				return true
-			}
-			c.CloseTopPopup()
-			return true
-		}
-	}
-
-	if popupWidgetsBefore != len(c.PopupWidgets) {
-		return true
-	}
-
 	// Determine if the click is within the horizontal scroll bar area
 	if c.allowScrollX && c.innerWidth > c.w && y >= c.h-c.scrollBarXSize {
 		isLeftBar := x < c.w*c.scrollX/c.innerWidth
@@ -1330,14 +1284,6 @@ func (c *Widget) ProcessMouseDown(button nuimouse.MouseButton, x int, y int, mod
 }
 
 func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers, onlyForWidgetId string) bool {
-	if len(c.PopupWidgets) > 0 {
-		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
-		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
-			topWidget.ProcessMouseUp(button, x-topWidget.X(), y-topWidget.Y(), mods, onlyForWidgetId)
-			return true
-		}
-	}
-
 	// If scrolling is active, stop it
 	if c.scrollingX {
 		c.scrollingX = false
@@ -1367,14 +1313,6 @@ func (c *Widget) ProcessMouseUp(button nuimouse.MouseButton, x int, y int, mods 
 func (c *Widget) ProcessMouseMove(x int, y int, mods nuikey.KeyModifiers) bool {
 	if c.form == nil {
 		return false
-	}
-
-	if len(c.PopupWidgets) > 0 {
-		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
-		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
-			topWidget.ProcessMouseMove(x-topWidget.X(), y-topWidget.Y(), mods)
-			return true
-		}
 	}
 
 	if c.scrollingX {
@@ -1488,14 +1426,6 @@ func (c *Widget) ProcessKeyUp(key nuikey.Key, mods nuikey.KeyModifiers) bool {
 func (c *Widget) ProcessMouseDblClick(button nuimouse.MouseButton, x int, y int, mods nuikey.KeyModifiers) bool {
 	fmt.Println("Widget Mouse Double Click", x, y)
 
-	if len(c.PopupWidgets) > 0 {
-		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
-		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
-			topWidget.ProcessMouseDblClick(button, x-topWidget.X(), y-topWidget.Y(), mods)
-			return true
-		}
-	}
-
 	x += c.scrollX
 	y += c.scrollY
 
@@ -1536,16 +1466,6 @@ func (c *Widget) ProcessChar(char rune, mods nuikey.KeyModifiers) bool {
 }
 
 func (c *Widget) ProcessMouseWheel(deltaX, deltaY int) bool {
-	// The top popup scrolls when the mouse is over it. Popups belong to the
-	// form's top widget, so the form's mouse position is in their coordinates.
-	if len(c.PopupWidgets) > 0 && c.form != nil {
-		topWidget := c.PopupWidgets[len(c.PopupWidgets)-1]
-		x, y := c.form.lastMouseX, c.form.lastMouseY
-		if x > topWidget.X() && x < topWidget.X()+topWidget.Width() && y > topWidget.Y() && y < topWidget.Y()+topWidget.Height() && topWidget.IsVisible() {
-			return topWidget.ProcessMouseWheel(deltaX, deltaY)
-		}
-	}
-
 	hoverWidget := c.getWidgetAt(c.lastMouseX, c.lastMouseY)
 	if hoverWidget != nil {
 		processed := hoverWidget.ProcessMouseWheel(deltaX, deltaY)

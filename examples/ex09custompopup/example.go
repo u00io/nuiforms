@@ -3,8 +3,8 @@ package ex09custompopup
 import "github.com/u00io/nuiforms/ui"
 
 // NewExampleForm shows a popup widget of your own: a color palette that
-// drops down from a button. It's shown in its own window (NativePopup), so
-// it extends beyond the small form, and opens above the button when it
+// drops down from a button. Like every popup it's shown in its own window,
+// so it extends beyond the small form, and it opens above the button when it
 // doesn't fit below it (PopupFlipped).
 func NewExampleForm() *ui.Form {
 	form := ui.NewForm()
@@ -75,11 +75,6 @@ func (c *palette) openBelow(anchor *ui.Button) {
 	c.SetSize(paletteColumns*paletteCellW, rows*paletteCellH)
 	c.SetPosition(c.anchorX, c.anchorY+anchor.Height())
 	anchor.Form().OpenPopup(c)
-}
-
-// NativePopup shows the palette in its own window, not clipped by the form
-func (c *palette) NativePopup() bool {
-	return true
 }
 
 // PopupFlipped opens the palette above the button when it doesn't fit

@@ -7,15 +7,9 @@ import (
 	"github.com/u00io/nui/nuimouse"
 )
 
-// NativePopupWidget is implemented by popup widgets (see Form.OpenPopup)
-// that are shown in their own native window, so they aren't clipped by the
-// form's bounds. Popups without it are drawn inside the form.
-type NativePopupWidget interface {
-	NativePopup() bool
-}
-
-// PopupPlacer is implemented by native popup widgets that know a better
-// position than being pushed back onto the screen when they don't fit on it.
+// PopupPlacer is implemented by popup widgets (see Form.OpenPopup) that know
+// a better position than being pushed back onto the screen when they don't
+// fit on it.
 type PopupPlacer interface {
 	// PopupFlipped returns, in the form's client coordinates, the X to use
 	// when the popup doesn't fit to the right and the Y to use when it
@@ -24,19 +18,15 @@ type PopupPlacer interface {
 }
 
 // popupHost is the native window of an open popup widget. The widget keeps
-// its position in the form's client coordinates, which may now be outside
-// the client area. Mouse events of the window are translated to those
-// coordinates and processed by the form like its own, so the popup widgets
-// work the same way whether they have a window or not.
+// its position in the form's client coordinates, which may be outside the
+// client area. Mouse events of the window are translated to those
+// coordinates, and the form sends them to the popup widget (see mouseTarget).
 type popupHost struct {
 	widget        Widgeter
 	wnd           nui.PopupWindow
 	width, height int
-}
-
-func wantsPopupWindow(w Widgeter) bool {
-	n, ok := w.(NativePopupWidget)
-	return ok && n.NativePopup()
+	// cursor is the last cursor set on the window
+	cursor nuimouse.MouseCursor
 }
 
 // syncPopupWindows shows windows for newly opened popup widgets and hides
@@ -61,12 +51,12 @@ func (c *Form) syncPopupWindows() {
 	c.popupHosts = open
 
 	for _, w := range c.topWidget.PopupWidgets {
-		if !wantsPopupWindow(w) || c.popupHostOf(w) != nil {
+		if c.popupHostOf(w) != nil {
 			continue
 		}
 		wnd := c.takePopupWindow()
 		if wnd == nil {
-			continue // no popups on this platform: drawn inside the form
+			continue // the platform failed to create a window: the popup stays invisible
 		}
 		h := &popupHost{widget: w, wnd: wnd}
 		c.bindPopupWindow(h)
@@ -143,6 +133,7 @@ func (c *Form) bindPopupWindow(h *popupHost) {
 			// window is hidden, so the button release may never come
 			c.mouseLeftButtonPressed = false
 			c.mouseLeftButtonPressedWidget = nil
+			c.mouseDownPopup = nil
 		}
 	})
 	h.wnd.OnMouseButtonUp(func(btn nuimouse.MouseButton, x, y int) {
@@ -155,6 +146,7 @@ func (c *Form) bindPopupWindow(h *popupHost) {
 		if !c.isPopupHostOpen(h) {
 			return
 		}
+		c.popupUnderMouse = h
 		c.processMouseWheel(deltaX, deltaY)
 	})
 	h.wnd.OnMouseLeave(func() {
@@ -166,8 +158,8 @@ func (c *Form) bindPopupWindow(h *popupHost) {
 }
 
 // placePopupWindow shows the window over the widget's position, moved onto
-// the screen if needed. The widget is moved along, so the form's hit
-// testing matches what is on the screen.
+// the screen if needed. The widget is moved along, so the client
+// coordinates of the mouse events match what is on the screen.
 func (c *Form) placePopupWindow(h *popupHost) {
 	w := h.widget
 	width, height := w.Width(), w.Height()
@@ -201,6 +193,44 @@ func (c *Form) updatePopupWindows() {
 		}
 		h.wnd.Update()
 	}
+}
+
+// mouseTarget returns the widget that gets a mouse event at the client point
+// (x, y), and the point in its coordinates: the popup widget of the window
+// the event came from, or the form's top widget for the form's own window.
+func (c *Form) mouseTarget(host *popupHost, x, y int) (Widgeter, int, int) {
+	if host != nil {
+		return host.widget, x - host.widget.X(), y - host.widget.Y()
+	}
+	return c.topWidget, x, y
+}
+
+// widgetUnderMouse finds the widget at the client point (x, y) in the window
+// the mouse is over.
+func (c *Form) widgetUnderMouse(x, y int) Widgeter {
+	target, targetX, targetY := c.mouseTarget(c.popupUnderMouse, x, y)
+	if w := target.findWidgetAt(targetX, targetY); w != nil {
+		return w
+	}
+	return target
+}
+
+// closePopupsByClickOutside closes the popups when the form itself is
+// clicked (a click outside all popup windows), topmost first, up to one
+// that stays open on such clicks. Returns true when the click was outside
+// the popups, so it must not reach the form's widgets.
+func (c *Form) closePopupsByClickOutside() bool {
+	if c.popupUnderMouse != nil || len(c.topWidget.PopupWidgets) == 0 {
+		return false
+	}
+	for len(c.topWidget.PopupWidgets) > 0 {
+		topPopup := c.topWidget.PopupWidgets[len(c.topWidget.PopupWidgets)-1]
+		if !topPopup.CloseByClickOutside() {
+			break
+		}
+		c.topWidget.CloseTopPopup()
+	}
+	return true
 }
 
 // closePopups closes all popup widgets, e.g. when the form loses activation:

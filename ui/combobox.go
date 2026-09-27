@@ -185,12 +185,6 @@ func (c *comboBoxPopup) drawBorder(cnv *Canvas) {
 	cnv.DrawRect(0, c.ScrollY(), c.Width(), c.Height())
 }
 
-// NativePopup: the dropdown is shown in its own window, so it can extend
-// beyond the form
-func (c *comboBoxPopup) NativePopup() bool {
-	return true
-}
-
 // PopupFlipped opens the dropdown above the ComboBox when it doesn't fit
 // below, and aligns it to the ComboBox's right edge when it doesn't fit to
 // the right.

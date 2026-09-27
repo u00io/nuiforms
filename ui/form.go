@@ -50,6 +50,9 @@ type Form struct {
 	// popupUnderMouse is the popup window the last mouse event came from,
 	// nil when it came from the form's own window
 	popupUnderMouse *popupHost
+	// mouseDownPopup is the popup window where a mouse button was pressed,
+	// so the release goes there too
+	mouseDownPopup *popupHost
 
 	onGlobalKeyDown func(keyCode nuikey.Key, mods nuikey.KeyModifiers) bool
 
@@ -245,15 +248,12 @@ func newWidgetId() string {
 //	picker.SetPosition(x, y+field.Height())
 //	form.OpenPopup(picker)
 //
-// Its children are laid out on the grid like in any panel.
+// The popup is shown in its own window, so it can extend beyond the form,
+// and is kept on the screen. Implement PopupPlacer to choose where it goes
+// when it doesn't fit. Its children are laid out on the grid like in any panel.
 //
 // The popup closes on a click outside it (see SetCloseByClickOutside), on
 // Escape, when the form loses activation or is moved, and by CloseTopPopup.
-//
-// By default the popup is drawn inside the form and clipped by it. Implement
-// NativePopupWidget to show it in its own window that can extend beyond the
-// form and is kept on the screen, and PopupPlacer to choose where it goes
-// when it doesn't fit.
 func (c *Form) OpenPopup(w Widgeter) {
 	// A new widget isn't attached to any form yet, and without a form its
 	// children weren't laid out when its size was set
@@ -387,9 +387,15 @@ func (c *Form) createWindow(maximized bool) {
 	c.wnd = nui.CreateWindow(c.title, c.posX, c.posY, c.width, c.height, centerOnScreen, maximized)
 	c.wnd.OnPaint(c.processPaint)
 	c.wnd.OnResize(c.processResize)
-	c.wnd.OnMouseButtonDown(c.processMouseDown)
+	c.wnd.OnMouseButtonDown(func(button nuimouse.MouseButton, x, y int) {
+		c.popupUnderMouse = nil
+		c.processMouseDown(button, x, y)
+	})
 	c.wnd.OnMouseButtonUp(c.processMouseUp)
-	c.wnd.OnMouseButtonDblClick(c.processMouseDblClick)
+	c.wnd.OnMouseButtonDblClick(func(button nuimouse.MouseButton, x, y int) {
+		c.popupUnderMouse = nil
+		c.processMouseDblClick(button, x, y)
+	})
 	c.wnd.OnMouseMove(func(x, y int) {
 		c.popupUnderMouse = nil
 		c.processMouseMove(x, y)
@@ -584,7 +590,12 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressed = true
 	}
 	c.tooltipSuppress()
-	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
+	if c.closePopupsByClickOutside() {
+		c.Update()
+		return
+	}
+	c.mouseDownPopup = c.popupUnderMouse
+	widgetAtCoords := c.widgetUnderMouse(x, y)
 	if c.mouseLeftButtonPressed {
 		c.mouseLeftButtonPressedWidget = widgetAtCoords
 	}
@@ -597,7 +608,8 @@ func (c *Form) processMouseDown(button nuimouse.MouseButton, x int, y int) {
 			}
 		}
 	}
-	c.topWidget.ProcessMouseDown(button, x, y, c.lastKeyboardModifiers)
+	target, targetX, targetY := c.mouseTarget(c.popupUnderMouse, x, y)
+	target.ProcessMouseDown(button, targetX, targetY, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -606,14 +618,20 @@ func (c *Form) processMouseDblClick(button nuimouse.MouseButton, x int, y int) {
 	if button == nuimouse.MouseButtonLeft {
 		c.mouseLeftButtonPressed = true
 	}
-	widgetAtCoords := c.topWidget.findWidgetAt(x, y)
+	if c.closePopupsByClickOutside() {
+		c.Update()
+		return
+	}
+	c.mouseDownPopup = c.popupUnderMouse
+	widgetAtCoords := c.widgetUnderMouse(x, y)
 	if c.mouseLeftButtonPressed {
 		c.mouseLeftButtonPressedWidget = widgetAtCoords
 	}
 	if widgetAtCoords != nil {
 		widgetAtCoords.Focus()
 	}
-	c.topWidget.ProcessMouseDblClick(button, x, y, c.lastKeyboardModifiers)
+	target, targetX, targetY := c.mouseTarget(c.popupUnderMouse, x, y)
+	target.ProcessMouseDblClick(button, targetX, targetY, c.lastKeyboardModifiers)
 	c.Update()
 }
 
@@ -628,7 +646,15 @@ func (c *Form) processMouseUp(button nuimouse.MouseButton, x int, y int) {
 		c.mouseLeftButtonPressedWidget = nil
 	}
 
-	c.topWidget.ProcessMouseUp(button, x, y, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId)
+	// The release goes where the button was pressed, wherever the mouse is now
+	downPopup := c.mouseDownPopup
+	c.mouseDownPopup = nil
+	if downPopup != nil && !c.isPopupHostOpen(downPopup) {
+		c.Update() // the press closed that popup
+		return
+	}
+	target, targetX, targetY := c.mouseTarget(downPopup, x, y)
+	target.ProcessMouseUp(button, targetX, targetY, c.lastKeyboardModifiers, mouseLeftButtonPressedWidgetId)
 
 	c.Update()
 }
@@ -641,7 +667,8 @@ func (c *Form) processMouseMove(x int, y int) {
 		return
 	}
 
-	c.topWidget.ProcessMouseMove(x, y, c.lastKeyboardModifiers)
+	target, targetX, targetY := c.mouseTarget(c.popupUnderMouse, x, y)
+	target.ProcessMouseMove(targetX, targetY, c.lastKeyboardModifiers)
 
 	c.lastMouseX = x
 	c.lastMouseY = y
@@ -657,10 +684,7 @@ func (c *Form) updateHover() {
 	if c == nil || c.topWidget == nil {
 		return
 	}
-	hoverWidget := c.topWidget.findWidgetAt(c.lastMouseX, c.lastMouseY)
-	if hoverWidget == nil {
-		hoverWidget = c.topWidget
-	}
+	hoverWidget := c.widgetUnderMouse(c.lastMouseX, c.lastMouseY)
 
 	if hoverWidget != c.hoverWidget {
 		if c.hoverWidget != nil {
@@ -678,6 +702,15 @@ func (c *Form) updateHover() {
 		if c.hoverWidget.MouseCursor() != nuimouse.MouseCursorNotDefined {
 			newCursor = c.hoverWidget.MouseCursor()
 		}
+	}
+
+	// The cursor belongs to the window the mouse is over
+	if h := c.popupUnderMouse; h != nil {
+		if h.cursor != newCursor {
+			h.wnd.SetMouseCursor(newCursor)
+			h.cursor = newCursor
+		}
+		return
 	}
 
 	if c.lastMouseCursor != newCursor {
@@ -833,7 +866,8 @@ func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 	if c.lastKeyboardModifiers.Shift {
 		deltaX, deltaY = deltaY, deltaX // Swap for horizontal scrolling
 	}
-	c.topWidget.ProcessMouseWheel(deltaX, deltaY)
+	target, _, _ := c.mouseTarget(c.popupUnderMouse, 0, 0)
+	target.ProcessMouseWheel(deltaX, deltaY)
 	// The content under the mouse may have scrolled
 	c.updateHover()
 	c.Update()
