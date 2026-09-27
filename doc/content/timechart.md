@@ -129,6 +129,19 @@ Gap points are not merged into buckets: each one stays a separate point and
 starts a new bucket after it, so a break in the data remains visible at any
 zoom level.
 
+### TimeChartAggregator
+
+The same aggregation, fed one point at a time - for a source with many points
+(e.g. a day of samples) that should not build a slice of all of them on every paint:
+
+```go
+agg := ui.NewTimeChartAggregator(groupDuration, 0)
+for _, s := range samplesIn(from, to) { // sorted, plus one neighbour on each side
+	agg.Add(toPoint(s))
+}
+return agg.Points()
+```
+
 Buckets are aligned to multiples of `groupDuration` since the Unix epoch, so
 panning does not change how points are grouped. It is the same aggregation a
 server should do before sending data to the chart. With `groupDuration <= 0`

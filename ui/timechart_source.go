@@ -66,45 +66,71 @@ func TimeChartDownsample(points []TimeChartPoint, from, to time.Time, groupDurat
 		return res
 	}
 
-	g := int64(groupDuration)
-	res := make([]TimeChartPoint, 0, min(len(src), int(to.Sub(from)/groupDuration)+3))
-	var bucket int64
-	inBucket := false
+	agg := NewTimeChartAggregator(groupDuration, min(len(src), int(to.Sub(from)/groupDuration)+3))
 	for _, p := range src {
-		ns := p.DT.UnixNano()
-		b := ns / g
-		if ns < 0 && ns%g != 0 {
-			b--
-		}
-		if p.IsGap() {
-			res = append(res, NewTimeChartGap(time.Unix(0, b*g)))
-			inBucket = false
-			continue
-		}
-		good := p.HasValue()
-		if inBucket && b == bucket {
-			last := &res[len(res)-1]
-			last.HasBad = last.HasBad || p.HasBad
-			switch {
-			case !good:
-			case !last.HasGood:
-				last.First, last.Last, last.High, last.Low = p.First, p.Last, p.High, p.Low
-				last.HasGood = true
-			default:
-				last.Last = p.Last
-				last.High = math.Max(last.High, p.High)
-				last.Low = math.Min(last.Low, p.Low)
-			}
-			continue
-		}
-		bucket = b
-		inBucket = true
-		q := TimeChartPoint{DT: time.Unix(0, b*g), HasBad: p.HasBad}
-		if good {
-			q.First, q.Last, q.High, q.Low = p.First, p.Last, p.High, p.Low
-			q.HasGood = true
-		}
-		res = append(res, q)
+		agg.Add(p)
 	}
-	return res
+	return agg.Points()
+}
+
+// TimeChartAggregator merges sorted points into buckets of groupDuration one by
+// one, the same way as TimeChartDownsample. A source with many points can feed
+// them straight from its storage without building a slice of all of them first.
+type TimeChartAggregator struct {
+	group    int64
+	res      []TimeChartPoint
+	bucket   int64
+	inBucket bool
+}
+
+// NewTimeChartAggregator creates an aggregator; capacity is a hint for the number of result points
+func NewTimeChartAggregator(groupDuration time.Duration, capacity int) *TimeChartAggregator {
+	return &TimeChartAggregator{
+		group: max(int64(groupDuration), 1),
+		res:   make([]TimeChartPoint, 0, max(capacity, 0)),
+	}
+}
+
+// Add adds the next point; points must come sorted by DT
+func (c *TimeChartAggregator) Add(p TimeChartPoint) {
+	g := c.group
+	ns := p.DT.UnixNano()
+	b := ns / g
+	if ns < 0 && ns%g != 0 {
+		b--
+	}
+	if p.IsGap() {
+		c.res = append(c.res, NewTimeChartGap(time.Unix(0, b*g)))
+		c.inBucket = false
+		return
+	}
+	good := p.HasValue()
+	if c.inBucket && b == c.bucket {
+		last := &c.res[len(c.res)-1]
+		last.HasBad = last.HasBad || p.HasBad
+		switch {
+		case !good:
+		case !last.HasGood:
+			last.First, last.Last, last.High, last.Low = p.First, p.Last, p.High, p.Low
+			last.HasGood = true
+		default:
+			last.Last = p.Last
+			last.High = math.Max(last.High, p.High)
+			last.Low = math.Min(last.Low, p.Low)
+		}
+		return
+	}
+	c.bucket = b
+	c.inBucket = true
+	q := TimeChartPoint{DT: time.Unix(0, b*g), HasBad: p.HasBad}
+	if good {
+		q.First, q.Last, q.High, q.Low = p.First, p.Last, p.High, p.Low
+		q.HasGood = true
+	}
+	c.res = append(c.res, q)
+}
+
+// Points returns the aggregated points
+func (c *TimeChartAggregator) Points() []TimeChartPoint {
+	return c.res
 }

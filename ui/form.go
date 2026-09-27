@@ -102,6 +102,19 @@ func (c *Form) Maximize() {
 	}
 }
 
+// Restore returns a maximized window to its normal size
+func (c *Form) Restore() {
+	if c.wnd != nil {
+		c.wnd.RestoreWindow()
+	}
+}
+
+func (c *Form) Minimize() {
+	if c.wnd != nil {
+		c.wnd.MinimizeWindow()
+	}
+}
+
 func (c *Form) UpdateLayout() {
 	if c != nil && c.Panel() != nil {
 		c.Panel().ClearLayoutCache()
