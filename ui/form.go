@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"runtime/debug"
 	"sort"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/u00io/nui/nui"
@@ -59,6 +61,10 @@ type Form struct {
 	// OnDialogShow resizes the dialog to fit its actual content.
 	parentForm *Form
 
+	// Functions to run on the goroutine of this form, see Invoke
+	invokeMtx   sync.Mutex
+	invokeQueue []func()
+
 	acceptButton *Button // The button that is triggered when the user accepts the form (e.g., presses Enter)
 	cancelButton *Button // The button that is triggered when the user cancels the form (e.g., presses Esc)
 
@@ -66,18 +72,45 @@ type Form struct {
 }
 
 var nextWidgetId int64
-var allwidgets map[string]Widgeter
+
+// allwidgets holds the widgets of all the forms by ID. Each form is handled by
+// its own goroutine, so the map is locked: an unlocked concurrent access is a fatal error.
+var (
+	allwidgetsMtx sync.RWMutex
+	allwidgets    map[string]Widgeter
+)
 
 func init() {
-	nextWidgetId = 1
+	nextWidgetId = 0
 	allwidgets = make(map[string]Widgeter)
+}
+
+func registerWidget(w Widgeter) {
+	allwidgetsMtx.Lock()
+	allwidgets[w.Id()] = w
+	allwidgetsMtx.Unlock()
+}
+
+func unregisterWidget(id string) {
+	allwidgetsMtx.Lock()
+	delete(allwidgets, id)
+	allwidgetsMtx.Unlock()
+}
+
+func lookupWidget(id string) (Widgeter, bool) {
+	allwidgetsMtx.RLock()
+	defer allwidgetsMtx.RUnlock()
+	w, ok := allwidgets[id]
+	return w, ok
 }
 
 func PrintAllWidgets() {
 	ws := make([]Widgeter, 0)
+	allwidgetsMtx.RLock()
 	for _, w := range allwidgets {
 		ws = append(ws, w)
 	}
+	allwidgetsMtx.RUnlock()
 	sort.Slice(ws, func(i, j int) bool {
 		return ws[i].Id() < ws[j].Id()
 	})
@@ -129,7 +162,7 @@ func (c *Form) UpdateLayout() {
 }
 
 func (c *Form) WidgetById(id string) Widgeter {
-	if widget, exists := allwidgets[id]; exists {
+	if widget, exists := lookupWidget(id); exists {
 		return widget
 	}
 	return nil
@@ -153,16 +186,15 @@ func NewForm() *Form {
 	topWidget.SetAnchors(true, true, true, true)
 	topWidget.SetAutoFillBackground(true)
 	c.topWidget = topWidget
-	allwidgets[topWidget.Id()] = topWidget
+	registerWidget(topWidget)
 	return &c
 }
 
 func newWidgetId() string {
-	id := fmt.Sprint(nextWidgetId)
+	id := fmt.Sprint(atomic.AddInt64(&nextWidgetId, 1))
 	for len(id) < 3 {
 		id = "0" + id
 	}
-	nextWidgetId++
 	return id
 }
 
@@ -724,7 +756,40 @@ func (c *Form) processMouseWheel(deltaX int, deltaY int) {
 	c.Update()
 }
 
+// Invoke runs f on the goroutine that handles this form, on its next timer tick
+// (about 10ms later). Each window has its own goroutine, so code that changes
+// the widgets of this form from another window - e.g. a callback of a dialog
+// shown over it - must go through Invoke: changing widgets while this form
+// paints them would crash with a concurrent map access. Safe to call from any goroutine.
+func (c *Form) Invoke(f func()) {
+	if c == nil || f == nil {
+		return
+	}
+	c.invokeMtx.Lock()
+	c.invokeQueue = append(c.invokeQueue, f)
+	c.invokeMtx.Unlock()
+}
+
+// ParentForm returns the form this one was shown modally over, nil if none
+func (c *Form) ParentForm() *Form {
+	return c.parentForm
+}
+
+func (c *Form) runInvoked() {
+	c.invokeMtx.Lock()
+	queue := c.invokeQueue
+	c.invokeQueue = nil
+	c.invokeMtx.Unlock()
+	for _, f := range queue {
+		f()
+	}
+	if len(queue) > 0 {
+		c.Update()
+	}
+}
+
 func (c *Form) processTimer() {
+	c.runInvoked()
 
 	if time.Since(c.lastFreeMemoryTime) > 30*time.Second {
 		c.freeMemory()

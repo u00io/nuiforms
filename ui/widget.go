@@ -462,7 +462,7 @@ func (c *Widget) SetCellPadding(padding int) {
 }
 
 func (c *Widget) AddWidget(gridRow int, gridColumn int, w Widgeter) {
-	if _, exists := allwidgets[w.Id()]; exists {
+	if _, exists := lookupWidget(w.Id()); exists {
 		return
 	}
 	w.SetGridPosition(gridRow, gridColumn)
@@ -488,9 +488,9 @@ func (c *Widget) setId(id string) {
 func (c *Widget) attachToForm(self Widgeter, form *Form) {
 	c.form = form
 	if form != nil {
-		allwidgets[c.id] = self
+		registerWidget(self)
 	} else {
-		delete(allwidgets, c.id)
+		unregisterWidget(c.id)
 	}
 	for _, w := range c.widgets {
 		w.attachToForm(w, form)
@@ -1643,7 +1643,7 @@ func (c *Widget) AppendPopupWidget(w Widgeter) {
 		w.setPreviousFocusedWidget(c.form.focusedWidget)
 		c.PopupWidgets = append(c.PopupWidgets, w)
 		w.SetParentWidgetId(c.form.Panel().Id())
-		allwidgets[w.Id()] = w
+		registerWidget(w)
 		w.attachToForm(w, w.Form())
 	}
 	c.form.Update()

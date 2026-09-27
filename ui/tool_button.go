@@ -28,6 +28,7 @@ type ToolButton struct {
 	img         image.Image
 	imgDisabled image.Image
 	checked     bool
+	highlight   color.Color
 	onClick     func()
 }
 
@@ -103,10 +104,24 @@ func (c *ToolButton) SetChecked(checked bool) {
 	c.form.Update()
 }
 
-// drawBottomEdge draws the lighter bottom edge, or the bright bar when the button is checked
+// SetHighlight draws the bottom bar in the color to draw attention to the button,
+// e.g. the action to start with. nil returns the usual look.
+func (c *ToolButton) SetHighlight(col color.Color) {
+	if c.highlight == col {
+		return
+	}
+	c.highlight = col
+	c.form.Update()
+}
+
+// drawBottomEdge draws the lighter bottom edge, or a bright bar when the button is checked or highlighted
 func (c *ToolButton) drawBottomEdge(cnv *Canvas) {
 	if c.checked {
 		cnv.FillRect(0, c.Height()-toolButtonCheckMarkWidth, c.Width(), toolButtonCheckMarkWidth, c.ForegroundColor())
+		return
+	}
+	if c.highlight != nil {
+		cnv.FillRect(0, c.Height()-toolButtonCheckMarkWidth, c.Width(), toolButtonCheckMarkWidth, c.highlight)
 		return
 	}
 	cnv.FillRect(0, c.Height()-toolButtonEdgeWidth, c.Width(), toolButtonEdgeWidth, c.BackgroundColorWithAddElevation(toolButtonEdgeLift))

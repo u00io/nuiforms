@@ -18,6 +18,19 @@ const (
 	messageBoxChromeHeight = 120
 )
 
+// runOnParent runs a message box callback on the goroutine of the parent window,
+// which owns the widgets the callback usually changes (see Form.Invoke)
+func runOnParent(parentWidget Widgeter, f func()) {
+	if f == nil {
+		return
+	}
+	if parentWidget == nil || parentWidget.Form() == nil {
+		f()
+		return
+	}
+	parentWidget.Form().Invoke(f)
+}
+
 func ShowMessageBox(parentWidget Widgeter, title string, text string) {
 	c, buttonPanel := newMessageBoxForm(title, text)
 
@@ -38,16 +51,12 @@ func ShowQuestionMessageBoxYesNo(parentWidget Widgeter, title string, text strin
 	buttonPanel.AddHSpacer(0, 0)
 	yesButton := buttonPanel.AddButton(0, 1, "Yes", func() {
 		c.Close()
-		if onYes != nil {
-			onYes()
-		}
+		runOnParent(parentWidget, onYes)
 	})
 	buttonPanel.AddHSpacer(0, 2)
 	noButton := buttonPanel.AddButton(0, 3, "No", func() {
 		c.Close()
-		if onNo != nil {
-			onNo()
-		}
+		runOnParent(parentWidget, onNo)
 	})
 	buttonPanel.AddHSpacer(0, 4)
 
@@ -64,16 +73,12 @@ func ShowQuestionMessageBoxOKCancel(parentWidget Widgeter, title string, text st
 	buttonPanel.AddHSpacer(0, 0)
 	okButton := buttonPanel.AddButton(0, 1, "OK", func() {
 		c.Close()
-		if onOK != nil {
-			onOK()
-		}
+		runOnParent(parentWidget, onOK)
 	})
 	buttonPanel.AddHSpacer(0, 2)
 	cancelButton := buttonPanel.AddButton(0, 3, "Cancel", func() {
 		c.Close()
-		if onCancel != nil {
-			onCancel()
-		}
+		runOnParent(parentWidget, onCancel)
 	})
 	buttonPanel.AddHSpacer(0, 4)
 
